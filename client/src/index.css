@@ -29,7 +29,7 @@ canvas {
   touch-action: none;
 }
 
-/* Hide system keyboard/control overlays */
+/* Hide all system overlays and instructions */
 [data-testid*="keyboard"],
 [class*="keyboard"],
 [class*="shortcut"],
@@ -38,16 +38,43 @@ canvas {
 [data-testid="floating-controls"],
 [aria-label*="keyboard"],
 [aria-label*="shortcut"],
+[aria-label*="Arrow Keys"],
+[aria-label*="WASD"],
 div[style*="z-index: 9999"],
-div[style*="position: absolute"][style*="bottom"] {
+div[style*="position: absolute"][style*="bottom"],
+div[style*="position: fixed"][style*="bottom"],
+.replit-ui-kit-popover,
+.replit-ui-kit-floating-panel,
+[data-testid*="tooltip"],
+[role="tooltip"],
+.tooltip {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+  z-index: -1 !important;
 }
 
-/* Specifically hide Replit's keyboard overlay */
-.replit-ui-kit-popover,
-.replit-ui-kit-floating-panel {
+/* Hide any floating divs that contain control instructions */
+div:has-text("Arrow Keys"),
+div:has-text("WASD"),
+div:has-text("Move"),
+div:has-text("ESC"),
+div:has-text("Pause"),
+div:has-text("Click button") {
+  display: none !important;
+}
+
+/* Brute force hide bottom overlays */
+body > div:last-child[style*="position"][style*="bottom"] {
+  display: none !important;
+}
+
+/* Hide specific Replit overlay classes */
+.replit-ui-kit-toast,
+.replit-ui-kit-overlay,
+[class*="replit"][class*="overlay"],
+[class*="floating"][class*="panel"],
+[class*="keyboard"][class*="hint"] {
   display: none !important;
 }
