@@ -251,7 +251,7 @@ export default function GameBoard2D() {
 
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center pb-40">
+      <div className="fixed inset-0 flex items-center justify-center pb-24">
         <div 
           className="relative bg-green-800 border-4 border-green-600 rounded-lg shadow-2xl"
           style={{ 
