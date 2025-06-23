@@ -29,26 +29,12 @@ canvas {
   touch-action: none;
 }
 
-/* Hide all system overlays and instructions completely */
-div[style*="position: fixed"][style*="bottom"],
-div[style*="position: absolute"][style*="bottom"],
-[data-testid*="keyboard"],
-[data-testid*="floating"],
-[class*="replit-ui-kit"],
-[role="tooltip"],
-.tooltip,
-[aria-label*="keyboard"],
-[aria-label*="shortcut"] {
+/* Target specific system overlays only */
+div[style*="position: fixed"]:not([class]):not([id]) {
   display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  height: 0 !important;
-  width: 0 !important;
-  overflow: hidden !important;
 }
 
-/* Nuclear option - hide any bottom positioned overlays */
-body > div:not(#root):last-child {
+/* Hide elements that appear outside our game container */
+body > div:not(#root) {
   display: none !important;
 }
