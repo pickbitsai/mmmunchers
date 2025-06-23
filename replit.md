@@ -115,6 +115,9 @@ Number Munchers is a modern 3D educational game built with React Three Fiber, in
 ```
 Changelog:
 - June 23, 2025. Initial setup
+- June 23, 2025. Added level progression system with automatic advancement when all correct answers are munched
+- June 23, 2025. Implemented separate movement and munch controls with 200ms debounce protection
+- June 23, 2025. Added score system (10 points × level per correct answer, 100 × level bonus per level completion)
 ```
 
 ## User Preferences

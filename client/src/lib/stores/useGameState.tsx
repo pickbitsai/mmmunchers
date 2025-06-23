@@ -69,6 +69,7 @@ interface GameState {
   processPlayerMove: (newX: number, newY: number) => void;
   spawnEnemies: () => void;
   nextLevel: () => void;
+  addScore: (points: number) => void;
 }
 
 const GRID_WIDTH = 9;
@@ -283,6 +284,12 @@ export const useGameState = create<GameState>()(
       }));
       
       get().startGame();
+    },
+    
+    addScore: (points: number) => {
+      set((state) => ({
+        score: state.score + points
+      }));
     }
   }))
 );

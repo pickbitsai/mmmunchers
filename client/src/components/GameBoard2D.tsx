@@ -15,12 +15,15 @@ export default function GameBoard2D() {
     player,
     enemies,
     currentChallenge,
+    level,
     updatePlayer,
     updateEnemies,
     updateGrid,
     processPlayerMove,
     spawnEnemies,
-    gameOver
+    gameOver,
+    nextLevel,
+    addScore
   } = useGameState();
 
   // Initialize enemies when game starts
@@ -95,7 +98,18 @@ export default function GameBoard2D() {
         })
       );
       updateGrid(newGrid);
-      // Add score or other positive feedback here
+      
+      // Award points based on level
+      addScore(10 * level);
+      
+      // Check if all correct answers have been munched (level complete)
+      const remainingCorrect = newGrid.flat().some(cell => cell.isCorrect && !cell.isMunched);
+      if (!remainingCorrect) {
+        // All correct answers munched - advance to next level
+        setTimeout(() => {
+          nextLevel();
+        }, 500); // Small delay for visual feedback
+      }
     } else {
       // Wrong answer - game over
       gameOver();
@@ -122,6 +136,18 @@ export default function GameBoard2D() {
           })
         );
         updateGrid(newGrid);
+        
+        // Award points based on level
+        addScore(10 * level);
+        
+        // Check if all correct answers have been munched (level complete)
+        const remainingCorrect = newGrid.flat().some(cell => cell.isCorrect && !cell.isMunched);
+        if (!remainingCorrect) {
+          // All correct answers munched - advance to next level
+          setTimeout(() => {
+            nextLevel();
+          }, 500); // Small delay for visual feedback
+        }
       } else {
         // Wrong answer - game over
         gameOver();
