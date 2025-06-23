@@ -28,3 +28,18 @@ canvas {
   height: 100% !important;
   touch-action: none;
 }
+
+/* Hide system keyboard/control overlays */
+[data-testid*="keyboard"],
+[class*="keyboard"],
+[class*="shortcut"],
+.replit-ui-kit-tooltip,
+[data-cy*="keyboard"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide any floating instruction overlays */
+div[style*="position: fixed"][style*="bottom"]:has(span:contains("Arrow Keys")) {
+  display: none !important;
+}
