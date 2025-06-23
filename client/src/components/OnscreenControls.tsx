@@ -45,58 +45,60 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   `;
 
   return (
-    <div className="fixed bottom-20 left-20 z-50">
-      {/* D-pad style controls */}
-      <div className="relative">
-        {/* Up */}
-        <Button
-          className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2`}
-          onTouchStart={(e) => handleButtonPress('up', e)}
-          onMouseDown={(e) => handleButtonPress('up', e)}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <ChevronUp className="w-6 h-6" />
-        </Button>
+    <>
+      {/* D-pad directional controls - centered below grid */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="relative">
+          {/* Up */}
+          <Button
+            className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2`}
+            onTouchStart={(e) => handleButtonPress('up', e)}
+            onMouseDown={(e) => handleButtonPress('up', e)}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <ChevronUp className="w-6 h-6" />
+          </Button>
 
-        {/* Left */}
-        <Button
-          className={`${buttonClass('left')} absolute top-0 -left-16`}
-          onTouchStart={(e) => handleButtonPress('left', e)}
-          onMouseDown={(e) => handleButtonPress('left', e)}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </Button>
+          {/* Left */}
+          <Button
+            className={`${buttonClass('left')} absolute top-0 -left-16`}
+            onTouchStart={(e) => handleButtonPress('left', e)}
+            onMouseDown={(e) => handleButtonPress('left', e)}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </Button>
 
-        {/* Center (visual reference) */}
-        <div className="w-14 h-14 bg-black/20 border-2 border-white/20 rounded-md" />
+          {/* Center (visual reference) */}
+          <div className="w-14 h-14 bg-black/20 border-2 border-white/20 rounded-md" />
 
-        {/* Right */}
-        <Button
-          className={`${buttonClass('right')} absolute top-0 -right-16`}
-          onTouchStart={(e) => handleButtonPress('right', e)}
-          onMouseDown={(e) => handleButtonPress('right', e)}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <ChevronRight className="w-6 h-6" />
-        </Button>
+          {/* Right */}
+          <Button
+            className={`${buttonClass('right')} absolute top-0 -right-16`}
+            onTouchStart={(e) => handleButtonPress('right', e)}
+            onMouseDown={(e) => handleButtonPress('right', e)}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <ChevronRight className="w-6 h-6" />
+          </Button>
 
-        {/* Down */}
-        <Button
-          className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2`}
-          onTouchStart={(e) => handleButtonPress('down', e)}
-          onMouseDown={(e) => handleButtonPress('down', e)}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <ChevronDown className="w-6 h-6" />
-        </Button>
+          {/* Down */}
+          <Button
+            className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2`}
+            onTouchStart={(e) => handleButtonPress('down', e)}
+            onMouseDown={(e) => handleButtonPress('down', e)}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            <ChevronDown className="w-6 h-6" />
+          </Button>
+        </div>
       </div>
 
-      {/* Munch Button */}
-      <div className="absolute -right-20 top-1/2 transform -translate-y-1/2">
+      {/* Munch Button - right side of screen */}
+      <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50">
         <Button
-          className="w-16 h-16 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
-                     text-white shadow-lg transition-all duration-150 text-sm font-bold"
+          className="w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
+                     text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg"
           onTouchStart={() => {
             setPressedButton('munch');
             onMunch();
@@ -112,13 +114,6 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           MUNCH
         </Button>
       </div>
-
-      {/* Instructions */}
-      <div className="absolute -top-24 left-1/2 transform -translate-x-1/2 text-center">
-        <div className="bg-black/70 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm border border-white/20">
-          Move around, then MUNCH answers
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
