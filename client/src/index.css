@@ -29,52 +29,26 @@ canvas {
   touch-action: none;
 }
 
-/* Hide all system overlays and instructions */
-[data-testid*="keyboard"],
-[class*="keyboard"],
-[class*="shortcut"],
-.replit-ui-kit-tooltip,
-[data-cy*="keyboard"],
-[data-testid="floating-controls"],
-[aria-label*="keyboard"],
-[aria-label*="shortcut"],
-[aria-label*="Arrow Keys"],
-[aria-label*="WASD"],
-div[style*="z-index: 9999"],
-div[style*="position: absolute"][style*="bottom"],
+/* Hide all system overlays and instructions completely */
 div[style*="position: fixed"][style*="bottom"],
-.replit-ui-kit-popover,
-.replit-ui-kit-floating-panel,
-[data-testid*="tooltip"],
+div[style*="position: absolute"][style*="bottom"],
+[data-testid*="keyboard"],
+[data-testid*="floating"],
+[class*="replit-ui-kit"],
 [role="tooltip"],
-.tooltip {
+.tooltip,
+[aria-label*="keyboard"],
+[aria-label*="shortcut"] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  z-index: -1 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
 }
 
-/* Hide any floating divs that contain control instructions */
-div:has-text("Arrow Keys"),
-div:has-text("WASD"),
-div:has-text("Move"),
-div:has-text("ESC"),
-div:has-text("Pause"),
-div:has-text("Click button") {
-  display: none !important;
-}
-
-/* Brute force hide bottom overlays */
-body > div:last-child[style*="position"][style*="bottom"] {
-  display: none !important;
-}
-
-/* Hide specific Replit overlay classes */
-.replit-ui-kit-toast,
-.replit-ui-kit-overlay,
-[class*="replit"][class*="overlay"],
-[class*="floating"][class*="panel"],
-[class*="keyboard"][class*="hint"] {
+/* Nuclear option - hide any bottom positioned overlays */
+body > div:not(#root):last-child {
   display: none !important;
 }
