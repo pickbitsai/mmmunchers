@@ -45,7 +45,7 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   `;
 
   return (
-    <div className="fixed bottom-4 left-4 z-50">
+    <div className="fixed bottom-20 left-20 z-50">
       {/* D-pad style controls */}
       <div className="relative">
         {/* Up */}
