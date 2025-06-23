@@ -42,19 +42,19 @@ export default function TopicSelection() {
   ];
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center">
-      <div className="container max-w-4xl mx-auto p-6">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-4">Number Munchers</h1>
-          <p className="text-xl text-gray-300">Educational Adventure Game</p>
+    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 pt-20 pb-20">
+      <div className="container max-w-3xl mx-auto">
+        <div className="text-center mb-6">
+          <h1 className="text-4xl font-bold text-white mb-2">Number Munchers</h1>
+          <p className="text-lg text-gray-300">Educational Adventure Game</p>
         </div>
 
         <Card className="bg-black/40 border-gray-600 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center text-white">Choose Your Topic</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl text-center text-white">Choose Your Topic</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {topics.map((topic) => {
                 const IconComponent = topic.icon;
                 
@@ -68,18 +68,18 @@ export default function TopicSelection() {
                     }`}
                     onClick={() => topic.available && selectTopic(topic.id)}
                   >
-                    <CardContent className="p-6 text-center">
-                      <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
+                    <CardContent className="p-4 text-center">
+                      <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
                         topic.available ? topic.color : 'bg-gray-600'
                       }`}>
-                        <IconComponent className="h-8 w-8 text-white" />
+                        <IconComponent className="h-6 w-6 text-white" />
                       </div>
                       
-                      <h3 className="text-xl font-bold text-white mb-2">
+                      <h3 className="text-lg font-bold text-white mb-2">
                         {topic.name}
                       </h3>
                       
-                      <p className="text-gray-300 text-sm mb-4">
+                      <p className="text-gray-300 text-xs mb-3">
                         {topic.description}
                       </p>
                       

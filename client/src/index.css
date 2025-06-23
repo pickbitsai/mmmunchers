@@ -34,12 +34,20 @@ canvas {
 [class*="keyboard"],
 [class*="shortcut"],
 .replit-ui-kit-tooltip,
-[data-cy*="keyboard"] {
+[data-cy*="keyboard"],
+[data-testid="floating-controls"],
+[aria-label*="keyboard"],
+[aria-label*="shortcut"],
+div[style*="z-index: 9999"],
+div[style*="position: absolute"][style*="bottom"] {
   display: none !important;
   visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-/* Hide any floating instruction overlays */
-div[style*="position: fixed"][style*="bottom"]:has(span:contains("Arrow Keys")) {
+/* Specifically hide Replit's keyboard overlay */
+.replit-ui-kit-popover,
+.replit-ui-kit-floating-panel {
   display: none !important;
 }
