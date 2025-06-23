@@ -6,6 +6,8 @@ import OnscreenControls from "./OnscreenControls";
 export default function GameBoard2D() {
   const animationRef = useRef<number>();
   const lastTimeRef = useRef<number>(0);
+  const lastMoveTimeRef = useRef<number>(0);
+  const isMovingRef = useRef<boolean>(false);
   
   const {
     gamePhase,
@@ -129,6 +131,13 @@ export default function GameBoard2D() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (gamePhase !== 'playing') return;
 
+      const now = Date.now();
+      
+      // Prevent rapid-fire movements (debounce to 200ms)
+      if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
+        return;
+      }
+
       let newX = player.x;
       let newY = player.y;
 
@@ -160,7 +169,14 @@ export default function GameBoard2D() {
 
       event.preventDefault();
       if (newX !== player.x || newY !== player.y) {
+        isMovingRef.current = true;
+        lastMoveTimeRef.current = now;
         updatePlayer({ x: newX, y: newY });
+        
+        // Reset movement flag after animation completes
+        setTimeout(() => {
+          isMovingRef.current = false;
+        }, 150);
       }
     };
 
@@ -169,6 +185,13 @@ export default function GameBoard2D() {
   }, [gamePhase, player.x, player.y, gridWidth, gridHeight, updatePlayer, gameOver, updateGrid, grid]);
 
   const handleOnscreenMove = (direction: 'up' | 'down' | 'left' | 'right') => {
+    const now = Date.now();
+    
+    // Prevent rapid-fire movements (debounce to 200ms)
+    if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
+      return;
+    }
+    
     let newX = player.x;
     let newY = player.y;
     
@@ -189,7 +212,14 @@ export default function GameBoard2D() {
     
     // Allow movement to any square (don't check if it's empty or correct)
     if (newX !== player.x || newY !== player.y) {
+      isMovingRef.current = true;
+      lastMoveTimeRef.current = now;
       updatePlayer({ x: newX, y: newY });
+      
+      // Reset movement flag after animation completes
+      setTimeout(() => {
+        isMovingRef.current = false;
+      }, 150);
     }
   };
 

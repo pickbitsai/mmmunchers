@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -9,13 +9,33 @@ interface OnscreenControlsProps {
 
 export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsProps) {
   const [pressedButton, setPressedButton] = useState<string | null>(null);
+  const lastMoveTimeRef = useRef<number>(0);
+  const isProcessingRef = useRef<boolean>(false);
 
-  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right') => {
+  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right', event?: React.MouseEvent | React.TouchEvent) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    const now = Date.now();
+    
+    // Prevent rapid-fire movements (debounce to 200ms)
+    if (isProcessingRef.current || now - lastMoveTimeRef.current < 200) {
+      return;
+    }
+    
+    isProcessingRef.current = true;
+    lastMoveTimeRef.current = now;
+    
     setPressedButton(direction);
     onMove(direction);
     
-    // Visual feedback
-    setTimeout(() => setPressedButton(null), 150);
+    // Visual feedback and reset processing flag
+    setTimeout(() => {
+      setPressedButton(null);
+      isProcessingRef.current = false;
+    }, 150);
   };
 
   const buttonClass = (direction: string) => `
@@ -31,8 +51,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
         {/* Up */}
         <Button
           className={`${buttonClass('up')} absolute -top-20 left-1/2 transform -translate-x-1/2`}
-          onTouchStart={() => handleButtonPress('up')}
-          onMouseDown={() => handleButtonPress('up')}
+          onTouchStart={(e) => handleButtonPress('up', e)}
+          onMouseDown={(e) => handleButtonPress('up', e)}
           onContextMenu={(e) => e.preventDefault()}
         >
           <ChevronUp className="w-8 h-8" />
@@ -41,8 +61,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
         {/* Left */}
         <Button
           className={`${buttonClass('left')} absolute top-0 -left-20`}
-          onTouchStart={() => handleButtonPress('left')}
-          onMouseDown={() => handleButtonPress('left')}
+          onTouchStart={(e) => handleButtonPress('left', e)}
+          onMouseDown={(e) => handleButtonPress('left', e)}
           onContextMenu={(e) => e.preventDefault()}
         >
           <ChevronLeft className="w-8 h-8" />
@@ -54,8 +74,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
         {/* Right */}
         <Button
           className={`${buttonClass('right')} absolute top-0 -right-20`}
-          onTouchStart={() => handleButtonPress('right')}
-          onMouseDown={() => handleButtonPress('right')}
+          onTouchStart={(e) => handleButtonPress('right', e)}
+          onMouseDown={(e) => handleButtonPress('right', e)}
           onContextMenu={(e) => e.preventDefault()}
         >
           <ChevronRight className="w-8 h-8" />
@@ -64,8 +84,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
         {/* Down */}
         <Button
           className={`${buttonClass('down')} absolute -bottom-20 left-1/2 transform -translate-x-1/2`}
-          onTouchStart={() => handleButtonPress('down')}
-          onMouseDown={() => handleButtonPress('down')}
+          onTouchStart={(e) => handleButtonPress('down', e)}
+          onMouseDown={(e) => handleButtonPress('down', e)}
           onContextMenu={(e) => e.preventDefault()}
         >
           <ChevronDown className="w-8 h-8" />
