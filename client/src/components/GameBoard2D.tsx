@@ -17,7 +17,8 @@ export default function GameBoard2D() {
     updateEnemies,
     updateGrid,
     processPlayerMove,
-    spawnEnemies
+    spawnEnemies,
+    gameOver
   } = useGameState();
 
   // Initialize enemies when game starts
@@ -74,6 +75,99 @@ export default function GameBoard2D() {
   const boardWidth = gridWidth * cellSize;
   const boardHeight = gridHeight * cellSize;
 
+  const handleMunch = () => {
+    const currentCell = grid[player.y]?.[player.x];
+    if (!currentCell || currentCell.isEmpty || currentCell.isMunched) {
+      return; // Nothing to munch
+    }
+
+    // Check if the answer is correct
+    if (currentCell.isCorrect) {
+      // Correct answer - mark as munched and award points
+      const newGrid = grid.map((row, rowIndex) =>
+        row.map((cell, colIndex) => {
+          if (rowIndex === player.y && colIndex === player.x) {
+            return { ...cell, isMunched: true };
+          }
+          return cell;
+        })
+      );
+      updateGrid(newGrid);
+      // Add score or other positive feedback here
+    } else {
+      // Wrong answer - game over
+      gameOver();
+    }
+  };
+
+  // Keyboard controls
+  useEffect(() => {
+    const handleMunchAction = () => {
+      const currentCell = grid[player.y]?.[player.x];
+      if (!currentCell || currentCell.isEmpty || currentCell.isMunched) {
+        return; // Nothing to munch
+      }
+
+      // Check if the answer is correct
+      if (currentCell.isCorrect) {
+        // Correct answer - mark as munched and award points
+        const newGrid = grid.map((row, rowIndex) =>
+          row.map((cell, colIndex) => {
+            if (rowIndex === player.y && colIndex === player.x) {
+              return { ...cell, isMunched: true };
+            }
+            return cell;
+          })
+        );
+        updateGrid(newGrid);
+      } else {
+        // Wrong answer - game over
+        gameOver();
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (gamePhase !== 'playing') return;
+
+      let newX = player.x;
+      let newY = player.y;
+
+      switch (event.code) {
+        case 'ArrowUp':
+        case 'KeyW':
+          newY = Math.max(0, player.y - 1);
+          break;
+        case 'ArrowDown':
+        case 'KeyS':
+          newY = Math.min(gridHeight - 1, player.y + 1);
+          break;
+        case 'ArrowLeft':
+        case 'KeyA':
+          newX = Math.max(0, player.x - 1);
+          break;
+        case 'ArrowRight':
+        case 'KeyD':
+          newX = Math.min(gridWidth - 1, player.x + 1);
+          break;
+        case 'Space':
+        case 'Enter':
+          event.preventDefault();
+          handleMunchAction();
+          return;
+        default:
+          return;
+      }
+
+      event.preventDefault();
+      if (newX !== player.x || newY !== player.y) {
+        updatePlayer({ x: newX, y: newY });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gamePhase, player.x, player.y, gridWidth, gridHeight, updatePlayer, gameOver, updateGrid, grid]);
+
   const handleOnscreenMove = (direction: 'up' | 'down' | 'left' | 'right') => {
     let newX = player.x;
     let newY = player.y;
@@ -93,8 +187,9 @@ export default function GameBoard2D() {
         break;
     }
     
+    // Allow movement to any square (don't check if it's empty or correct)
     if (newX !== player.x || newY !== player.y) {
-      processPlayerMove(newX, newY);
+      updatePlayer({ x: newX, y: newY });
     }
   };
 
@@ -184,7 +279,7 @@ export default function GameBoard2D() {
       </div>
       
       {/* Onscreen Controls - positioned outside game board */}
-      <OnscreenControls onMove={handleOnscreenMove} />
+      <OnscreenControls onMove={handleOnscreenMove} onMunch={handleMunch} />
     </>
   );
 }

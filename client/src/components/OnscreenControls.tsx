@@ -4,9 +4,10 @@ import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 
 interface OnscreenControlsProps {
   onMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
+  onMunch: () => void;
 }
 
-export default function OnscreenControls({ onMove }: OnscreenControlsProps) {
+export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsProps) {
   const [pressedButton, setPressedButton] = useState<string | null>(null);
 
   const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right') => {
@@ -24,7 +25,7 @@ export default function OnscreenControls({ onMove }: OnscreenControlsProps) {
   `;
 
   return (
-    <div className="fixed bottom-8 left-8 z-50">
+    <div className="fixed bottom-8 left-12 z-50">
       {/* D-pad style controls */}
       <div className="relative">
         {/* Up */}
@@ -71,10 +72,31 @@ export default function OnscreenControls({ onMove }: OnscreenControlsProps) {
         </Button>
       </div>
 
+      {/* Munch Button */}
+      <div className="absolute -right-32 top-1/2 transform -translate-y-1/2">
+        <Button
+          className="w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
+                     text-white shadow-lg transition-all duration-150 text-lg font-bold"
+          onTouchStart={() => {
+            setPressedButton('munch');
+            onMunch();
+            setTimeout(() => setPressedButton(null), 150);
+          }}
+          onMouseDown={() => {
+            setPressedButton('munch');
+            onMunch();
+            setTimeout(() => setPressedButton(null), 150);
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          MUNCH
+        </Button>
+      </div>
+
       {/* Instructions */}
       <div className="absolute -top-32 left-1/2 transform -translate-x-1/2 text-center">
         <div className="bg-black/60 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm">
-          Move to munch answers
+          Move around, then MUNCH answers
         </div>
       </div>
     </div>
