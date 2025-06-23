@@ -1,14 +1,18 @@
-import { useKeyboardControls } from "@react-three/drei";
 import { Player, Enemy, GridCell, Challenge } from "./stores/useGameState";
 import { useAudio } from "./stores/useAudio";
 
-enum Controls {
-  up = 'up',
-  down = 'down',
-  left = 'left',
-  right = 'right',
-  select = 'select',
-  pause = 'pause'
+// Simple keyboard state tracking
+const keyState: { [key: string]: boolean } = {};
+
+// Setup keyboard listeners
+if (typeof window !== 'undefined') {
+  window.addEventListener('keydown', (e) => {
+    keyState[e.code] = true;
+  });
+  
+  window.addEventListener('keyup', (e) => {
+    keyState[e.code] = false;
+  });
 }
 
 interface GameLogicParams {
@@ -39,26 +43,23 @@ export function updateGameLogic({
 }: GameLogicParams) {
   const currentTime = Date.now();
   
-  // Handle player input
-  const [, getControls] = useKeyboardControls<Controls>();
-  const controls = getControls();
-  
-  // Player movement with cooldown
+  // Handle player input with simple keyboard tracking
   if (currentTime - lastMoveTime > MOVE_COOLDOWN) {
     let newX = player.x;
     let newY = player.y;
     let moved = false;
     
-    if (controls.up && !moved) {
+    // Check for movement keys
+    if ((keyState['ArrowUp'] || keyState['KeyW']) && !moved) {
       newY = Math.max(0, player.y - 1);
       moved = true;
-    } else if (controls.down && !moved) {
+    } else if ((keyState['ArrowDown'] || keyState['KeyS']) && !moved) {
       newY = Math.min(grid.length - 1, player.y + 1);
       moved = true;
-    } else if (controls.left && !moved) {
+    } else if ((keyState['ArrowLeft'] || keyState['KeyA']) && !moved) {
       newX = Math.max(0, player.x - 1);
       moved = true;
-    } else if (controls.right && !moved) {
+    } else if ((keyState['ArrowRight'] || keyState['KeyD']) && !moved) {
       newX = Math.min(grid[0]?.length - 1 || 0, player.x + 1);
       moved = true;
     }

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useGameState } from "../lib/stores/useGameState";
 import TopicSelection from "./TopicSelection";
-import GameBoard from "./GameBoard";
+import GameBoard2D from "./GameBoard2D";
 import GameUI from "./GameUI";
 
 export default function Game() {
@@ -16,7 +16,7 @@ export default function Game() {
       {gamePhase === 'topic_selection' && <TopicSelection />}
       {(gamePhase === 'playing' || gamePhase === 'paused' || gamePhase === 'game_over') && (
         <>
-          <GameBoard />
+          <GameBoard2D />
           <GameUI />
         </>
       )}
