@@ -18,40 +18,47 @@ const queryClient = new QueryClient({
 function App() {
   useEffect(() => {
     const removeInstructions = () => {
-      const instructionTexts = [
+      // Find and remove any element containing these exact texts
+      const targetTexts = [
         'Arrow Keys / WASD: Move',
-        'P / ESC: Pause', 
-        'Click button to toggle'
+        'Arrow Keys / WASD',
+        'P / ESC: Pause',
+        'Click button to toggle',
+        'WASD: Move',
+        'ESC: Pause'
       ];
       
-      instructionTexts.forEach(text => {
-        const walker = document.createTreeWalker(
-          document.body,
-          NodeFilter.SHOW_TEXT,
-          null,
-          false
-        );
-        
-        let node;
-        while (node = walker.nextNode()) {
-          if (node.nodeValue && node.nodeValue.includes(text)) {
-            // Remove the parent element containing this text
-            let parent = node.parentElement;
-            while (parent && parent !== document.body) {
-              if (parent.style.position === 'fixed' || parent.style.position === 'absolute') {
-                parent.remove();
-                break;
-              }
-              parent = parent.parentElement;
+      // Get all elements in the document
+      const allElements = Array.from(document.querySelectorAll('*'));
+      
+      allElements.forEach(element => {
+        if (element.textContent && element.textContent.trim()) {
+          targetTexts.forEach(text => {
+            if (element.textContent && element.textContent.includes(text) && element.id !== 'root') {
+              // Remove this element completely
+              element.remove();
             }
-          }
+          });
         }
+      });
+      
+      // Also check for elements with these specific aria-labels or data attributes
+      const attributeSelectors = [
+        '[aria-label*="Arrow Keys"]',
+        '[aria-label*="WASD"]', 
+        '[aria-label*="ESC"]',
+        '[data-testid*="keyboard"]',
+        '[data-testid*="controls"]'
+      ];
+      
+      attributeSelectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => el.remove());
       });
     };
 
-    // Run immediately and then every 500ms
+    // Run more frequently to catch these overlays
     removeInstructions();
-    const interval = setInterval(removeInstructions, 500);
+    const interval = setInterval(removeInstructions, 100);
     
     return () => clearInterval(interval);
   }, []);
