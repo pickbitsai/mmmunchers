@@ -47,7 +47,7 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   return (
     <>
       {/* D-pad directional controls - centered below grid */}
-      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50">
+      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
         <div className="relative">
           {/* Up */}
           <Button
@@ -95,7 +95,7 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       </div>
 
       {/* Munch Button - right side of screen */}
-      <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50">
+      <div className="fixed right-4 bottom-20 z-50">
         <Button
           className="w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
                      text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg"
