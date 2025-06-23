@@ -45,7 +45,7 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   `;
 
   return (
-    <div className="fixed bottom-4 left-4 z-50">
+    <div className="fixed bottom-6 left-6 z-50">
       {/* D-pad style controls */}
       <div className="relative">
         {/* Up */}
@@ -114,8 +114,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       </div>
 
       {/* Instructions */}
-      <div className="absolute -top-32 left-1/2 transform -translate-x-1/2 text-center">
-        <div className="bg-black/60 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm">
+      <div className="absolute -top-28 left-1/2 transform -translate-x-1/2 text-center">
+        <div className="bg-black/70 text-white text-sm px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20">
           Move around, then MUNCH answers
         </div>
       </div>
