@@ -16,7 +16,45 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  useEffect(() => {
+    const removeInstructions = () => {
+      const instructionTexts = [
+        'Arrow Keys / WASD: Move',
+        'P / ESC: Pause', 
+        'Click button to toggle'
+      ];
+      
+      instructionTexts.forEach(text => {
+        const walker = document.createTreeWalker(
+          document.body,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+          if (node.nodeValue && node.nodeValue.includes(text)) {
+            // Remove the parent element containing this text
+            let parent = node.parentElement;
+            while (parent && parent !== document.body) {
+              if (parent.style.position === 'fixed' || parent.style.position === 'absolute') {
+                parent.remove();
+                break;
+              }
+              parent = parent.parentElement;
+            }
+          }
+        }
+      });
+    };
 
+    // Run immediately and then every 500ms
+    removeInstructions();
+    const interval = setInterval(removeInstructions, 500);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
