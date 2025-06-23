@@ -74,7 +74,7 @@ export default function GameBoard2D() {
 
   if (!grid.length || !currentChallenge) return null;
 
-  const cellSize = 60;
+  const cellSize = 40; // Reduced from 60 to fit better
   const gridWidth = grid[0]?.length || 9;
   const gridHeight = grid.length || 7;
   const boardWidth = gridWidth * cellSize;
@@ -251,13 +251,15 @@ export default function GameBoard2D() {
 
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center">
+      <div className="fixed inset-0 flex items-center justify-center p-4">
         <div 
           className="relative bg-green-800 border-4 border-green-600 rounded-lg shadow-2xl"
           style={{ 
-            width: boardWidth + 40, 
-            height: boardHeight + 40,
-            padding: '20px'
+            width: boardWidth + 20, 
+            height: boardHeight + 20,
+            padding: '10px',
+            maxWidth: 'calc(100vw - 200px)', // Leave space for controls
+            maxHeight: 'calc(100vh - 100px)' // Leave space for UI
           }}
         >
           {/* Grid cells */}
