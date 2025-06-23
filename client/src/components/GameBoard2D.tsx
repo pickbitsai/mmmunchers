@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useGameState } from "../lib/stores/useGameState";
 import { updateGameLogic } from "../lib/gameLogic";
+import OnscreenControls from "./OnscreenControls";
 
 export default function GameBoard2D() {
   const animationRef = useRef<number>();
@@ -73,17 +74,42 @@ export default function GameBoard2D() {
   const boardWidth = gridWidth * cellSize;
   const boardHeight = gridHeight * cellSize;
 
+  const handleOnscreenMove = (direction: 'up' | 'down' | 'left' | 'right') => {
+    let newX = player.x;
+    let newY = player.y;
+    
+    switch (direction) {
+      case 'up':
+        newY = Math.max(0, player.y - 1);
+        break;
+      case 'down':
+        newY = Math.min(gridHeight - 1, player.y + 1);
+        break;
+      case 'left':
+        newX = Math.max(0, player.x - 1);
+        break;
+      case 'right':
+        newX = Math.min(gridWidth - 1, player.x + 1);
+        break;
+    }
+    
+    if (newX !== player.x || newY !== player.y) {
+      processPlayerMove(newX, newY);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center">
-      <div 
-        className="relative bg-green-800 border-4 border-green-600 rounded-lg shadow-2xl"
-        style={{ 
-          width: boardWidth + 40, 
-          height: boardHeight + 40,
-          padding: '20px'
-        }}
-      >
-        {/* Grid cells */}
+    <>
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div 
+          className="relative bg-green-800 border-4 border-green-600 rounded-lg shadow-2xl"
+          style={{ 
+            width: boardWidth + 40, 
+            height: boardHeight + 40,
+            padding: '20px'
+          }}
+        >
+          {/* Grid cells */}
         {grid.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <div
@@ -154,7 +180,11 @@ export default function GameBoard2D() {
             backgroundSize: `${cellSize}px ${cellSize}px`
           }}
         />
+        </div>
       </div>
-    </div>
+      
+      {/* Onscreen Controls - positioned outside game board */}
+      <OnscreenControls onMove={handleOnscreenMove} />
+    </>
   );
 }

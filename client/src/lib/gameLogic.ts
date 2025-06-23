@@ -105,35 +105,42 @@ function updateEnemyAI(enemy: Enemy, player: Player, delta: number, grid: GridCe
 }
 
 function updateBasicEnemyAI(enemy: Enemy, player: Player, delta: number, gridWidth: number, gridHeight: number): Enemy {
-  const moveSpeed = enemy.speed * delta * 2; // Scale movement speed
+  const moveSpeed = enemy.speed * delta * 1.5; // Slower, more controlled movement
   
   // Move towards player with some randomness
   let targetX = enemy.targetX;
   let targetY = enemy.targetY;
   
-  // Update target occasionally (every ~2 seconds)
-  if (Math.random() < delta * 0.5) {
-    if (Math.random() < 0.7) {
-      // 70% chance to move towards player
+  // Update target occasionally (every ~1-3 seconds)
+  if (Math.random() < delta * 0.3) {
+    if (Math.random() < 0.8) {
+      // 80% chance to move towards player
       targetX = player.x;
       targetY = player.y;
     } else {
-      // 30% chance to move randomly
+      // 20% chance to move randomly
       targetX = Math.floor(Math.random() * gridWidth);
       targetY = Math.floor(Math.random() * gridHeight);
     }
   }
   
-  // Move towards target
+  // Move towards target with grid-based movement
   const dx = targetX - enemy.x;
   const dy = targetY - enemy.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
   
-  if (distance > 0.1) {
-    const newX = enemy.x + (dx / distance) * moveSpeed;
-    const newY = enemy.y + (dy / distance) * moveSpeed;
+  if (distance > 0.2) {
+    let newX = enemy.x;
+    let newY = enemy.y;
     
-    // Keep within bounds
+    // Grid-based movement - move in primary direction first
+    if (Math.abs(dx) > Math.abs(dy)) {
+      newX = enemy.x + (dx > 0 ? moveSpeed : -moveSpeed);
+    } else {
+      newY = enemy.y + (dy > 0 ? moveSpeed : -moveSpeed);
+    }
+    
+    // Keep within bounds and snap to grid positions
     const clampedX = Math.max(0, Math.min(gridWidth - 1, newX));
     const clampedY = Math.max(0, Math.min(gridHeight - 1, newY));
     
@@ -151,15 +158,22 @@ function updateBasicEnemyAI(enemy: Enemy, player: Player, delta: number, gridWid
 
 function updateFastEnemyAI(enemy: Enemy, player: Player, delta: number, gridWidth: number, gridHeight: number): Enemy {
   // Fast enemies move directly towards player with higher speed
-  const moveSpeed = enemy.speed * delta * 2.5;
+  const moveSpeed = enemy.speed * delta * 2.0;
   
   const dx = player.x - enemy.x;
   const dy = player.y - enemy.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
   
-  if (distance > 0.1) {
-    const newX = enemy.x + (dx / distance) * moveSpeed;
-    const newY = enemy.y + (dy / distance) * moveSpeed;
+  if (distance > 0.15) {
+    let newX = enemy.x;
+    let newY = enemy.y;
+    
+    // Move in larger steps but still grid-aligned
+    if (Math.abs(dx) > Math.abs(dy)) {
+      newX = enemy.x + (dx > 0 ? moveSpeed * 1.5 : -moveSpeed * 1.5);
+    } else {
+      newY = enemy.y + (dy > 0 ? moveSpeed * 1.5 : -moveSpeed * 1.5);
+    }
     
     const clampedX = Math.max(0, Math.min(gridWidth - 1, newX));
     const clampedY = Math.max(0, Math.min(gridHeight - 1, newY));
@@ -178,7 +192,7 @@ function updateFastEnemyAI(enemy: Enemy, player: Player, delta: number, gridWidt
 
 function updateSmartEnemyAI(enemy: Enemy, player: Player, delta: number, gridWidth: number, gridHeight: number): Enemy {
   // Smart enemies try to predict player movement and cut them off
-  const moveSpeed = enemy.speed * delta * 2.2;
+  const moveSpeed = enemy.speed * delta * 1.8;
   
   // Predict where player might move (simple prediction)
   let predictedX = player.x;
@@ -186,8 +200,8 @@ function updateSmartEnemyAI(enemy: Enemy, player: Player, delta: number, gridWid
   
   // Add some prediction based on player's recent movement
   if (player.isMoving) {
-    predictedX += player.moveX * 2;
-    predictedY += player.moveY * 2;
+    predictedX += player.moveX * 1.5;
+    predictedY += player.moveY * 1.5;
   }
   
   // Clamp prediction to grid bounds
@@ -198,9 +212,16 @@ function updateSmartEnemyAI(enemy: Enemy, player: Player, delta: number, gridWid
   const dy = predictedY - enemy.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
   
-  if (distance > 0.1) {
-    const newX = enemy.x + (dx / distance) * moveSpeed;
-    const newY = enemy.y + (dy / distance) * moveSpeed;
+  if (distance > 0.2) {
+    let newX = enemy.x;
+    let newY = enemy.y;
+    
+    // Smart movement - try to intercept
+    if (Math.abs(dx) > Math.abs(dy)) {
+      newX = enemy.x + (dx > 0 ? moveSpeed : -moveSpeed);
+    } else {
+      newY = enemy.y + (dy > 0 ? moveSpeed : -moveSpeed);
+    }
     
     const clampedX = Math.max(0, Math.min(gridWidth - 1, newX));
     const clampedY = Math.max(0, Math.min(gridHeight - 1, newY));
