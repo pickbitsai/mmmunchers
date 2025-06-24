@@ -120,6 +120,7 @@ Changelog:
 - June 23, 2025. Added score system (10 points × level per correct answer, 100 × level bonus per level completion)
 - June 23, 2025. Fixed layout overlaps: repositioned UI cards, controls below grid, MUNCH button on right side
 - June 23, 2025. Implemented system overlay removal to hide "Arrow Keys / WASD: Move" instruction text
+- June 24, 2025. Removed instruction text cards from game interface (GameUI, interface, TopicSelection components)
 ```
 
 ## User Preferences

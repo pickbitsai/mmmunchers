@@ -120,18 +120,7 @@ export default function GameUI() {
         </div>
       )}
 
-      {/* Instructions */}
-      <div className="absolute bottom-4 left-4 pointer-events-auto">
-        <Card className="bg-black/80 text-white border-gray-600">
-          <CardContent className="p-3">
-            <div className="text-xs space-y-1">
-              <div>🎮 Arrow Keys / WASD: Move</div>
-              <div>⏸️ P / ESC: Pause</div>
-              <div>🔊 Click button to toggle sound</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+
     </div>
   );
 }

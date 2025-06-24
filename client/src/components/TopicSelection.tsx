@@ -109,11 +109,7 @@ export default function TopicSelection() {
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6">
-          <p className="text-gray-400 text-sm">
-            Use arrow keys or WASD to move around the grid and munch the correct answers!
-          </p>
-        </div>
+
       </div>
     </div>
   );
