@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useGameState } from "../lib/stores/useGameState";
+import { useAudio } from "../lib/stores/useAudio";
 import { updateGameLogic } from "../lib/gameLogic";
 import OnscreenControls from "./OnscreenControls";
 
@@ -25,6 +26,8 @@ export default function GameBoard2D() {
     nextLevel,
     addScore
   } = useGameState();
+  
+  const { playMove, playMunch } = useAudio();
 
   // Initialize enemies when game starts
   useEffect(() => {
@@ -89,6 +92,9 @@ export default function GameBoard2D() {
 
     // Check if the answer is correct
     if (currentCell.isCorrect) {
+      // Play munch sound for correct answer
+      playMunch();
+      
       // Correct answer - mark as munched and award points
       const newGrid = grid.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
@@ -198,6 +204,10 @@ export default function GameBoard2D() {
       if (newX !== player.x || newY !== player.y) {
         isMovingRef.current = true;
         lastMoveTimeRef.current = now;
+        
+        // Play movement sound
+        playMove();
+        
         updatePlayer({ x: newX, y: newY });
         
         // Reset movement flag after animation completes
@@ -241,6 +251,10 @@ export default function GameBoard2D() {
     if (newX !== player.x || newY !== player.y) {
       isMovingRef.current = true;
       lastMoveTimeRef.current = now;
+      
+      // Play movement sound
+      playMove();
+      
       updatePlayer({ x: newX, y: newY });
       
       // Reset movement flag after animation completes
