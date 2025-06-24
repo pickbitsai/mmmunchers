@@ -51,10 +51,6 @@ canvas {
 
 /* Fix viewport for mobile */
 @media (max-width: 768px) {
-  .topic-selection-container {
-    padding: 1rem !important;
-  }
-  
   body.topic-selection-active {
     overflow: auto !important;
     height: 100vh !important;

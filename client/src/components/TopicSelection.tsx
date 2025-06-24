@@ -103,87 +103,87 @@ export default function TopicSelection() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 topic-selection-container" style={{ paddingTop: 'max(env(safe-area-inset-top), 6rem)', paddingBottom: '2rem' }}>
-      <div className="container max-w-3xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-white mb-2">Number Munchers</h1>
-          <p className="text-lg text-gray-300">Educational Adventure Game</p>
-        </div>
+    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 topic-selection-container">
+      <div className="flex items-center justify-center min-h-full p-4" style={{ paddingTop: 'max(env(safe-area-inset-top), 8rem)', paddingBottom: 'max(env(safe-area-inset-bottom), 2rem)' }}>
+        <div className="container max-w-3xl mx-auto">
+          <div className="text-center mb-6">
+            <h1 className="text-4xl font-bold text-white mb-2">Number Munchers</h1>
+            <p className="text-lg text-gray-300">Educational Adventure Game</p>
+          </div>
 
-        <Card className="bg-black/40 border-gray-600 backdrop-blur-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl text-center text-white">Choose Your Topic</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {topics.map((topic) => {
-                const IconComponent = topic.icon;
-                
-                return (
-                  <Card 
-                    key={topic.id} 
-                    className={`border-2 transition-all duration-200 ${
-                      topic.available 
-                        ? 'border-gray-600 hover:border-gray-400 bg-black/60' 
-                        : 'border-gray-800 bg-black/20 opacity-50'
-                    }`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="text-center mb-4">
-                        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
-                          topic.available ? topic.color : 'bg-gray-600'
-                        }`}>
-                          <IconComponent className="h-6 w-6 text-white" />
-                        </div>
-                        
-                        <h3 className="text-lg font-bold text-white mb-2">
-                          {topic.name}
-                        </h3>
-                        
-                        <p className="text-gray-300 text-xs mb-3">
-                          {topic.description}
-                        </p>
-                      </div>
-                      
-                      {topic.available ? (
-                        <div className="space-y-3">
-                          <div className="relative">
-                            <MobileSelect
-                              value={selectedCategories[topic.id] || 'random'}
-                              onValueChange={(value) => {
-                                setSelectedCategories(prev => ({...prev, [topic.id]: value}));
-                              }}
-                              options={getTopicCategories(topic.id)}
-                              placeholder="Random Mix"
-                              triggerClassName="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
-                              contentClassName="bg-gray-800 text-white border-gray-600"
-                            />
+          <Card className="bg-black/40 border-gray-600 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-center text-white">Choose Your Topic</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {topics.map((topic) => {
+                  const IconComponent = topic.icon;
+                  
+                  return (
+                    <Card 
+                      key={topic.id} 
+                      className={`border-2 transition-all duration-200 ${
+                        topic.available 
+                          ? 'border-gray-600 hover:border-gray-400 bg-black/60' 
+                          : 'border-gray-800 bg-black/20 opacity-50'
+                      }`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="text-center mb-4">
+                          <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
+                            topic.available ? topic.color : 'bg-gray-600'
+                          }`}>
+                            <IconComponent className="h-6 w-6 text-white" />
                           </div>
                           
-                          <Button 
-                            className={`w-full ${topic.color} text-white border-none`}
-                            onClick={() => handleTopicSelect(topic.id)}
-                          >
-                            Start Playing
-                          </Button>
+                          <h3 className="text-lg font-bold text-white mb-2">
+                            {topic.name}
+                          </h3>
+                          
+                          <p className="text-gray-300 text-xs mb-3">
+                            {topic.description}
+                          </p>
                         </div>
-                      ) : (
-                        <Button 
-                          disabled 
-                          className="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
-                        >
-                          Coming Soon
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-
+                        
+                        {topic.available ? (
+                          <div className="space-y-3">
+                            <div className="relative">
+                              <MobileSelect
+                                value={selectedCategories[topic.id] || 'random'}
+                                onValueChange={(value) => {
+                                  setSelectedCategories(prev => ({...prev, [topic.id]: value}));
+                                }}
+                                options={getTopicCategories(topic.id)}
+                                placeholder="Random Mix"
+                                triggerClassName="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
+                                contentClassName="bg-gray-800 text-white border-gray-600"
+                              />
+                            </div>
+                            
+                            <Button 
+                              className={`w-full ${topic.color} text-white border-none`}
+                              onClick={() => handleTopicSelect(topic.id)}
+                            >
+                              Start Playing
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button 
+                            disabled 
+                            className="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
+                          >
+                            Coming Soon
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
