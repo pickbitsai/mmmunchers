@@ -170,39 +170,44 @@ export default function GameBoard2D() {
 
       let newX = player.x;
       let newY = player.y;
+      let shouldMove = false;
 
       switch (event.code) {
         case 'ArrowUp':
         case 'KeyW':
+          event.preventDefault();
           newY = Math.max(0, player.y - 1);
+          shouldMove = true;
           break;
         case 'ArrowDown':
         case 'KeyS':
+          event.preventDefault();
           newY = Math.min(gridHeight - 1, player.y + 1);
+          shouldMove = true;
           break;
         case 'ArrowLeft':
         case 'KeyA':
+          event.preventDefault();
           newX = Math.max(0, player.x - 1);
+          shouldMove = true;
           break;
         case 'ArrowRight':
         case 'KeyD':
+          event.preventDefault();
           newX = Math.min(gridWidth - 1, player.x + 1);
+          shouldMove = true;
           break;
         case 'Space':
         case 'Enter':
           event.preventDefault();
-          // Play munch sound immediately on button press
-          playMunch();
           handleMunchAction();
           return;
         default:
           return;
       }
 
-      event.preventDefault();
-      
-      // Play movement sound immediately on key press
-      if (newX !== player.x || newY !== player.y) {
+      // Play movement sound immediately if position would change
+      if (shouldMove && (newX !== player.x || newY !== player.y)) {
         playMove();
         
         isMovingRef.current = true;
@@ -221,6 +226,9 @@ export default function GameBoard2D() {
   }, [gamePhase, player.x, player.y, gridWidth, gridHeight, updatePlayer, gameOver, updateGrid, grid]);
 
   const handleOnscreenMove = (direction: 'up' | 'down' | 'left' | 'right') => {
+    // Play sound immediately on touch/click
+    playMove();
+    
     const now = Date.now();
     
     // Prevent rapid-fire movements (debounce to 200ms)
@@ -248,9 +256,6 @@ export default function GameBoard2D() {
     
     // Allow movement to any square (don't check if it's empty or correct)
     if (newX !== player.x || newY !== player.y) {
-      // Play movement sound immediately
-      playMove();
-      
       isMovingRef.current = true;
       lastMoveTimeRef.current = now;
       updatePlayer({ x: newX, y: newY });
