@@ -136,6 +136,7 @@ Changelog:
 - June 24, 2025. Implemented Movie Trivia topic with actors, directors, genres, decades, franchises, and awards categories
 - June 24, 2025. Fixed text overflow in grid cells with improved wrapping, smaller font sizes, and multi-line text clipping
 - June 24, 2025. Enhanced audio system with sound effects for player munching, movement, and enemy movement actions
+- June 24, 2025. Improved munch sound effect with lower playback rate and different base sound for more satisfying crunch feedback
 ```
 
 ## User Preferences

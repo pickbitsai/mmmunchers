@@ -28,8 +28,8 @@ export default function SoundManager() {
     successAudio.volume = 0.7;
     setSuccessSound(successAudio);
 
-    // Load munch sound (using success sound as base)
-    const munchAudio = new Audio("/sounds/success.mp3");
+    // Load munch sound (using hit sound for crunchier effect)
+    const munchAudio = new Audio("/sounds/hit.mp3");
     munchAudio.volume = 0.6;
     setMunchSound(munchAudio);
 
