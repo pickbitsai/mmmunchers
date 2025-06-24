@@ -244,15 +244,18 @@ export const useGameState = create<GameState>()(
       
       // Check if cell can be moved to
       if (cell.isEmpty || cell.isMunched) {
+        // Play move sound for regular movement
+        const { playMove } = useAudio.getState();
+        playMove();
         get().updatePlayer({ x: newX, y: newY });
         return;
       }
       
       // Process munching
       if (currentChallenge?.checkAnswer(cell.value)) {
-        // Correct answer - play success sound
-        const { playSuccess } = useAudio.getState();
-        playSuccess();
+        // Correct answer - play munch sound
+        const { playMunch } = useAudio.getState();
+        playMunch();
         
         const newGrid = [...grid];
         newGrid[newY][newX] = { ...cell, isMunched: true };

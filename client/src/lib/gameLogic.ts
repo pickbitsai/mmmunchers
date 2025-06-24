@@ -94,18 +94,32 @@ export function updateGameLogic({
 }
 
 function updateEnemyAI(enemy: Enemy, player: Player, delta: number, grid: GridCell[][]): Enemy {
+  const wasAtTarget = (enemy.x === enemy.targetX && enemy.y === enemy.targetY);
   const GRID_WIDTH = grid[0]?.length || 9;
   const GRID_HEIGHT = grid.length || 7;
   
   // Different AI behaviors based on enemy type
+  let updatedEnemy: Enemy;
   switch (enemy.type) {
     case 'smart':
-      return updateSmartEnemyAI(enemy, player, delta, GRID_WIDTH, GRID_HEIGHT);
+      updatedEnemy = updateSmartEnemyAI(enemy, player, delta, GRID_WIDTH, GRID_HEIGHT);
+      break;
     case 'fast':
-      return updateFastEnemyAI(enemy, player, delta, GRID_WIDTH, GRID_HEIGHT);
+      updatedEnemy = updateFastEnemyAI(enemy, player, delta, GRID_WIDTH, GRID_HEIGHT);
+      break;
     default:
-      return updateBasicEnemyAI(enemy, player, delta, GRID_WIDTH, GRID_HEIGHT);
+      updatedEnemy = updateBasicEnemyAI(enemy, player, delta, GRID_WIDTH, GRID_HEIGHT);
+      break;
   }
+  
+  // Play sound when enemy starts moving to a new target
+  const isStartingNewMove = wasAtTarget && (updatedEnemy.targetX !== enemy.x || updatedEnemy.targetY !== enemy.y);
+  if (isStartingNewMove) {
+    const { playEnemyMove } = useAudio.getState();
+    playEnemyMove();
+  }
+  
+  return updatedEnemy;
 }
 
 function updateBasicEnemyAI(enemy: Enemy, player: Player, delta: number, gridWidth: number, gridHeight: number): Enemy {
