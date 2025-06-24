@@ -116,81 +116,69 @@ export default function TopicSelection() {
                     key={topic.id} 
                     className={`border-2 transition-all duration-200 ${
                       topic.available 
-                        ? 'border-gray-600 hover:border-gray-400 cursor-pointer bg-black/60' 
+                        ? 'border-gray-600 hover:border-gray-400 bg-black/60' 
                         : 'border-gray-800 bg-black/20 opacity-50'
                     }`}
-                    onClick={() => topic.available && selectTopic(topic.id)}
                   >
-                    <CardContent className="p-4 text-center">
-                      <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
-                        topic.available ? topic.color : 'bg-gray-600'
-                      }`}>
-                        <IconComponent className="h-6 w-6 text-white" />
-                      </div>
-                      
-                      <h3 className="text-lg font-bold text-white mb-2">
-                        {topic.name}
-                      </h3>
-                      
-                      <p className="text-gray-300 text-xs mb-3">
-                        {topic.description}
-                      </p>
-                      
-                    {topic.available ? (
-                      <div className="space-y-3">
-                        <div onClick={(e) => e.stopPropagation()}>
-                          <Select 
-                            value={selectedCategories[topic.id] || 'random'}
-                            onValueChange={(value) => {
-                              console.log(`Selected category for ${topic.id}:`, value);
-                              setSelectedCategories(prev => ({...prev, [topic.id]: value}));
-                            }}
-                          >
-                            <SelectTrigger 
-                              className="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <SelectValue placeholder="Random Mix">
-                                {getTopicCategories(topic.id).find(cat => cat.id === (selectedCategories[topic.id] || 'random'))?.name || 'Random Mix'}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent 
-                              className="bg-gray-800 text-white border-gray-600 z-50 max-h-60"
-                              position="popper"
-                              side="bottom"
-                              align="start"
-                            >
-                              {getTopicCategories(topic.id).map((category) => (
-                                <SelectItem 
-                                  key={category.id} 
-                                  value={category.id} 
-                                  className="hover:bg-gray-700 focus:bg-gray-700 text-white cursor-pointer data-[highlighted]:bg-gray-700"
-                                >
-                                  {category.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                    <CardContent className="p-4">
+                      <div className="text-center mb-4">
+                        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
+                          topic.available ? topic.color : 'bg-gray-600'
+                        }`}>
+                          <IconComponent className="h-6 w-6 text-white" />
                         </div>
                         
-                        <Button 
-                          className={`w-full ${topic.color} text-white border-none`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTopicSelect(topic.id);
-                          }}
-                        >
-                          Start Playing
-                        </Button>
+                        <h3 className="text-lg font-bold text-white mb-2">
+                          {topic.name}
+                        </h3>
+                        
+                        <p className="text-gray-300 text-xs mb-3">
+                          {topic.description}
+                        </p>
                       </div>
-                    ) : (
-                      <Button 
-                        disabled 
-                        className="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
-                      >
-                        Coming Soon
-                      </Button>
-                    )}
+                      
+                      {topic.available ? (
+                        <div className="space-y-3">
+                          <div className="relative">
+                            <Select 
+                              value={selectedCategories[topic.id] || 'random'}
+                              onValueChange={(value) => {
+                                console.log(`Selected category for ${topic.id}:`, value);
+                                setSelectedCategories(prev => ({...prev, [topic.id]: value}));
+                              }}
+                            >
+                              <SelectTrigger className="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60">
+                                <SelectValue placeholder="Random Mix" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-800 text-white border-gray-600">
+                                {getTopicCategories(topic.id).map((category) => (
+                                  <SelectItem 
+                                    key={category.id} 
+                                    value={category.id} 
+                                    className="hover:bg-gray-700 focus:bg-gray-700 text-white cursor-pointer"
+                                  >
+                                    {category.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <Button 
+                            className={`w-full ${topic.color} text-white border-none`}
+                            onClick={() => handleTopicSelect(topic.id)}
+                          >
+                            Start Playing
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          disabled 
+                          className="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
+                        >
+                          Coming Soon
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 );
