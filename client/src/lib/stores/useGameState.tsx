@@ -4,6 +4,8 @@ import { TopicProvider } from "../topics/TopicProvider";
 import { MathTopic } from "../topics/MathTopic";
 import { WordTopic } from "../topics/WordTopic";
 import { MarvelTopic } from "../topics/MarvelTopic";
+import { MovieTopic } from "../topics/MovieTopic";
+import { useAudio } from "./useAudio";
 
 export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over";
 
@@ -136,6 +138,9 @@ export const useGameState = create<GameState>()(
         case 'marvel':
           provider = new MarvelTopic();
           break;
+        case 'movies':
+          provider = new MovieTopic();
+          break;
         default:
           console.error(`Unknown topic: ${topicId}`);
           return;
@@ -245,7 +250,10 @@ export const useGameState = create<GameState>()(
       
       // Process munching
       if (currentChallenge?.checkAnswer(cell.value)) {
-        // Correct answer
+        // Correct answer - play success sound
+        const { playSuccess } = useAudio.getState();
+        playSuccess();
+        
         const newGrid = [...grid];
         newGrid[newY][newX] = { ...cell, isMunched: true };
         

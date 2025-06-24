@@ -10,7 +10,8 @@ export default function TopicSelection() {
   const [selectedCategories, setSelectedCategories] = useState<{[key: string]: string}>({
     math: 'random',
     words: 'random', 
-    marvel: 'random'
+    marvel: 'random',
+    movies: 'random'
   });
 
   useEffect(() => {
@@ -47,12 +48,12 @@ export default function TopicSelection() {
       available: true
     },
     {
-      id: 'trivia',
-      name: 'Trivia & Facts',
-      description: 'Test your knowledge across various subjects!',
+      id: 'movies',
+      name: 'Movie Trivia',
+      description: 'Test your knowledge of films, actors, and directors!',
       icon: HelpCircle,
       color: 'bg-purple-500 hover:bg-purple-600',
-      available: false
+      available: true
     }
   ];
 
@@ -96,6 +97,16 @@ export default function TopicSelection() {
           { id: 'teams', name: 'Teams' },
           { id: 'powers', name: 'Superpowers' },
           { id: 'locations', name: 'Locations' }
+        ];
+      case 'movies':
+        return [
+          { id: 'random', name: 'Random Mix' },
+          { id: 'actors', name: 'Famous Actors' },
+          { id: 'directors', name: 'Directors' },
+          { id: 'genres', name: 'Movie Genres' },
+          { id: 'decades', name: 'Movie Decades' },
+          { id: 'franchises', name: 'Movie Franchises' },
+          { id: 'awards', name: 'Award Winners' }
         ];
       default:
         return [];

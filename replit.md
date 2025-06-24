@@ -132,6 +132,8 @@ Changelog:
 - June 24, 2025. Enhanced text wrapping with truncation for long words (8+ characters) and better font sizing
 - June 24, 2025. Fixed mobile dropdown interaction issues by creating custom mobile-friendly Select component with proper touch handling
 - June 24, 2025. Resolved mobile scrolling conflicts and improved layout to work properly under browser navigation bars
+- June 24, 2025. Added success sound effect for correct answers when player munches correct grid items
+- June 24, 2025. Implemented Movie Trivia topic with actors, directors, genres, decades, franchises, and awards categories
 ```
 
 ## User Preferences
