@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { MobileSelect } from "./ui/mobile-select";
 import { useGameState } from "../lib/stores/useGameState";
 import { Calculator, BookOpen, Zap, HelpCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function TopicSelection() {
   const { selectTopic, topicProvider } = useGameState();
@@ -12,6 +12,14 @@ export default function TopicSelection() {
     words: 'random', 
     marvel: 'random'
   });
+
+  useEffect(() => {
+    // Enable scrolling when topic selection is active
+    document.body.classList.add('topic-selection-active');
+    return () => {
+      document.body.classList.remove('topic-selection-active');
+    };
+  }, []);
 
   const topics = [
     {
@@ -95,7 +103,7 @@ export default function TopicSelection() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 pt-20 pb-20">
+    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 pt-20 pb-20 topic-selection-container">
       <div className="container max-w-3xl mx-auto">
         <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-white mb-2">Number Munchers</h1>
@@ -140,44 +148,17 @@ export default function TopicSelection() {
                       {topic.available ? (
                         <div className="space-y-3">
                           <div className="relative">
-                            <Select 
+                            <MobileSelect
                               value={selectedCategories[topic.id] || 'random'}
                               onValueChange={(value) => {
                                 console.log(`Selected category for ${topic.id}:`, value);
                                 setSelectedCategories(prev => ({...prev, [topic.id]: value}));
                               }}
-                              onOpenChange={(open) => {
-                                console.log(`Select ${topic.id} opened:`, open);
-                              }}
-                            >
-                              <SelectTrigger 
-                                className="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60 min-h-[44px] touch-manipulation"
-                                onTouchStart={(e) => {
-                                  console.log(`Touch start on ${topic.id} select trigger`);
-                                  e.stopPropagation();
-                                }}
-                                onClick={(e) => {
-                                  console.log(`Click on ${topic.id} select trigger`);
-                                  e.stopPropagation();
-                                }}
-                              >
-                                <SelectValue placeholder="Random Mix" />
-                              </SelectTrigger>
-                              <SelectContent className="bg-gray-800 text-white border-gray-600 z-[99999]">
-                                {getTopicCategories(topic.id).map((category) => (
-                                  <SelectItem 
-                                    key={category.id} 
-                                    value={category.id} 
-                                    className="hover:bg-gray-700 focus:bg-gray-700 text-white cursor-pointer min-h-[44px]"
-                                    onTouchStart={(e) => {
-                                      console.log(`Touch start on category ${category.id}`);
-                                    }}
-                                  >
-                                    {category.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              options={getTopicCategories(topic.id)}
+                              placeholder="Random Mix"
+                              triggerClassName="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
+                              contentClassName="bg-gray-800 text-white border-gray-600"
+                            />
                           </div>
                           
                           <Button 

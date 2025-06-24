@@ -15,6 +15,11 @@
     width: 100vw;
     height: 100vh;
   }
+  
+  body.topic-selection-active {
+    overflow: auto !important;
+    height: auto !important;
+  }
 }
 
 #root {
@@ -27,6 +32,35 @@ canvas {
   width: 100% !important;
   height: 100% !important;
   touch-action: none;
+}
+
+/* Allow scrolling and touch interaction for UI elements */
+.topic-selection-container {
+  touch-action: auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Ensure mobile interactions work properly */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix viewport for mobile */
+@media (max-width: 768px) {
+  .topic-selection-container {
+    padding: 1rem !important;
+  }
+  
+  body {
+    overflow: auto !important;
+  }
+  
+  html, body {
+    height: auto !important;
+  }
 }
 
 /* Nuclear approach to hide system overlays */
