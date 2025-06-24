@@ -9,7 +9,6 @@ interface OnscreenControlsProps {
 
 export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsProps) {
   const [pressedButton, setPressedButton] = useState<string | null>(null);
-  const { playMunch } = useAudio();
   const lastMoveTimeRef = useRef<number>(0);
   const isProcessingRef = useRef<boolean>(false);
 
@@ -101,13 +100,11 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           className="w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
                      text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg"
           onTouchStart={() => {
-            playMunch();
             setPressedButton('munch');
             onMunch();
             setTimeout(() => setPressedButton(null), 150);
           }}
           onMouseDown={() => {
-            playMunch();
             setPressedButton('munch');
             onMunch();
             setTimeout(() => setPressedButton(null), 150);
