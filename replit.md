@@ -128,6 +128,8 @@ Changelog:
 - June 24, 2025. Implemented category selection system for Math, Word, and Marvel topics
 - June 24, 2025. Created Marvel Universe topic with heroes, villains, teams, powers, and locations
 - June 24, 2025. Improved text fitting in grid cells with smaller font sizes and overflow handling
+- June 24, 2025. Fixed dropdown interaction to prevent immediate game launch and allow proper category selection
+- June 24, 2025. Enhanced text wrapping with truncation for long words (8+ characters) and better font sizing
 ```
 
 ## User Preferences

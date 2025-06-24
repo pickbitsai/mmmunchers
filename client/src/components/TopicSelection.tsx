@@ -132,42 +132,57 @@ export default function TopicSelection() {
                         {topic.description}
                       </p>
                       
-                      {topic.available ? (
-                        <div className="space-y-3">
+                    {topic.available ? (
+                      <div className="space-y-3">
+                        <div onClick={(e) => e.stopPropagation()}>
                           <Select 
                             value={selectedCategories[topic.id] || 'random'}
-                            onValueChange={(value) => setSelectedCategories(prev => ({...prev, [topic.id]: value}))}
+                            onValueChange={(value) => {
+                              setSelectedCategories(prev => ({...prev, [topic.id]: value}));
+                            }}
                           >
-                            <SelectTrigger className="w-full bg-black/40 text-white border-gray-600">
+                            <SelectTrigger 
+                              className="w-full bg-black/40 text-white border-gray-600"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
-                            <SelectContent className="bg-gray-800 text-white border-gray-600">
+                            <SelectContent 
+                              className="bg-gray-800 text-white border-gray-600"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               {getTopicCategories(topic.id).map((category) => (
-                                <SelectItem key={category.id} value={category.id} className="hover:bg-gray-700">
+                                <SelectItem 
+                                  key={category.id} 
+                                  value={category.id} 
+                                  className="hover:bg-gray-700"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   {category.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          
-                          <Button 
-                            className={`w-full ${topic.color} text-white border-none`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleTopicSelect(topic.id);
-                            }}
-                          >
-                            Start Playing
-                          </Button>
                         </div>
-                      ) : (
+                        
                         <Button 
-                          disabled 
-                          className="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
+                          className={`w-full ${topic.color} text-white border-none`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTopicSelect(topic.id);
+                          }}
                         >
-                          Coming Soon
+                          Start Playing
                         </Button>
-                      )}
+                      </div>
+                    ) : (
+                      <Button 
+                        disabled 
+                        className="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
+                      >
+                        Coming Soon
+                      </Button>
+                    )}
                     </CardContent>
                   </Card>
                 );

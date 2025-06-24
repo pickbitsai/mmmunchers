@@ -277,15 +277,31 @@ export default function GameBoard2D() {
                 width: cellSize - 2,
                 height: cellSize - 2,
                 transition: 'all 0.2s ease',
-                fontSize: Math.min(cellSize / 6, 10) + 'px',
-                padding: '2px',
+                fontSize: Math.min(cellSize / 8, 8) + 'px',
+                padding: '1px',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                lineHeight: '1.1',
+                wordWrap: 'break-word',
+                hyphens: 'auto'
               }}
               title={cell.value} // Show full text on hover
             >
-              {!cell.isEmpty && !cell.isMunched && cell.value}
+              {!cell.isEmpty && !cell.isMunched && (
+                <div style={{
+                  fontSize: 'inherit',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  lineHeight: '1',
+                  maxWidth: '100%',
+                  maxHeight: '100%'
+                }}>
+                  {cell.value.length > 8 ? cell.value.substring(0, 6) + '...' : cell.value}
+                </div>
+              )}
             </div>
           ))
         )}
