@@ -118,6 +118,8 @@ Changelog:
 - June 23, 2025. Added level progression system with automatic advancement when all correct answers are munched
 - June 23, 2025. Implemented separate movement and munch controls with 200ms debounce protection
 - June 23, 2025. Added score system (10 points × level per correct answer, 100 × level bonus per level completion)
+- June 23, 2025. Fixed layout overlaps: repositioned UI cards, controls below grid, MUNCH button on right side
+- June 23, 2025. Implemented system overlay removal to hide "Arrow Keys / WASD: Move" instruction text
 ```
 
 ## User Preferences

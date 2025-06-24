@@ -18,34 +18,51 @@ const queryClient = new QueryClient({
 function App() {
   useEffect(() => {
     const removeInstructions = () => {
-      // Only target elements that are likely system overlays (positioned absolutely/fixed)
-      const targetTexts = [
+      // Target the exact text patterns from the user
+      const targetPatterns = [
         'Arrow Keys / WASD: Move',
+        '⏸️ P / ESC: Pause', 
+        '🔊 Click button to toggle',
         'P / ESC: Pause',
         'Click button to toggle'
       ];
       
-      targetTexts.forEach(text => {
-        // Find elements containing this text
-        const elements = Array.from(document.querySelectorAll('*')).filter(el => 
-          el.textContent && 
-          el.textContent.includes(text) && 
-          el.id !== 'root' &&
-          !el.closest('#root') // Don't remove elements inside our game
-        );
-        
-        elements.forEach(element => {
-          const computedStyle = window.getComputedStyle(element);
-          // Only remove if it's positioned (likely an overlay)
-          if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
-            element.remove();
-          }
-        });
+      // Find and remove elements containing these patterns
+      document.querySelectorAll('*').forEach(element => {
+        if (element.textContent) {
+          const text = element.textContent.trim();
+          targetPatterns.forEach(pattern => {
+            if (text.includes(pattern) && 
+                element !== document.body && 
+                element !== document.documentElement &&
+                !element.closest('#root')) {
+              
+              // Additional check - make sure it's not our game content
+              const rect = element.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0) {
+                element.style.display = 'none';
+                element.style.visibility = 'hidden';
+                element.style.opacity = '0';
+                element.style.pointerEvents = 'none';
+                
+                // Also try to remove it completely
+                setTimeout(() => {
+                  try {
+                    element.remove();
+                  } catch (e) {
+                    // Ignore errors if element already removed
+                  }
+                }, 100);
+              }
+            }
+          });
+        }
       });
     };
 
-    // Run less frequently and safely
-    const interval = setInterval(removeInstructions, 2000);
+    // Run immediately and then every second
+    removeInstructions();
+    const interval = setInterval(removeInstructions, 1000);
     
     return () => clearInterval(interval);
   }, []);
