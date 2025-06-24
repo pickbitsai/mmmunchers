@@ -19,39 +19,107 @@ function App() {
   useEffect(() => {
     const removeInstructions = () => {
       try {
-        // Target the exact text patterns
+        // More comprehensive text patterns
         const targetPatterns = [
-          'Arrow Keys / WASD: Move',
-          '⏸️ P / ESC: Pause', 
-          '🔊 Click button to toggle',
-          'P / ESC: Pause',
-          'Click button to toggle',
-          'WASD: Move'
+          'Arrow Keys',
+          'WASD',
+          'Move',
+          'P / ESC',
+          'Pause', 
+          'Click button',
+          'toggle',
+          '⏸️',
+          '🔊'
         ];
         
-        // Remove elements containing these patterns
-        targetPatterns.forEach(pattern => {
-          const elements = Array.from(document.querySelectorAll('*')).filter(el => 
-            el.textContent?.includes(pattern) && 
-            !el.closest('#root') &&
-            el !== document.body &&
-            el !== document.documentElement
-          );
-          
-          elements.forEach(element => {
+        // Get ALL elements and check their text content
+        const walker = document.createTreeWalker(
+          document,
+          NodeFilter.SHOW_ELEMENT,
+          {
+            acceptNode: (node) => {
+              const element = node as Element;
+              if (element.closest('#root') || 
+                  element === document.body || 
+                  element === document.documentElement) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          },
+          false
+        );
+        
+        const elementsToRemove: Element[] = [];
+        let currentNode: Element | null = walker.nextNode() as Element;
+        
+        while (currentNode) {
+          if (currentNode.textContent) {
+            const text = currentNode.textContent.toLowerCase();
+            for (const pattern of targetPatterns) {
+              if (text.includes(pattern.toLowerCase())) {
+                elementsToRemove.push(currentNode);
+                break;
+              }
+            }
+          }
+          currentNode = walker.nextNode() as Element;
+        }
+        
+        // Remove all found elements
+        elementsToRemove.forEach(element => {
+          try {
             element.remove();
+          } catch (e) {
+            // Element may already be removed
+          }
+        });
+        
+        // Also remove by common overlay selectors
+        const overlaySelectors = [
+          'div[style*="position: fixed"]',
+          'div[style*="position: absolute"]',
+          '[role="tooltip"]',
+          '[data-testid*="floating"]',
+          '[data-testid*="keyboard"]'
+        ];
+        
+        overlaySelectors.forEach(selector => {
+          document.querySelectorAll(selector).forEach(el => {
+            if (!el.closest('#root') && 
+                el.textContent && 
+                (el.textContent.includes('Arrow') || 
+                 el.textContent.includes('WASD') || 
+                 el.textContent.includes('ESC') ||
+                 el.textContent.includes('Click'))) {
+              el.remove();
+            }
           });
         });
+        
       } catch (error) {
         // Silently handle any errors
       }
     };
 
-    // Run immediately and frequently
+    // Run immediately and very frequently
     removeInstructions();
-    const interval = setInterval(removeInstructions, 500);
+    const interval = setInterval(removeInstructions, 100);
     
-    return () => clearInterval(interval);
+    // Also run on mutations
+    const observer = new MutationObserver(removeInstructions);
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true,
+      attributes: true,
+      attributeOldValue: true,
+      characterData: true
+    });
+    
+    return () => {
+      clearInterval(interval);
+      observer.disconnect();
+    };
   }, []);
 
   return (
