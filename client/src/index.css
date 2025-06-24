@@ -29,12 +29,25 @@ canvas {
   touch-action: none;
 }
 
-/* Target specific system overlays only */
-div[style*="position: fixed"]:not([class]):not([id]) {
+/* Nuclear approach to hide system overlays */
+body > *:not(#root) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  z-index: -9999 !important;
+}
+
+/* Hide any floating positioned elements that aren't our game */
+*[style*="position: fixed"]:not(#root):not(#root *) {
   display: none !important;
 }
 
-/* Hide elements that appear outside our game container */
-body > div:not(#root) {
+*[style*="position: absolute"]:not(#root):not(#root *) {
   display: none !important;
 }

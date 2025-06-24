@@ -18,51 +18,38 @@ const queryClient = new QueryClient({
 function App() {
   useEffect(() => {
     const removeInstructions = () => {
-      // Target the exact text patterns from the user
-      const targetPatterns = [
-        'Arrow Keys / WASD: Move',
-        '⏸️ P / ESC: Pause', 
-        '🔊 Click button to toggle',
-        'P / ESC: Pause',
-        'Click button to toggle'
-      ];
-      
-      // Find and remove elements containing these patterns
-      document.querySelectorAll('*').forEach(element => {
-        if (element.textContent) {
-          const text = element.textContent.trim();
-          targetPatterns.forEach(pattern => {
-            if (text.includes(pattern) && 
-                element !== document.body && 
-                element !== document.documentElement &&
-                !element.closest('#root')) {
-              
-              // Additional check - make sure it's not our game content
-              const rect = element.getBoundingClientRect();
-              if (rect.width > 0 && rect.height > 0) {
-                element.style.display = 'none';
-                element.style.visibility = 'hidden';
-                element.style.opacity = '0';
-                element.style.pointerEvents = 'none';
-                
-                // Also try to remove it completely
-                setTimeout(() => {
-                  try {
-                    element.remove();
-                  } catch (e) {
-                    // Ignore errors if element already removed
-                  }
-                }, 100);
-              }
-            }
+      try {
+        // Target the exact text patterns
+        const targetPatterns = [
+          'Arrow Keys / WASD: Move',
+          '⏸️ P / ESC: Pause', 
+          '🔊 Click button to toggle',
+          'P / ESC: Pause',
+          'Click button to toggle',
+          'WASD: Move'
+        ];
+        
+        // Remove elements containing these patterns
+        targetPatterns.forEach(pattern => {
+          const elements = Array.from(document.querySelectorAll('*')).filter(el => 
+            el.textContent?.includes(pattern) && 
+            !el.closest('#root') &&
+            el !== document.body &&
+            el !== document.documentElement
+          );
+          
+          elements.forEach(element => {
+            element.remove();
           });
-        }
-      });
+        });
+      } catch (error) {
+        // Silently handle any errors
+      }
     };
 
-    // Run immediately and then every second
+    // Run immediately and frequently
     removeInstructions();
-    const interval = setInterval(removeInstructions, 1000);
+    const interval = setInterval(removeInstructions, 500);
     
     return () => clearInterval(interval);
   }, []);
