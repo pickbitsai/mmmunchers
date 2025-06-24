@@ -84,6 +84,12 @@ export default function GameBoard2D() {
   const boardWidth = gridWidth * cellSize;
   const boardHeight = gridHeight * cellSize;
 
+  const handleMunchAction = () => {
+    // Play munch sound first, then handle logic
+    playMunch();
+    handleMunch();
+  };
+
   const handleMunch = () => {
     const currentCell = grid[player.y]?.[player.x];
     if (!currentCell || currentCell.isEmpty || currentCell.isMunched) {
