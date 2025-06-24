@@ -146,16 +146,32 @@ export default function TopicSelection() {
                                 console.log(`Selected category for ${topic.id}:`, value);
                                 setSelectedCategories(prev => ({...prev, [topic.id]: value}));
                               }}
+                              onOpenChange={(open) => {
+                                console.log(`Select ${topic.id} opened:`, open);
+                              }}
                             >
-                              <SelectTrigger className="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60">
+                              <SelectTrigger 
+                                className="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60 min-h-[44px] touch-manipulation"
+                                onTouchStart={(e) => {
+                                  console.log(`Touch start on ${topic.id} select trigger`);
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                  console.log(`Click on ${topic.id} select trigger`);
+                                  e.stopPropagation();
+                                }}
+                              >
                                 <SelectValue placeholder="Random Mix" />
                               </SelectTrigger>
-                              <SelectContent className="bg-gray-800 text-white border-gray-600">
+                              <SelectContent className="bg-gray-800 text-white border-gray-600 z-[99999]">
                                 {getTopicCategories(topic.id).map((category) => (
                                   <SelectItem 
                                     key={category.id} 
                                     value={category.id} 
-                                    className="hover:bg-gray-700 focus:bg-gray-700 text-white cursor-pointer"
+                                    className="hover:bg-gray-700 focus:bg-gray-700 text-white cursor-pointer min-h-[44px]"
+                                    onTouchStart={(e) => {
+                                      console.log(`Touch start on category ${category.id}`);
+                                    }}
                                   >
                                     {category.name}
                                   </SelectItem>
