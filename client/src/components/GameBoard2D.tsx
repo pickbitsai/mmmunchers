@@ -84,11 +84,7 @@ export default function GameBoard2D() {
   const boardWidth = gridWidth * cellSize;
   const boardHeight = gridHeight * cellSize;
 
-  const handleMunchAction = () => {
-    // Play munch sound first, then handle logic
-    playMunch();
-    handleMunch();
-  };
+
 
   const handleMunch = () => {
     const currentCell = grid[player.y]?.[player.x];
@@ -167,54 +163,59 @@ export default function GameBoard2D() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (gamePhase !== 'playing') return;
 
-      const now = Date.now();
-      
-      // Prevent rapid-fire movements (debounce to 200ms)
-      if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
-        return;
-      }
-
       let newX = player.x;
       let newY = player.y;
       let shouldMove = false;
+      let shouldMunch = false;
 
+      // Play sounds immediately on key press before any logic
       switch (event.code) {
         case 'ArrowUp':
         case 'KeyW':
           event.preventDefault();
+          playMove();
           newY = Math.max(0, player.y - 1);
           shouldMove = true;
           break;
         case 'ArrowDown':
         case 'KeyS':
           event.preventDefault();
+          playMove();
           newY = Math.min(gridHeight - 1, player.y + 1);
           shouldMove = true;
           break;
         case 'ArrowLeft':
         case 'KeyA':
           event.preventDefault();
+          playMove();
           newX = Math.max(0, player.x - 1);
           shouldMove = true;
           break;
         case 'ArrowRight':
         case 'KeyD':
           event.preventDefault();
+          playMove();
           newX = Math.min(gridWidth - 1, player.x + 1);
           shouldMove = true;
           break;
         case 'Space':
         case 'Enter':
           event.preventDefault();
-          handleMunchAction();
-          return;
+          playMunch();
+          shouldMunch = true;
+          break;
         default:
           return;
       }
 
-      // Play movement sound immediately if position would change
+      const now = Date.now();
+      
+      // Handle movement logic after sound
       if (shouldMove && (newX !== player.x || newY !== player.y)) {
-        playMove();
+        // Prevent rapid-fire movements (debounce to 200ms)
+        if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
+          return;
+        }
         
         isMovingRef.current = true;
         lastMoveTimeRef.current = now;
@@ -224,6 +225,11 @@ export default function GameBoard2D() {
         setTimeout(() => {
           isMovingRef.current = false;
         }, 150);
+      }
+      
+      // Handle munch logic after sound
+      if (shouldMunch) {
+        handleMunch();
       }
     };
 

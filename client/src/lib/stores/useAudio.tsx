@@ -88,11 +88,11 @@ export const useAudio = create<AudioState>((set, get) => ({
   playMunch: () => {
     const { munchSound, isMuted } = get();
     if (munchSound && !isMuted) {
-      const soundClone = munchSound.cloneNode() as HTMLAudioElement;
-      soundClone.volume = 0.6;
-      // Make it sound more crunchy by adjusting playback rate slightly
-      soundClone.playbackRate = 0.8; // Slower, deeper crunch sound
-      soundClone.play().catch(error => {
+      // Use the original sound directly for fastest response
+      munchSound.currentTime = 0; // Reset to beginning
+      munchSound.volume = 0.6;
+      munchSound.playbackRate = 0.8; // Slower, deeper crunch sound
+      munchSound.play().catch(error => {
         console.log("Munch sound play prevented:", error);
       });
     }
