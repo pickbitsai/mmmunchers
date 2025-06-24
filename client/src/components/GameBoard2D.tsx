@@ -269,9 +269,7 @@ export default function GameBoard2D() {
               className={`absolute border-2 flex items-center justify-center text-lg font-bold ${
                 cell.isEmpty || cell.isMunched 
                   ? 'border-green-700 bg-green-900/20' 
-                  : cell.isCorrect 
-                  ? 'border-blue-400 bg-blue-500/80 text-white shadow-lg' 
-                  : 'border-gray-400 bg-gray-200 text-gray-800'
+                  : 'border-gray-400 bg-white text-black shadow-lg'
               }`}
               style={{
                 left: colIndex * cellSize,

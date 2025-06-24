@@ -123,6 +123,7 @@ Changelog:
 - June 24, 2025. Removed instruction text cards from game interface (GameUI, interface, TopicSelection components)
 - June 24, 2025. Made all grid tiles uniform green color instead of blue/gray distinction for correct answers
 - June 24, 2025. Implemented game over trigger when player overlaps with enemy using existing collision detection
+- June 24, 2025. Updated all grid text to have black text on white background for better readability
 ```
 
 ## User Preferences
