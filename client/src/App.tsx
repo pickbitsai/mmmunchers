@@ -18,47 +18,34 @@ const queryClient = new QueryClient({
 function App() {
   useEffect(() => {
     const removeInstructions = () => {
-      // Find and remove any element containing these exact texts
+      // Only target elements that are likely system overlays (positioned absolutely/fixed)
       const targetTexts = [
         'Arrow Keys / WASD: Move',
-        'Arrow Keys / WASD',
         'P / ESC: Pause',
-        'Click button to toggle',
-        'WASD: Move',
-        'ESC: Pause'
+        'Click button to toggle'
       ];
       
-      // Get all elements in the document
-      const allElements = Array.from(document.querySelectorAll('*'));
-      
-      allElements.forEach(element => {
-        if (element.textContent && element.textContent.trim()) {
-          targetTexts.forEach(text => {
-            if (element.textContent && element.textContent.includes(text) && element.id !== 'root') {
-              // Remove this element completely
-              element.remove();
-            }
-          });
-        }
-      });
-      
-      // Also check for elements with these specific aria-labels or data attributes
-      const attributeSelectors = [
-        '[aria-label*="Arrow Keys"]',
-        '[aria-label*="WASD"]', 
-        '[aria-label*="ESC"]',
-        '[data-testid*="keyboard"]',
-        '[data-testid*="controls"]'
-      ];
-      
-      attributeSelectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => el.remove());
+      targetTexts.forEach(text => {
+        // Find elements containing this text
+        const elements = Array.from(document.querySelectorAll('*')).filter(el => 
+          el.textContent && 
+          el.textContent.includes(text) && 
+          el.id !== 'root' &&
+          !el.closest('#root') // Don't remove elements inside our game
+        );
+        
+        elements.forEach(element => {
+          const computedStyle = window.getComputedStyle(element);
+          // Only remove if it's positioned (likely an overlay)
+          if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
+            element.remove();
+          }
+        });
       });
     };
 
-    // Run more frequently to catch these overlays
-    removeInstructions();
-    const interval = setInterval(removeInstructions, 100);
+    // Run less frequently and safely
+    const interval = setInterval(removeInstructions, 2000);
     
     return () => clearInterval(interval);
   }, []);
