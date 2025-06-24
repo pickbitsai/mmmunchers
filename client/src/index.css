@@ -18,7 +18,8 @@
   
   body.topic-selection-active {
     overflow: auto !important;
-    height: auto !important;
+    height: 100vh !important;
+    touch-action: auto !important;
   }
 }
 
@@ -39,7 +40,7 @@ canvas {
   touch-action: auto !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
 }
 
@@ -52,16 +53,16 @@ canvas {
 @media (max-width: 768px) {
   .topic-selection-container {
     padding: 1rem !important;
-    padding-top: max(env(safe-area-inset-top), 6rem) !important;
   }
   
   body.topic-selection-active {
     overflow: auto !important;
-    height: auto !important;
+    height: 100vh !important;
+    touch-action: auto !important;
   }
   
-  html, body {
-    height: auto !important;
+  .topic-selection-container {
+    touch-action: pan-y !important;
   }
 }
 

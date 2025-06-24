@@ -103,7 +103,7 @@ export default function TopicSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 pt-24 pb-20 topic-selection-container" style={{ paddingTop: 'max(env(safe-area-inset-top), 6rem)' }}>
+    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 topic-selection-container" style={{ paddingTop: 'max(env(safe-area-inset-top), 6rem)', paddingBottom: '2rem' }}>
       <div className="container max-w-3xl mx-auto">
         <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-white mb-2">Number Munchers</h1>
