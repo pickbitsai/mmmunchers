@@ -7,7 +7,11 @@ import { useState } from "react";
 
 export default function TopicSelection() {
   const { selectTopic, topicProvider } = useGameState();
-  const [selectedCategories, setSelectedCategories] = useState<{[key: string]: string}>({});
+  const [selectedCategories, setSelectedCategories] = useState<{[key: string]: string}>({
+    math: 'random',
+    words: 'random', 
+    marvel: 'random'
+  });
 
   const topics = [
     {
@@ -138,25 +142,29 @@ export default function TopicSelection() {
                           <Select 
                             value={selectedCategories[topic.id] || 'random'}
                             onValueChange={(value) => {
+                              console.log(`Selected category for ${topic.id}:`, value);
                               setSelectedCategories(prev => ({...prev, [topic.id]: value}));
                             }}
                           >
                             <SelectTrigger 
-                              className="w-full bg-black/40 text-white border-gray-600"
+                              className="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <SelectValue placeholder="Select category" />
+                              <SelectValue placeholder="Random Mix">
+                                {getTopicCategories(topic.id).find(cat => cat.id === (selectedCategories[topic.id] || 'random'))?.name || 'Random Mix'}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent 
-                              className="bg-gray-800 text-white border-gray-600"
-                              onClick={(e) => e.stopPropagation()}
+                              className="bg-gray-800 text-white border-gray-600 z-50 max-h-60"
+                              position="popper"
+                              side="bottom"
+                              align="start"
                             >
                               {getTopicCategories(topic.id).map((category) => (
                                 <SelectItem 
                                   key={category.id} 
                                   value={category.id} 
-                                  className="hover:bg-gray-700"
-                                  onClick={(e) => e.stopPropagation()}
+                                  className="hover:bg-gray-700 focus:bg-gray-700 text-white cursor-pointer data-[highlighted]:bg-gray-700"
                                 >
                                   {category.name}
                                 </SelectItem>
