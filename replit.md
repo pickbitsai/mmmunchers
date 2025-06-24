@@ -134,6 +134,7 @@ Changelog:
 - June 24, 2025. Resolved mobile scrolling conflicts and improved layout to work properly under browser navigation bars
 - June 24, 2025. Added success sound effect for correct answers when player munches correct grid items
 - June 24, 2025. Implemented Movie Trivia topic with actors, directors, genres, decades, franchises, and awards categories
+- June 24, 2025. Fixed text overflow in grid cells with improved wrapping, smaller font sizes, and multi-line text clipping
 ```
 
 ## User Preferences
