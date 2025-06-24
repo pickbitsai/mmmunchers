@@ -92,9 +92,6 @@ export default function GameBoard2D() {
 
     // Check if the answer is correct
     if (currentCell.isCorrect) {
-      // Play munch sound for correct answer
-      playMunch();
-      
       // Correct answer - mark as munched and award points
       const newGrid = grid.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
@@ -194,6 +191,8 @@ export default function GameBoard2D() {
         case 'Space':
         case 'Enter':
           event.preventDefault();
+          // Play munch sound immediately on button press
+          playMunch();
           handleMunchAction();
           return;
         default:
@@ -201,13 +200,13 @@ export default function GameBoard2D() {
       }
 
       event.preventDefault();
+      
+      // Play movement sound immediately on key press
       if (newX !== player.x || newY !== player.y) {
-        isMovingRef.current = true;
-        lastMoveTimeRef.current = now;
-        
-        // Play movement sound
         playMove();
         
+        isMovingRef.current = true;
+        lastMoveTimeRef.current = now;
         updatePlayer({ x: newX, y: newY });
         
         // Reset movement flag after animation completes
@@ -249,12 +248,11 @@ export default function GameBoard2D() {
     
     // Allow movement to any square (don't check if it's empty or correct)
     if (newX !== player.x || newY !== player.y) {
-      isMovingRef.current = true;
-      lastMoveTimeRef.current = now;
-      
-      // Play movement sound
+      // Play movement sound immediately
       playMove();
       
+      isMovingRef.current = true;
+      lastMoveTimeRef.current = now;
       updatePlayer({ x: newX, y: newY });
       
       // Reset movement flag after animation completes
