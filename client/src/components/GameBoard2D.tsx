@@ -54,7 +54,8 @@ export default function GameBoard2D() {
           updatePlayer,
           updateEnemies,
           updateGrid,
-          processPlayerMove
+          processPlayerMove,
+          gameOver
         });
       }
 
@@ -70,7 +71,7 @@ export default function GameBoard2D() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [gamePhase, player, enemies, grid, currentChallenge, updatePlayer, updateEnemies, updateGrid, processPlayerMove]);
+  }, [gamePhase, player, enemies, grid, currentChallenge, updatePlayer, updateEnemies, updateGrid, processPlayerMove, gameOver]);
 
   if (!grid.length || !currentChallenge) return null;
 

@@ -25,6 +25,7 @@ interface GameLogicParams {
   updateEnemies: (enemies: Enemy[]) => void;
   updateGrid: (grid: GridCell[][]) => void;
   processPlayerMove: (newX: number, newY: number) => void;
+  gameOver: () => void;
 }
 
 let lastMoveTime = 0;
@@ -39,7 +40,8 @@ export function updateGameLogic({
   updatePlayer,
   updateEnemies,
   updateGrid,
-  processPlayerMove
+  processPlayerMove,
+  gameOver
 }: GameLogicParams) {
   const currentTime = Date.now();
   
@@ -80,10 +82,12 @@ export function updateGameLogic({
   );
   
   if (collision) {
-    // Player hit by enemy - this should be handled by the game state
+    // Player hit by enemy - trigger game over
     console.log("Player hit by enemy!");
     const { playHit } = useAudio.getState();
     playHit();
+    gameOver();
+    return; // Stop processing further game logic
   }
   
   updateEnemies(updatedEnemies);

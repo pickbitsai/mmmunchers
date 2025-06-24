@@ -19,9 +19,9 @@ export default function GridCell({ cell, position }: GridCellProps) {
   const meshRef = useRef<Mesh>(null);
 
   useFrame((state) => {
-    if (meshRef.current && cell.isCorrect && !cell.isMunched) {
-      // Highlight correct answers with a gentle glow effect
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+    if (meshRef.current && !cell.isMunched) {
+      // Gentle animation for all tiles
+      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.02;
     }
   });
 
@@ -33,7 +33,7 @@ export default function GridCell({ cell, position }: GridCellProps) {
       <mesh ref={meshRef} position={position} receiveShadow>
         <boxGeometry args={[1.5, 0.2, 1.5]} />
         <meshLambertMaterial 
-          color={cell.isCorrect ? "#2196F3" : "#90A4AE"}
+          color="#4CAF50"
           transparent
           opacity={0.8}
         />
