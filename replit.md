@@ -130,6 +130,8 @@ Changelog:
 - June 24, 2025. Improved text fitting in grid cells with smaller font sizes and overflow handling
 - June 24, 2025. Fixed dropdown interaction to prevent immediate game launch and allow proper category selection
 - June 24, 2025. Enhanced text wrapping with truncation for long words (8+ characters) and better font sizing
+- June 24, 2025. Fixed mobile dropdown interaction issues by creating custom mobile-friendly Select component with proper touch handling
+- June 24, 2025. Resolved mobile scrolling conflicts and improved layout to work properly under browser navigation bars
 ```
 
 ## User Preferences
