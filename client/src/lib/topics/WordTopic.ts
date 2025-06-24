@@ -2,6 +2,24 @@ import { TopicProvider, GridCell } from "./TopicProvider";
 import { Challenge } from "../stores/useGameState";
 
 export class WordTopic extends TopicProvider {
+  private selectedCategory: string = 'random';
+  
+  setCategory(category: string): void {
+    this.selectedCategory = category;
+  }
+  
+  getCategories(): Array<{id: string, name: string}> {
+    return [
+      { id: 'random', name: 'Random Mix' },
+      { id: 'nouns', name: 'Nouns' },
+      { id: 'verbs', name: 'Verbs' },
+      { id: 'adjectives', name: 'Adjectives' },
+      { id: 'word_length', name: 'Word Length' },
+      { id: 'word_endings', name: 'Word Endings' },
+      { id: 'vowel_patterns', name: 'Vowel Patterns' }
+    ];
+  }
+  
   private readonly nouns = [
     "cat", "dog", "house", "car", "tree", "book", "phone", "chair", "table", "water",
     "apple", "school", "friend", "family", "music", "game", "food", "flower", "bird", "fish"
@@ -27,44 +45,98 @@ export class WordTopic extends TopicProvider {
   }
   
   generateChallenge(level: number): Challenge {
-    const challenges = [
-      {
-        description: "Munch NOUNS",
-        checkAnswer: (value: string) => this.nouns.includes(value.toLowerCase())
-      },
-      {
-        description: "Munch VERBS",
-        checkAnswer: (value: string) => this.verbs.includes(value.toLowerCase())
-      },
-      {
-        description: "Munch ADJECTIVES",
-        checkAnswer: (value: string) => this.adjectives.includes(value.toLowerCase())
-      },
-      {
-        description: "Munch words with 4+ letters",
-        checkAnswer: (value: string) => {
-          return /^[a-zA-Z]+$/.test(value) && value.length >= 4;
+    const allChallenges = {
+      nouns: [
+        {
+          description: "Munch NOUNS",
+          checkAnswer: (value: string) => {
+            return this.nouns.includes(value.toLowerCase());
+          }
         }
-      },
-      {
-        description: "Munch words starting with vowels",
-        checkAnswer: (value: string) => {
-          const vowels = ['a', 'e', 'i', 'o', 'u'];
-          return /^[a-zA-Z]+$/.test(value) && vowels.includes(value.toLowerCase()[0]);
+      ],
+      verbs: [
+        {
+          description: "Munch VERBS",
+          checkAnswer: (value: string) => {
+            return this.verbs.includes(value.toLowerCase());
+          }
         }
-      },
-      {
-        description: "Munch words ending in 'ed'",
-        checkAnswer: (value: string) => {
-          return /^[a-zA-Z]+$/.test(value) && value.toLowerCase().endsWith('ed');
+      ],
+      adjectives: [
+        {
+          description: "Munch ADJECTIVES",
+          checkAnswer: (value: string) => {
+            return this.adjectives.includes(value.toLowerCase());
+          }
         }
-      }
-    ];
+      ],
+      word_length: [
+        {
+          description: "Munch words with 4+ letters",
+          checkAnswer: (value: string) => {
+            return /^[a-zA-Z]+$/.test(value) && value.length >= 4;
+          }
+        },
+        {
+          description: "Munch short words (3 letters)",
+          checkAnswer: (value: string) => {
+            return /^[a-zA-Z]+$/.test(value) && value.length === 3;
+          }
+        },
+        {
+          description: "Munch long words (5+ letters)",
+          checkAnswer: (value: string) => {
+            return /^[a-zA-Z]+$/.test(value) && value.length >= 5;
+          }
+        }
+      ],
+      vowel_patterns: [
+        {
+          description: "Munch words starting with vowels",
+          checkAnswer: (value: string) => {
+            const vowels = ['a', 'e', 'i', 'o', 'u'];
+            return /^[a-zA-Z]+$/.test(value) && vowels.includes(value.toLowerCase()[0]);
+          }
+        },
+        {
+          description: "Munch words ending with vowels",
+          checkAnswer: (value: string) => {
+            const vowels = ['a', 'e', 'i', 'o', 'u'];
+            const lastChar = value.toLowerCase().slice(-1);
+            return /^[a-zA-Z]+$/.test(value) && vowels.includes(lastChar);
+          }
+        }
+      ],
+      word_endings: [
+        {
+          description: "Munch words ending in 'ed'",
+          checkAnswer: (value: string) => {
+            return /^[a-zA-Z]+$/.test(value) && value.toLowerCase().endsWith('ed');
+          }
+        },
+        {
+          description: "Munch words ending in 'ing'",
+          checkAnswer: (value: string) => {
+            return /^[a-zA-Z]+$/.test(value) && value.toLowerCase().endsWith('ing');
+          }
+        },
+        {
+          description: "Munch words ending in 'ly'",
+          checkAnswer: (value: string) => {
+            return /^[a-zA-Z]+$/.test(value) && value.toLowerCase().endsWith('ly');
+          }
+        }
+      ]
+    };
     
-    const maxChallengeIndex = Math.min(level - 1, challenges.length - 1);
-    const challengeIndex = Math.floor(Math.random() * (maxChallengeIndex + 1));
+    let challenges: Challenge[];
+    if (this.selectedCategory === 'random') {
+      challenges = Object.values(allChallenges).flat();
+    } else {
+      challenges = allChallenges[this.selectedCategory as keyof typeof allChallenges] || allChallenges.nouns;
+    }
     
-    return challenges[challengeIndex];
+    return challenges[Math.floor(Math.random() * challenges.length)];
   }
   
   generateGrid(width: number, height: number, challenge: Challenge): GridCell[][] {

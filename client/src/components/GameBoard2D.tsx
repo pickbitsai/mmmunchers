@@ -266,7 +266,7 @@ export default function GameBoard2D() {
           row.map((cell, colIndex) => (
             <div
               key={`${rowIndex}-${colIndex}`}
-              className={`absolute border-2 flex items-center justify-center text-lg font-bold ${
+              className={`absolute border-2 flex items-center justify-center text-xs font-bold ${
                 cell.isEmpty || cell.isMunched 
                   ? 'border-green-700 bg-green-900/20' 
                   : 'border-gray-400 bg-white text-black shadow-lg'
@@ -276,8 +276,14 @@ export default function GameBoard2D() {
                 top: rowIndex * cellSize,
                 width: cellSize - 2,
                 height: cellSize - 2,
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                fontSize: Math.min(cellSize / 6, 10) + 'px',
+                padding: '2px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
               }}
+              title={cell.value} // Show full text on hover
             >
               {!cell.isEmpty && !cell.isMunched && cell.value}
             </div>

@@ -2,68 +2,135 @@ import { TopicProvider, GridCell } from "./TopicProvider";
 import { Challenge } from "../stores/useGameState";
 
 export class MathTopic extends TopicProvider {
+  private selectedCategory: string = 'random';
+  
   getName(): string {
     return "Mathematics";
   }
   
-  generateChallenge(level: number): Challenge {
-    const challenges = [
-      // Basic arithmetic
-      {
-        description: "Munch multiples of 3",
-        checkAnswer: (value: string) => {
-          const num = parseInt(value);
-          return !isNaN(num) && num % 3 === 0 && num > 0;
-        }
-      },
-      {
-        description: "Munch even numbers",
-        checkAnswer: (value: string) => {
-          const num = parseInt(value);
-          return !isNaN(num) && num % 2 === 0 && num > 0;
-        }
-      },
-      {
-        description: "Munch numbers > 50",
-        checkAnswer: (value: string) => {
-          const num = parseInt(value);
-          return !isNaN(num) && num > 50;
-        }
-      },
-      {
-        description: "Munch prime numbers",
-        checkAnswer: (value: string) => {
-          const num = parseInt(value);
-          if (isNaN(num) || num < 2) return false;
-          for (let i = 2; i <= Math.sqrt(num); i++) {
-            if (num % i === 0) return false;
-          }
-          return true;
-        }
-      },
-      {
-        description: "Munch perfect squares",
-        checkAnswer: (value: string) => {
-          const num = parseInt(value);
-          if (isNaN(num) || num < 1) return false;
-          const sqrt = Math.sqrt(num);
-          return sqrt === Math.floor(sqrt);
-        }
-      },
-      {
-        description: "Munch multiples of 7",
-        checkAnswer: (value: string) => {
-          const num = parseInt(value);
-          return !isNaN(num) && num % 7 === 0 && num > 0;
-        }
-      }
+  setCategory(category: string): void {
+    this.selectedCategory = category;
+  }
+  
+  getCategories(): Array<{id: string, name: string}> {
+    return [
+      { id: 'random', name: 'Random Mix' },
+      { id: 'multiples', name: 'Multiples' },
+      { id: 'factors', name: 'Factors' },
+      { id: 'primes', name: 'Prime Numbers' },
+      { id: 'squares', name: 'Perfect Squares' },
+      { id: 'even_odd', name: 'Even/Odd' },
+      { id: 'greater_less', name: 'Greater/Less Than' }
     ];
+  }
+  
+  generateChallenge(level: number): Challenge {
+    const allChallenges = {
+      multiples: [
+        {
+          description: "Munch multiples of 3",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num % 3 === 0 && num > 0;
+          }
+        },
+        {
+          description: "Munch multiples of 5",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num % 5 === 0 && num > 0;
+          }
+        },
+        {
+          description: "Munch multiples of 7",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num % 7 === 0 && num > 0;
+          }
+        }
+      ],
+      factors: [
+        {
+          description: "Munch factors of 24",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num > 0 && 24 % num === 0;
+          }
+        },
+        {
+          description: "Munch factors of 36",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num > 0 && 36 % num === 0;
+          }
+        }
+      ],
+      even_odd: [
+        {
+          description: "Munch even numbers",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num % 2 === 0 && num > 0;
+          }
+        },
+        {
+          description: "Munch odd numbers",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num % 2 === 1 && num > 0;
+          }
+        }
+      ],
+      greater_less: [
+        {
+          description: "Munch numbers > 50",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num > 50;
+          }
+        },
+        {
+          description: "Munch numbers < 25",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            return !isNaN(num) && num < 25 && num > 0;
+          }
+        }
+      ],
+      primes: [
+        {
+          description: "Munch prime numbers",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            if (isNaN(num) || num < 2) return false;
+            for (let i = 2; i <= Math.sqrt(num); i++) {
+              if (num % i === 0) return false;
+            }
+            return true;
+          }
+        }
+      ],
+      squares: [
+        {
+          description: "Munch perfect squares",
+          checkAnswer: (value: string) => {
+            const num = parseInt(value);
+            if (isNaN(num) || num < 1) return false;
+            const sqrt = Math.sqrt(num);
+            return sqrt === Math.floor(sqrt);
+          }
+        }
+      ]
+    };
     
-    // Higher levels get more complex challenges
-    const maxChallengeIndex = Math.min(level - 1, challenges.length - 1);
-    const challengeIndex = Math.floor(Math.random() * (maxChallengeIndex + 1));
+    let challenges: Challenge[];
+    if (this.selectedCategory === 'random') {
+      challenges = Object.values(allChallenges).flat();
+    } else {
+      challenges = allChallenges[this.selectedCategory as keyof typeof allChallenges] || allChallenges.multiples;
+    }
     
-    return challenges[challengeIndex];
+    return challenges[Math.floor(Math.random() * challenges.length)];
   }
   
   generateGrid(width: number, height: number, challenge: Challenge): GridCell[][] {

@@ -12,6 +12,10 @@ export abstract class TopicProvider {
   abstract generateChallenge(level: number): Challenge;
   abstract generateGrid(width: number, height: number, challenge: Challenge): GridCell[][];
   
+  // Optional category methods
+  setCategory?(category: string): void;
+  getCategories?(): Array<{id: string, name: string}>;
+  
   protected createEmptyGrid(width: number, height: number): GridCell[][] {
     return Array(height).fill(null).map(() =>
       Array(width).fill(null).map(() => ({

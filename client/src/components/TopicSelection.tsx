@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useGameState } from "../lib/stores/useGameState";
-import { Calculator, BookOpen, Star, HelpCircle } from "lucide-react";
+import { Calculator, BookOpen, Zap, HelpCircle } from "lucide-react";
+import { useState } from "react";
 
 export default function TopicSelection() {
-  const { selectTopic } = useGameState();
+  const { selectTopic, topicProvider } = useGameState();
+  const [selectedCategories, setSelectedCategories] = useState<{[key: string]: string}>({});
 
   const topics = [
     {
@@ -24,22 +27,68 @@ export default function TopicSelection() {
       available: true
     },
     {
+      id: 'marvel',
+      name: 'Marvel Universe',
+      description: 'Heroes, villains, teams, and superpowers!',
+      icon: Zap,
+      color: 'bg-red-500 hover:bg-red-600',
+      available: true
+    },
+    {
       id: 'trivia',
       name: 'Trivia & Facts',
       description: 'Test your knowledge across various subjects!',
       icon: HelpCircle,
       color: 'bg-purple-500 hover:bg-purple-600',
       available: false
-    },
-    {
-      id: 'pop_culture',
-      name: 'Pop Culture',
-      description: 'Movies, music, celebrities, and trending topics!',
-      icon: Star,
-      color: 'bg-pink-500 hover:bg-pink-600',
-      available: false
     }
   ];
+
+  const handleTopicSelect = (topicId: string) => {
+    // Store the selected category for this topic
+    const selectedCategory = selectedCategories[topicId] || 'random';
+    
+    // Store category preference for when topic provider is created
+    localStorage.setItem(`category_${topicId}`, selectedCategory);
+    
+    selectTopic(topicId);
+  };
+
+  const getTopicCategories = (topicId: string) => {
+    switch (topicId) {
+      case 'math':
+        return [
+          { id: 'random', name: 'Random Mix' },
+          { id: 'multiples', name: 'Multiples' },
+          { id: 'factors', name: 'Factors' },
+          { id: 'primes', name: 'Prime Numbers' },
+          { id: 'squares', name: 'Perfect Squares' },
+          { id: 'even_odd', name: 'Even/Odd' },
+          { id: 'greater_less', name: 'Greater/Less Than' }
+        ];
+      case 'words':
+        return [
+          { id: 'random', name: 'Random Mix' },
+          { id: 'nouns', name: 'Nouns' },
+          { id: 'verbs', name: 'Verbs' },
+          { id: 'adjectives', name: 'Adjectives' },
+          { id: 'word_length', name: 'Word Length' },
+          { id: 'word_endings', name: 'Word Endings' },
+          { id: 'vowel_patterns', name: 'Vowel Patterns' }
+        ];
+      case 'marvel':
+        return [
+          { id: 'random', name: 'Random Mix' },
+          { id: 'heroes', name: 'Superheroes' },
+          { id: 'villains', name: 'Villains' },
+          { id: 'teams', name: 'Teams' },
+          { id: 'powers', name: 'Superpowers' },
+          { id: 'locations', name: 'Locations' }
+        ];
+      default:
+        return [];
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4 pt-20 pb-20">
@@ -84,15 +133,33 @@ export default function TopicSelection() {
                       </p>
                       
                       {topic.available ? (
-                        <Button 
-                          className={`w-full ${topic.color} text-white border-none`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            selectTopic(topic.id);
-                          }}
-                        >
-                          Start Playing
-                        </Button>
+                        <div className="space-y-3">
+                          <Select 
+                            value={selectedCategories[topic.id] || 'random'}
+                            onValueChange={(value) => setSelectedCategories(prev => ({...prev, [topic.id]: value}))}
+                          >
+                            <SelectTrigger className="w-full bg-black/40 text-white border-gray-600">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-gray-800 text-white border-gray-600">
+                              {getTopicCategories(topic.id).map((category) => (
+                                <SelectItem key={category.id} value={category.id} className="hover:bg-gray-700">
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          
+                          <Button 
+                            className={`w-full ${topic.color} text-white border-none`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTopicSelect(topic.id);
+                            }}
+                          >
+                            Start Playing
+                          </Button>
+                        </div>
                       ) : (
                         <Button 
                           disabled 

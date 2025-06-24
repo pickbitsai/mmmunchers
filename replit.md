@@ -124,6 +124,10 @@ Changelog:
 - June 24, 2025. Made all grid tiles uniform green color instead of blue/gray distinction for correct answers
 - June 24, 2025. Implemented game over trigger when player overlaps with enemy using existing collision detection
 - June 24, 2025. Updated all grid text to have black text on white background for better readability
+- June 24, 2025. Added randomized starting level (1-3) for varied gameplay difficulty
+- June 24, 2025. Implemented category selection system for Math, Word, and Marvel topics
+- June 24, 2025. Created Marvel Universe topic with heroes, villains, teams, powers, and locations
+- June 24, 2025. Improved text fitting in grid cells with smaller font sizes and overflow handling
 ```
 
 ## User Preferences

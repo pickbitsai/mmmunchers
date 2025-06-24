@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { TopicProvider } from "../topics/TopicProvider";
 import { MathTopic } from "../topics/MathTopic";
 import { WordTopic } from "../topics/WordTopic";
+import { MarvelTopic } from "../topics/MarvelTopic";
 
 export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over";
 
@@ -132,9 +133,18 @@ export const useGameState = create<GameState>()(
         case 'words':
           provider = new WordTopic();
           break;
+        case 'marvel':
+          provider = new MarvelTopic();
+          break;
         default:
           console.error(`Unknown topic: ${topicId}`);
           return;
+      }
+      
+      // Set category if available from localStorage
+      const savedCategory = localStorage.getItem(`category_${topicId}`);
+      if (savedCategory && 'setCategory' in provider) {
+        (provider as any).setCategory(savedCategory);
       }
       
       set({
@@ -146,11 +156,14 @@ export const useGameState = create<GameState>()(
     },
     
     startGame: () => {
-      const { topicProvider, level } = get();
+      const { topicProvider } = get();
       if (!topicProvider) return;
       
+      // Randomize starting level (1-3)
+      const startingLevel = Math.floor(Math.random() * 3) + 1;
+      
       // Generate challenge and grid
-      const challenge = topicProvider.generateChallenge(level);
+      const challenge = topicProvider.generateChallenge(startingLevel);
       const grid = topicProvider.generateGrid(GRID_WIDTH, GRID_HEIGHT, challenge);
       
       set({
@@ -159,16 +172,22 @@ export const useGameState = create<GameState>()(
         grid,
         player: { x: 4, y: 3, moveX: 0, moveY: 0, isMoving: false },
         enemies: [],
-        timeRemaining: 60 + (level * 10) // More time for higher levels
+        level: startingLevel,
+        score: 0,
+        lives: 3,
+        timeRemaining: 60 + (startingLevel * 10) // More time for higher levels
       });
     },
     
     restartGame: () => {
       const { selectedTopic } = get();
+      // Randomize starting level for restart too
+      const startingLevel = Math.floor(Math.random() * 3) + 1;
+      
       set({
         score: 0,
         lives: 3,
-        level: 1,
+        level: startingLevel,
         enemies: [],
         timeRemaining: 0
       });
