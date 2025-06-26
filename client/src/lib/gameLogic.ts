@@ -83,7 +83,6 @@ export function updateGameLogic({
   
   if (collision) {
     // Player hit by enemy - trigger game over
-    console.log("Player hit by enemy!");
     const { playHit } = useAudio.getState();
     playHit();
     gameOver();

@@ -48,39 +48,26 @@ export const useAudio = create<AudioState>((set, get) => ({
     
     // Just update the muted state
     set({ isMuted: newMutedState });
-    
-    // Log the change
-    console.log(`Sound ${newMutedState ? 'muted' : 'unmuted'}`);
   },
   
   playHit: () => {
     const { hitSound, isMuted } = get();
-    if (hitSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Hit sound skipped (muted)");
-        return;
-      }
-      
+    if (hitSound && !isMuted) {
       // Clone the sound to allow overlapping playback
       const soundClone = hitSound.cloneNode() as HTMLAudioElement;
       soundClone.volume = 0.3;
-      soundClone.play().catch(error => {
-        console.log("Hit sound play prevented:", error);
+      soundClone.play().catch(() => {
+        // Silently handle audio play errors
       });
     }
   },
   
   playSuccess: () => {
     const { successSound, isMuted } = get();
-    if (successSound) {
-      if (isMuted) {
-        return;
-      }
-      
+    if (successSound && !isMuted) {
       successSound.currentTime = 0;
-      successSound.play().catch(error => {
-        console.log("Success sound play prevented:", error);
+      successSound.play().catch(() => {
+        // Silently handle audio play errors
       });
     }
   },
@@ -92,8 +79,8 @@ export const useAudio = create<AudioState>((set, get) => ({
       munchSound.currentTime = 0; // Reset to beginning
       munchSound.volume = 0.6;
       munchSound.playbackRate = 0.8; // Slower, deeper crunch sound
-      munchSound.play().catch(error => {
-        console.log("Munch sound play prevented:", error);
+      munchSound.play().catch(() => {
+        // Silently handle audio play errors
       });
     }
   },
@@ -103,8 +90,8 @@ export const useAudio = create<AudioState>((set, get) => ({
     if (moveSound && !isMuted) {
       const soundClone = moveSound.cloneNode() as HTMLAudioElement;
       soundClone.volume = 0.2;
-      soundClone.play().catch(error => {
-        console.log("Move sound play prevented:", error);
+      soundClone.play().catch(() => {
+        // Silently handle audio play errors
       });
     }
   },
@@ -114,8 +101,8 @@ export const useAudio = create<AudioState>((set, get) => ({
     if (enemyMoveSound && !isMuted) {
       const soundClone = enemyMoveSound.cloneNode() as HTMLAudioElement;
       soundClone.volume = 0.3;
-      soundClone.play().catch(error => {
-        console.log("Enemy move sound play prevented:", error);
+      soundClone.play().catch(() => {
+        // Silently handle audio play errors
       });
     }
   }
