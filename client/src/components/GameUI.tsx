@@ -23,6 +23,7 @@ export default function GameUI() {
 
   const { isMuted, toggleMute } = useAudio();
   const [isMobile, setIsMobile] = useState(false);
+  const [gameOverSelectedIndex, setGameOverSelectedIndex] = useState(0);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -30,6 +31,40 @@ export default function GameUI() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Keyboard controls for game over screen
+  useEffect(() => {
+    if (gamePhase !== 'game_over') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'ArrowRight':
+          e.preventDefault();
+          setGameOverSelectedIndex(prev => prev === 0 ? 1 : 0);
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          if (gameOverSelectedIndex === 0) {
+            restartGame();
+          } else {
+            selectTopic(null);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gamePhase, gameOverSelectedIndex, restartGame, selectTopic]);
+
+  // Reset selected index when game over screen appears
+  useEffect(() => {
+    if (gamePhase === 'game_over') {
+      setGameOverSelectedIndex(0);
+    }
+  }, [gamePhase]);
 
   if (gamePhase === 'topic_selection') return null;
 
@@ -114,18 +149,33 @@ export default function GameUI() {
             <CardContent className="p-8 text-center">
               <h2 className="text-3xl font-bold mb-2 text-red-400">Game Over!</h2>
               <div className="text-xl mb-6">Final Score: <span className="text-yellow-400 font-bold">{score}</span></div>
+              {!isMobile && (
+                <div className="text-sm text-gray-400 mb-4">
+                  Use arrow keys to select • Press Enter to confirm
+                </div>
+              )}
               <div className="flex gap-4">
                 <Button 
                   onClick={restartGame} 
                   variant="outline" 
-                  className="bg-green-600 hover:bg-green-700 text-white border-green-500"
+                  className={`${
+                    gameOverSelectedIndex === 0 
+                      ? 'bg-green-600 hover:bg-green-700 text-white border-green-500 ring-2 ring-white' 
+                      : 'bg-green-600/70 hover:bg-green-700 text-white border-green-500'
+                  } transition-all`}
+                  onMouseEnter={() => setGameOverSelectedIndex(0)}
                 >
                   Play Again
                 </Button>
                 <Button 
                   onClick={() => selectTopic(null)} 
                   variant="outline" 
-                  className="bg-white/10 text-white border-gray-600"
+                  className={`${
+                    gameOverSelectedIndex === 1 
+                      ? 'bg-white/20 text-white border-gray-600 ring-2 ring-white' 
+                      : 'bg-white/10 text-white border-gray-600'
+                  } transition-all`}
+                  onMouseEnter={() => setGameOverSelectedIndex(1)}
                 >
                   Main Menu
                 </Button>
