@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
-import { Group } from "three";
+import { useFrame, useThree } from "@react-three/fiber";
+import { Group, Vector3 } from "three";
 import { useGameState } from "../lib/stores/useGameState";
 import { updateGameLogic } from "../lib/gameLogic";
 import Player from "./Player";
@@ -9,8 +9,8 @@ import GridCell from "./GridCell";
 
 export default function GameBoard() {
   const groupRef = useRef<Group>(null);
-  // Temporarily disable texture loading to debug R3F error
-  // const grassTexture = useTexture("/textures/grass.png");
+  const { camera, size } = useThree();
+  const cameraTarget = useRef(new Vector3());
   
   const {
     gamePhase,
@@ -34,7 +34,28 @@ export default function GameBoard() {
     }
   }, [gamePhase, enemies.length, spawnEnemies]);
 
-  // Game loop
+  // Adjust camera based on screen size
+  useEffect(() => {
+    const isMobile = size.width < 768;
+    const isTablet = size.width < 1024;
+    
+    if (isMobile) {
+      // Mobile: Closer, more angled view
+      camera.position.set(0, 12, 8);
+      camera.fov = 75;
+    } else if (isTablet) {
+      // Tablet: Medium distance
+      camera.position.set(0, 14, 10);
+      camera.fov = 65;
+    } else {
+      // Desktop: Original view
+      camera.position.set(0, 10, 10);
+      camera.fov = 60;
+    }
+    camera.updateProjectionMatrix();
+  }, [size, camera]);
+
+  // Game loop with camera follow
   useFrame((state, delta) => {
     if (gamePhase !== 'playing') return;
 
@@ -51,6 +72,25 @@ export default function GameBoard() {
       munchCurrentCell,
       gameOver
     });
+
+    // Smooth camera follow on mobile/tablet
+    if (size.width < 1024) {
+      const playerWorldX = (player.x - 4) * 2;
+      const playerWorldZ = (player.y - 3) * 2;
+      
+      // Update camera target
+      cameraTarget.current.lerp(
+        new Vector3(playerWorldX * 0.3, camera.position.y, playerWorldZ * 0.3 + 10),
+        0.1
+      );
+      
+      camera.position.x = cameraTarget.current.x;
+      camera.position.z = cameraTarget.current.z;
+      camera.lookAt(playerWorldX, 0, playerWorldZ);
+    } else {
+      // Desktop: Fixed camera
+      camera.lookAt(0, 0, 0);
+    }
   });
 
   if (!grid.length || !currentChallenge) {

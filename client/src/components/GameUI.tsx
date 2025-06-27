@@ -3,6 +3,8 @@ import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useAudio } from "../lib/stores/useAudio";
+import OnscreenControls from "./OnscreenControls";
+import { useEffect, useState } from "react";
 
 export default function GameUI() {
   const {
@@ -14,47 +16,60 @@ export default function GameUI() {
     timeRemaining,
     togglePause,
     restartGame,
-    selectTopic
+    selectTopic,
+    processPlayerMove,
+    munchCurrentCell
   } = useGameState();
 
   const { isMuted, toggleMute } = useAudio();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (gamePhase === 'topic_selection') return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none">
-      {/* Top HUD */}
-      <Card className="absolute top-2 left-2 pointer-events-auto bg-black/80 text-white border-gray-600">
-        <CardContent className="p-2">
-          <div className="flex gap-4 text-xs">
-            <div>Score: <span className="font-bold text-yellow-400">{score}</span></div>
-            <div>Lives: <span className="font-bold text-red-400">{lives}</span></div>
-            <div>Level: <span className="font-bold text-blue-400">{level}</span></div>
-            {timeRemaining > 0 && (
-              <div>Time: <span className="font-bold text-green-400">{Math.ceil(timeRemaining)}</span></div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Challenge Display */}
-      {currentChallenge && (
-        <Card className="absolute top-2 right-2 pointer-events-auto bg-black/80 text-white border-gray-600">
+      {/* Mobile-friendly top HUD */}
+      <div className="absolute top-2 left-2 right-2 pointer-events-auto flex flex-col sm:flex-row gap-2">
+        {/* Stats */}
+        <Card className="bg-black/80 text-white border-gray-600 flex-1">
           <CardContent className="p-2">
-            <div className="text-center">
-              <div className="text-sm font-bold text-cyan-400 mb-1">
-                {currentChallenge.description}
-              </div>
-              <div className="text-xs text-gray-300">
-                Munch the correct answers!
-              </div>
+            <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm justify-around sm:justify-start">
+              <div>Score: <span className="font-bold text-yellow-400">{score}</span></div>
+              <div>Lives: <span className="font-bold text-red-400">{lives}</span></div>
+              <div>Level: <span className="font-bold text-blue-400">{level}</span></div>
+              {timeRemaining > 0 && (
+                <div className="hidden sm:block">Time: <span className="font-bold text-green-400">{Math.ceil(timeRemaining)}</span></div>
+              )}
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Control buttons */}
-      <div className="absolute top-16 left-1/2 transform -translate-x-1/2 flex gap-2 pointer-events-auto">
+        {/* Challenge Display */}
+        {currentChallenge && (
+          <Card className="bg-black/80 text-white border-gray-600 sm:max-w-xs">
+            <CardContent className="p-2">
+              <div className="text-center">
+                <div className="text-xs sm:text-sm font-bold text-cyan-400">
+                  {currentChallenge.description}
+                </div>
+                <div className="text-xs text-gray-300 hidden sm:block">
+                  Munch the correct answers!
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Control buttons - moved to bottom right on mobile */}
+      <div className="absolute bottom-20 sm:top-16 right-2 sm:left-1/2 sm:transform sm:-translate-x-1/2 flex gap-2 pointer-events-auto">
         <Button
           variant="outline"
           size="sm"
@@ -120,6 +135,35 @@ export default function GameUI() {
         </div>
       )}
 
+      {/* Mobile controls */}
+      {isMobile && gamePhase === 'playing' && (
+        <OnscreenControls 
+          onMove={(direction) => {
+            const player = useGameState.getState().player;
+            let newX = player.x;
+            let newY = player.y;
+            
+            switch(direction) {
+              case 'up': newY = Math.max(0, player.y - 1); break;
+              case 'down': newY = Math.min(6, player.y + 1); break;
+              case 'left': newX = Math.max(0, player.x - 1); break;
+              case 'right': newX = Math.min(8, player.x + 1); break;
+            }
+            
+            processPlayerMove(newX, newY);
+          }}
+          onMunch={munchCurrentCell}
+        />
+      )}
+
+      {/* Mobile hint */}
+      {isMobile && gamePhase === 'playing' && (
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 pointer-events-none">
+          <p className="text-white text-xs bg-black/60 px-2 py-1 rounded">
+            Use controls to move • Center button to munch
+          </p>
+        </div>
+      )}
 
     </div>
   );

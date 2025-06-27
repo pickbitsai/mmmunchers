@@ -12,8 +12,13 @@
 =======
       "Bash(npm install:*)",
       "Bash(curl:*)",
+<<<<<<< Updated upstream
       "Bash(ss:*)"
 >>>>>>> 8dfa9d15082776f0965b94f8640826bd7e21a1e5
+=======
+      "Bash(ss:*)",
+      "Bash(git config:*)"
+>>>>>>> Stashed changes
     ],
     "deny": []
   }
