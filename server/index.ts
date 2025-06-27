@@ -3,6 +3,33 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// CORS configuration - adjust origin as needed for production
+app.use((req, res, next) => {
+  const allowedOrigin = process.env.NODE_ENV === 'production' 
+    ? process.env.ALLOWED_ORIGIN || 'https://yourdomain.com'
+    : 'http://localhost:5000';
+  
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -59,11 +86,13 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client
   const port = 5000;
+  // Use environment variable for host, default to localhost for security
+  const host = process.env.HOST || "127.0.0.1";
   server.listen({
     port,
-    host: "0.0.0.0",
+    host,
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`serving on ${host}:${port}`);
   });
 })();

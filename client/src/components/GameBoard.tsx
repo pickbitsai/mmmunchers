@@ -22,7 +22,9 @@ export default function GameBoard() {
     updateEnemies,
     updateGrid,
     processPlayerMove,
-    spawnEnemies
+    munchCurrentCell,
+    spawnEnemies,
+    gameOver
   } = useGameState();
 
   // Initialize enemies when game starts
@@ -45,18 +47,23 @@ export default function GameBoard() {
       updatePlayer,
       updateEnemies,
       updateGrid,
-      processPlayerMove
+      processPlayerMove,
+      munchCurrentCell,
+      gameOver
     });
   });
 
-  if (!grid.length || !currentChallenge) return null;
+  if (!grid.length || !currentChallenge) {
+    console.log('GameBoard: Missing data', { gridLength: grid.length, hasChallenge: !!currentChallenge });
+    return null;
+  }
 
   return (
     <group ref={groupRef}>
       {/* Ground plane */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
+      <mesh position={[0, -0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[20, 16]} />
-        <meshLambertMaterial color="#4a5c3a" />
+        <meshLambertMaterial color="#2c3e50" />
       </mesh>
 
       {/* Grid cells */}

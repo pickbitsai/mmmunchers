@@ -70,6 +70,7 @@ interface GameState {
   updateEnemies: (enemies: Enemy[]) => void;
   updateGrid: (grid: GridCell[][]) => void;
   processPlayerMove: (newX: number, newY: number) => void;
+  munchCurrentCell: () => void;
   spawnEnemies: () => void;
   nextLevel: () => void;
   addScore: (points: number) => void;
@@ -161,27 +162,35 @@ export const useGameState = create<GameState>()(
     },
     
     startGame: () => {
-      const { topicProvider } = get();
+      const { topicProvider, selectedTopic, level: currentLevel } = get();
       if (!topicProvider) return;
       
-      // Randomize starting level (1-3)
-      const startingLevel = Math.floor(Math.random() * 3) + 1;
+      // Use current level if continuing, otherwise randomize starting level (1-3)
+      const gameLevel = currentLevel > 0 ? currentLevel : Math.floor(Math.random() * 3) + 1;
       
-      // Generate challenge and grid
-      const challenge = topicProvider.generateChallenge(startingLevel);
+      // Generate challenge and grid for the current level
+      const challenge = topicProvider.generateChallenge(gameLevel);
       const grid = topicProvider.generateGrid(GRID_WIDTH, GRID_HEIGHT, challenge);
       
-      set({
+      console.log('Starting game:', { 
+        topic: selectedTopic, 
+        level: gameLevel,
+        challenge: challenge?.description,
+        gridSize: grid?.length 
+      });
+      
+      set((state) => ({
         gamePhase: "playing",
         currentChallenge: challenge,
         grid,
         player: { x: 4, y: 3, moveX: 0, moveY: 0, isMoving: false },
         enemies: [],
-        level: startingLevel,
-        score: 0,
-        lives: 3,
-        timeRemaining: 60 + (startingLevel * 10) // More time for higher levels
-      });
+        level: gameLevel,
+        // Preserve score and lives when continuing to next level
+        score: state.score > 0 ? state.score : 0,
+        lives: state.lives > 0 ? state.lives : 3,
+        timeRemaining: 60 + (gameLevel * 10) // More time for higher levels
+      }));
     },
     
     restartGame: () => {
@@ -233,21 +242,25 @@ export const useGameState = create<GameState>()(
     },
     
     processPlayerMove: (newX: number, newY: number) => {
-      const { grid, player, currentChallenge } = get();
+      const { grid } = get();
       
       // Check bounds
       if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) {
         return;
       }
       
-      const cell = grid[newY][newX];
+      // Just move the player - no auto-munching
+      const { playMove } = useAudio.getState();
+      playMove();
+      get().updatePlayer({ x: newX, y: newY });
+    },
+    
+    munchCurrentCell: () => {
+      const { grid, player, currentChallenge } = get();
+      const cell = grid[player.y][player.x];
       
-      // Check if cell can be moved to
+      // Can't munch empty or already munched cells
       if (cell.isEmpty || cell.isMunched) {
-        // Play move sound for regular movement
-        const { playMove } = useAudio.getState();
-        playMove();
-        get().updatePlayer({ x: newX, y: newY });
         return;
       }
       
@@ -258,21 +271,28 @@ export const useGameState = create<GameState>()(
         playMunch();
         
         const newGrid = [...grid];
-        newGrid[newY][newX] = { ...cell, isMunched: true };
+        newGrid[player.y][player.x] = { ...cell, isMunched: true };
         
         set((state) => ({
           grid: newGrid,
-          player: { ...state.player, x: newX, y: newY },
           score: state.score + (10 * state.level)
         }));
         
         // Check if level complete (all correct answers munched)
         const remainingCorrect = newGrid.flat().some(c => c.isCorrect && !c.isMunched);
+        const totalCorrect = newGrid.flat().filter(c => c.isCorrect).length;
+        const munchedCorrect = newGrid.flat().filter(c => c.isCorrect && c.isMunched).length;
+        
+        console.log(`Munched correct answer! Progress: ${munchedCorrect}/${totalCorrect}`);
+        
         if (!remainingCorrect) {
+          console.log('All correct answers found! Level complete!');
           get().nextLevel();
         }
       } else {
         // Wrong answer - lose a life
+        const { playHit } = useAudio.getState();
+        playHit();
         set((state) => ({
           lives: state.lives - 1
         }));
@@ -307,13 +327,24 @@ export const useGameState = create<GameState>()(
     },
     
     nextLevel: () => {
+      const { playSuccess } = useAudio.getState();
+      playSuccess();
+      
+      console.log('Level complete! Moving to next level...');
+      
+      // Show a brief pause before starting next level
       set((state) => ({
         level: state.level + 1,
         lives: Math.min(state.lives + 1, 5), // Bonus life, max 5
-        score: state.score + 100 * state.level // Level completion bonus
+        score: state.score + 100 * state.level, // Level completion bonus
+        gamePhase: "paused" as GamePhase // Brief pause to show level complete
       }));
       
-      get().startGame();
+      // Start next level after a short delay
+      setTimeout(() => {
+        get().startGame();
+        get().spawnEnemies();
+      }, 1500);
     },
     
     addScore: (points: number) => {

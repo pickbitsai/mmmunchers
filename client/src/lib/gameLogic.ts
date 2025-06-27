@@ -25,11 +25,14 @@ interface GameLogicParams {
   updateEnemies: (enemies: Enemy[]) => void;
   updateGrid: (grid: GridCell[][]) => void;
   processPlayerMove: (newX: number, newY: number) => void;
+  munchCurrentCell: () => void;
   gameOver: () => void;
 }
 
 let lastMoveTime = 0;
+let lastMunchTime = 0;
 const MOVE_COOLDOWN = 200; // milliseconds between moves
+const MUNCH_COOLDOWN = 300; // milliseconds between munches
 
 export function updateGameLogic({
   delta,
@@ -41,6 +44,7 @@ export function updateGameLogic({
   updateEnemies,
   updateGrid,
   processPlayerMove,
+  munchCurrentCell,
   gameOver
 }: GameLogicParams) {
   const currentTime = Date.now();
@@ -69,8 +73,13 @@ export function updateGameLogic({
     if (moved && (newX !== player.x || newY !== player.y)) {
       processPlayerMove(newX, newY);
       lastMoveTime = currentTime;
-      console.log(`Player moved to: ${newX}, ${newY}`);
     }
+  }
+  
+  // Handle munch key (spacebar)
+  if (keyState['Space'] && currentTime - lastMunchTime > MUNCH_COOLDOWN) {
+    munchCurrentCell();
+    lastMunchTime = currentTime;
   }
   
   // Update enemy AI

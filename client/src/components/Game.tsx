@@ -1,25 +1,7 @@
-import { useEffect } from "react";
-import { useGameState } from "../lib/stores/useGameState";
-import TopicSelection from "./TopicSelection";
-import GameBoard2D from "./GameBoard2D";
-import GameUI from "./GameUI";
+import GameBoard from "./GameBoard";
 
 export default function Game() {
-  const { gamePhase, initializeGame } = useGameState();
-
-  useEffect(() => {
-    initializeGame();
-  }, [initializeGame]);
-
-  return (
-    <>
-      {gamePhase === 'topic_selection' && <TopicSelection />}
-      {(gamePhase === 'playing' || gamePhase === 'paused' || gamePhase === 'game_over') && (
-        <>
-          <GameBoard2D />
-          <GameUI />
-        </>
-      )}
-    </>
-  );
+  // Only render the 3D game board inside the Canvas
+  // Initialization is handled by the parent GameContainer
+  return <GameBoard />;
 }

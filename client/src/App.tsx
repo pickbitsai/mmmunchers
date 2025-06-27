@@ -1,8 +1,12 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Game from "./components/Game";
 import SoundManager from "./components/SoundManager";
+import TopicSelection from "./components/TopicSelection";
+import GameUI from "./components/GameUI";
+import { useGameState } from "./lib/stores/useGameState";
 import "@fontsource/inter";
 
 const queryClient = new QueryClient({
@@ -15,14 +19,49 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+function GameContainer() {
+  const { gamePhase, initializeGame } = useGameState();
+
+  // Initialize game once on mount
+  React.useEffect(() => {
+    console.log('GameContainer mounted, initializing game');
+    initializeGame();
+  }, [initializeGame]);
+
+  console.log('Current game phase:', gamePhase);
 
   return (
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
+      {/* UI Layer - Always on top */}
+      {gamePhase === 'topic_selection' && <TopicSelection />}
+      
+      {/* 3D Canvas Layer - Only when playing */}
+      {(gamePhase === 'playing' || gamePhase === 'paused' || gamePhase === 'game_over') && (
+        <>
+          <Canvas
+            shadows
+            camera={{ position: [0, 10, 10], fov: 60 }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+          >
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+            <Suspense fallback={null}>
+              <Game />
+            </Suspense>
+          </Canvas>
+          <GameUI />
+        </>
+      )}
+      
+      <SoundManager />
+    </div>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
-      <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
-        <Game />
-        <SoundManager />
-      </div>
+      <GameContainer />
     </QueryClientProvider>
   );
 }
