@@ -7,7 +7,13 @@
       "Bash(ls:*)",
       "Bash(npm run dev:*)",
       "Bash(npm config:*)",
+<<<<<<< HEAD
       "Bash(npm install:*)"
+=======
+      "Bash(npm install:*)",
+      "Bash(curl:*)",
+      "Bash(ss:*)"
+>>>>>>> 8dfa9d15082776f0965b94f8640826bd7e21a1e5
     ],
     "deny": []
   }
