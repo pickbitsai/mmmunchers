@@ -13,32 +13,76 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   const lastMoveTimeRef = useRef<number>(0);
   const isProcessingRef = useRef<boolean>(false);
 
-  // Custom touch handler for mobile controls
+  // Direct coordinate-based touch detection
   React.useEffect(() => {
     const handleTouch = (e: TouchEvent) => {
       if (e.type !== 'touchstart') return;
       
       const touch = e.touches[0];
-      const element = document.elementFromPoint(touch.clientX, touch.clientY) as Element;
+      const x = touch.clientX;
+      const y = touch.clientY;
       
-      if (!element) return;
+      console.log('Touch at coordinates:', x, y);
       
-      const controlElement = element.closest('[data-control]') as HTMLElement;
-      if (controlElement) {
+      // Get window dimensions for calculations
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      // Calculate control areas based on fixed positioning
+      const controlCenterX = windowWidth / 2;
+      const controlCenterY = windowHeight - 100; // bottom-20 = ~80px from bottom
+      
+      const munchX = windowWidth - 60; // right-4 = ~16px from right + half button width
+      const munchY = windowHeight - 100;
+      
+      // Check if touch is within control areas (allowing for button size)
+      const buttonSize = 56; // w-14 h-14 = 56px
+      
+      // Up button (center x, above center y)
+      if (Math.abs(x - controlCenterX) < buttonSize/2 && 
+          Math.abs(y - (controlCenterY - 64)) < buttonSize/2) {
+        console.log('UP button touched via coordinates');
+        handleButtonPress('up');
         e.preventDefault();
-        e.stopPropagation();
-        
-        const direction = controlElement.getAttribute('data-control');
-        console.log('Touch control detected:', direction);
-        
-        if (direction === 'munch') {
-          handleMunchPress();
-        } else if (direction && ['up', 'down', 'left', 'right'].includes(direction)) {
-          handleButtonPress(direction as 'up' | 'down' | 'left' | 'right');
-        }
-        
-        setTouchCount(prev => prev + 1);
+        return;
       }
+      
+      // Down button (center x, below center y)  
+      if (Math.abs(x - controlCenterX) < buttonSize/2 && 
+          Math.abs(y - (controlCenterY + 64)) < buttonSize/2) {
+        console.log('DOWN button touched via coordinates');
+        handleButtonPress('down');
+        e.preventDefault();
+        return;
+      }
+      
+      // Left button (left of center x, center y)
+      if (Math.abs(x - (controlCenterX - 64)) < buttonSize/2 && 
+          Math.abs(y - controlCenterY) < buttonSize/2) {
+        console.log('LEFT button touched via coordinates');
+        handleButtonPress('left');
+        e.preventDefault();
+        return;
+      }
+      
+      // Right button (right of center x, center y)
+      if (Math.abs(x - (controlCenterX + 64)) < buttonSize/2 && 
+          Math.abs(y - controlCenterY) < buttonSize/2) {
+        console.log('RIGHT button touched via coordinates');
+        handleButtonPress('right');
+        e.preventDefault();
+        return;
+      }
+      
+      // Munch button (right side)
+      if (Math.abs(x - munchX) < 40 && Math.abs(y - munchY) < 40) {
+        console.log('MUNCH button touched via coordinates');
+        handleMunchPress();
+        e.preventDefault();
+        return;
+      }
+      
+      setTouchCount(prev => prev + 1);
     };
 
     document.addEventListener('touchstart', handleTouch, { passive: false });
