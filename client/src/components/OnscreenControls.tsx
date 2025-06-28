@@ -13,6 +13,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   const isProcessingRef = useRef<boolean>(false);
 
   const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right', event?: React.MouseEvent | React.TouchEvent) => {
+    console.log('Button press detected:', direction, event?.type);
+    
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -27,12 +29,14 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
     
     // Prevent rapid-fire movements (debounce to 200ms)
     if (isProcessingRef.current || now - lastMoveTimeRef.current < 200) {
+      console.log('Button press blocked by debounce');
       return;
     }
     
     isProcessingRef.current = true;
     lastMoveTimeRef.current = now;
     
+    console.log('Executing move:', direction);
     setPressedButton(direction);
     onMove(direction);
     
@@ -44,6 +48,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   };
 
   const handleMunchPress = (event?: React.MouseEvent | React.TouchEvent) => {
+    console.log('Munch button press detected:', event?.type);
+    
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -54,6 +60,7 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       navigator.vibrate(100);
     }
     
+    console.log('Executing munch');
     setPressedButton('munch');
     onMunch();
     setTimeout(() => setPressedButton(null), 150);
@@ -71,72 +78,97 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50" style={{ touchAction: 'none' }}>
         <div className="relative">
           {/* Up */}
-          <Button
-            className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2`}
-            onTouchStart={(e) => handleButtonPress('up', e)}
-            onTouchEnd={(e) => e.preventDefault()}
-            onClick={(e) => handleButtonPress('up', e)}
+          <button
+            className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md`}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              handleButtonPress('up', e);
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleButtonPress('up', e);
+            }}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'none' }}
           >
             <ChevronUp className="w-6 h-6" />
-          </Button>
+          </button>
 
           {/* Left */}
-          <Button
-            className={`${buttonClass('left')} absolute top-0 -left-16`}
-            onTouchStart={(e) => handleButtonPress('left', e)}
-            onTouchEnd={(e) => e.preventDefault()}
-            onClick={(e) => handleButtonPress('left', e)}
+          <button
+            className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md`}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              handleButtonPress('left', e);
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleButtonPress('left', e);
+            }}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'none' }}
           >
             <ChevronLeft className="w-6 h-6" />
-          </Button>
+          </button>
 
           {/* Center (visual reference) */}
           <div className="w-14 h-14 bg-black/20 border-2 border-white/20 rounded-md" />
 
           {/* Right */}
-          <Button
-            className={`${buttonClass('right')} absolute top-0 -right-16`}
-            onTouchStart={(e) => handleButtonPress('right', e)}
-            onTouchEnd={(e) => e.preventDefault()}
-            onClick={(e) => handleButtonPress('right', e)}
+          <button
+            className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md`}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              handleButtonPress('right', e);
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleButtonPress('right', e);
+            }}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'none' }}
           >
             <ChevronRight className="w-6 h-6" />
-          </Button>
+          </button>
 
           {/* Down */}
-          <Button
-            className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2`}
-            onTouchStart={(e) => handleButtonPress('down', e)}
-            onTouchEnd={(e) => e.preventDefault()}
-            onClick={(e) => handleButtonPress('down', e)}
+          <button
+            className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md`}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              handleButtonPress('down', e);
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleButtonPress('down', e);
+            }}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'none' }}
           >
             <ChevronDown className="w-6 h-6" />
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Munch Button - right side of screen */}
       <div className="fixed right-4 bottom-20 z-50" style={{ touchAction: 'none' }}>
-        <Button
+        <button
           className={`w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
                      text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg select-none
                      ${pressedButton === 'munch' ? 'bg-yellow-600 scale-95' : ''}`}
-          onTouchStart={(e) => handleMunchPress(e)}
-          onTouchEnd={(e) => e.preventDefault()}
-          onClick={(e) => handleMunchPress(e)}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            handleMunchPress(e);
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            handleMunchPress(e);
+          }}
           onContextMenu={(e) => e.preventDefault()}
           style={{ touchAction: 'none' }}
         >
           MUNCH
-        </Button>
+        </button>
       </div>
     </>
   );
