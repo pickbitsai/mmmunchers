@@ -172,12 +172,7 @@ export const useGameState = create<GameState>()(
       const challenge = topicProvider.generateChallenge(gameLevel);
       const grid = topicProvider.generateGrid(GRID_WIDTH, GRID_HEIGHT, challenge);
       
-      console.log('Starting game:', { 
-        topic: selectedTopic, 
-        level: gameLevel,
-        challenge: challenge?.description,
-        gridSize: grid?.length 
-      });
+
       
       set((state) => ({
         gamePhase: "playing",
@@ -228,12 +223,11 @@ export const useGameState = create<GameState>()(
     },
     
     updatePlayer: (playerUpdate: Partial<Player>) => {
-      console.log('updatePlayer called with:', playerUpdate);
-      console.log('Current player before update:', get().player);
+
       set((state) => ({
         player: { ...state.player, ...playerUpdate }
       }));
-      console.log('Player after update:', get().player);
+
     },
     
     updateEnemies: (enemies: Enemy[]) => {
@@ -247,22 +241,21 @@ export const useGameState = create<GameState>()(
     processPlayerMove: (newX: number, newY: number) => {
       const { grid } = get();
       
-      console.log('processPlayerMove called:', newX, newY);
-      console.log('Grid bounds:', grid[0]?.length || 0, grid.length);
+
       
       // Check bounds using actual grid dimensions
       const gridWidth = grid[0]?.length || 0;
       const gridHeight = grid.length || 0;
       
       if (newX < 0 || newX >= gridWidth || newY < 0 || newY >= gridHeight) {
-        console.log('Move blocked - out of bounds');
+
         return;
       }
       
       // Just move the player - no auto-munching
       const { playMove } = useAudio.getState();
       playMove();
-      console.log('Moving player to:', newX, newY);
+
       get().updatePlayer({ x: newX, y: newY });
     },
     
@@ -294,10 +287,10 @@ export const useGameState = create<GameState>()(
         const totalCorrect = newGrid.flat().filter(c => c.isCorrect).length;
         const munchedCorrect = newGrid.flat().filter(c => c.isCorrect && c.isMunched).length;
         
-        console.log(`Munched correct answer! Progress: ${munchedCorrect}/${totalCorrect}`);
+
         
         if (!remainingCorrect) {
-          console.log('All correct answers found! Level complete!');
+
           get().nextLevel();
         }
       } else {
@@ -341,7 +334,7 @@ export const useGameState = create<GameState>()(
       const { playSuccess } = useAudio.getState();
       playSuccess();
       
-      console.log('Level complete! Moving to next level...');
+
       
       // Show a brief pause before starting next level
       set((state) => ({

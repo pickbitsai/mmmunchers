@@ -9,11 +9,10 @@ interface OnscreenControlsProps {
 
 export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsProps) {
   const [pressedButton, setPressedButton] = useState<string | null>(null);
-  const [touchCount, setTouchCount] = useState(0);
   const lastMoveTimeRef = useRef<number>(0);
   const isProcessingRef = useRef<boolean>(false);
 
-  // Direct coordinate-based touch detection
+  // Touch detection for mobile controls
   React.useEffect(() => {
     const handleTouch = (e: TouchEvent) => {
       if (e.type !== 'touchstart') return;
@@ -22,67 +21,50 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       const x = touch.clientX;
       const y = touch.clientY;
       
-      console.log('Touch at coordinates:', x, y);
-      
-      // Get window dimensions for calculations
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       
       // Calculate control areas based on fixed positioning
       const controlCenterX = windowWidth / 2;
-      const controlCenterY = windowHeight - 100; // bottom-20 = ~80px from bottom
-      
-      const munchX = windowWidth - 60; // right-4 = ~16px from right + half button width
+      const controlCenterY = windowHeight - 100;
+      const munchX = windowWidth - 60;
       const munchY = windowHeight - 100;
+      const buttonSize = 56;
       
-      // Check if touch is within control areas (allowing for button size)
-      const buttonSize = 56; // w-14 h-14 = 56px
-      
-      // Up button (center x, above center y)
+      // Check touch areas for each button
       if (Math.abs(x - controlCenterX) < buttonSize/2 && 
           Math.abs(y - (controlCenterY - 64)) < buttonSize/2) {
-        console.log('UP button touched via coordinates');
         handleButtonPress('up');
         e.preventDefault();
         return;
       }
       
-      // Down button (center x, below center y)  
       if (Math.abs(x - controlCenterX) < buttonSize/2 && 
           Math.abs(y - (controlCenterY + 64)) < buttonSize/2) {
-        console.log('DOWN button touched via coordinates');
         handleButtonPress('down');
         e.preventDefault();
         return;
       }
       
-      // Left button (left of center x, center y)
       if (Math.abs(x - (controlCenterX - 64)) < buttonSize/2 && 
           Math.abs(y - controlCenterY) < buttonSize/2) {
-        console.log('LEFT button touched via coordinates');
         handleButtonPress('left');
         e.preventDefault();
         return;
       }
       
-      // Right button (right of center x, center y)
       if (Math.abs(x - (controlCenterX + 64)) < buttonSize/2 && 
           Math.abs(y - controlCenterY) < buttonSize/2) {
-        console.log('RIGHT button touched via coordinates');
         handleButtonPress('right');
         e.preventDefault();
         return;
       }
       
-      // Munch button (right side)
       if (Math.abs(x - munchX) < 40 && Math.abs(y - munchY) < 40) {
-        console.log('MUNCH button touched via coordinates');
         handleMunchPress();
         e.preventDefault();
         return;
       }
-      
-      setTouchCount(prev => prev + 1);
     };
 
     document.addEventListener('touchstart', handleTouch, { passive: false });
@@ -93,8 +75,6 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   }, []);
 
   const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right') => {
-    console.log('OnscreenControls - Button press detected:', direction);
-    
     // Add haptic feedback for mobile devices
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
@@ -104,14 +84,12 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
     
     // Prevent rapid-fire movements (debounce to 200ms)
     if (isProcessingRef.current || now - lastMoveTimeRef.current < 200) {
-      console.log('OnscreenControls - Button press blocked by debounce');
       return;
     }
     
     isProcessingRef.current = true;
     lastMoveTimeRef.current = now;
     
-    console.log('OnscreenControls - Executing move:', direction);
     setPressedButton(direction);
     onMove(direction);
     
@@ -123,14 +101,11 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   };
 
   const handleMunchPress = () => {
-    console.log('Munch button press detected');
-    
     // Add haptic feedback for mobile devices
     if ('vibrate' in navigator) {
       navigator.vibrate(100);
     }
     
-    console.log('Executing munch');
     setPressedButton('munch');
     onMunch();
     setTimeout(() => setPressedButton(null), 150);
@@ -144,10 +119,6 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
 
   return (
     <>
-      {/* Debug indicator */}
-      <div className="fixed top-4 left-4 z-50 bg-red-500 text-white p-2 rounded text-xs">
-        Touch count: {touchCount}
-      </div>
       
       {/* D-pad directional controls - centered below grid */}
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50" style={{ touchAction: 'none' }}>

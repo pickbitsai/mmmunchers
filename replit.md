@@ -138,6 +138,8 @@ Changelog:
 - June 24, 2025. Enhanced audio system with sound effects for player munching, movement, and enemy movement actions
 - June 24, 2025. Improved munch sound effect with lower playback rate and different base sound for more satisfying crunch feedback
 - June 26, 2025. Prepared project for public release: removed development artifacts, created comprehensive documentation, cleaned up debugging code
+- June 28, 2025. Fixed mobile touch controls with coordinate-based detection system for reliable character movement on mobile devices
+- June 28, 2025. Cleaned up all debugging code and console logging for production-ready deployment
 ```
 
 ## User Preferences

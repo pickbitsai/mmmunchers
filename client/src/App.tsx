@@ -24,11 +24,11 @@ function GameContainer() {
 
   // Initialize game once on mount
   React.useEffect(() => {
-    console.log('GameContainer mounted, initializing game');
+
     initializeGame();
   }, [initializeGame]);
 
-  console.log('Current game phase:', gamePhase);
+
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>

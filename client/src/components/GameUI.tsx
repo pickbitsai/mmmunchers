@@ -30,7 +30,6 @@ export default function GameUI() {
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
-      console.log('Mobile detection:', mobile, 'Width:', window.innerWidth);
       setIsMobile(mobile);
     };
     checkMobile();
@@ -193,12 +192,12 @@ export default function GameUI() {
 
       {/* Mobile controls */}
       {(() => {
-        console.log('Mobile controls check - isMobile:', isMobile, 'gamePhase:', gamePhase);
+
         if (isMobile && gamePhase === 'playing') {
           return (
             <OnscreenControls 
               onMove={(direction) => {
-                console.log('GameUI - Mobile control onMove called:', direction);
+
                 // Play sound immediately on touch/click
                 playMove();
                 
@@ -206,7 +205,7 @@ export default function GameUI() {
                 
                 // Prevent rapid-fire movements (debounce to 200ms)
                 if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
-                  console.log('GameUI - Movement blocked by debounce');
+
                   return;
                 }
                 
@@ -216,9 +215,7 @@ export default function GameUI() {
                 let newX = player.x;
                 let newY = player.y;
                 
-                console.log('GameUI - Current player position:', player.x, player.y);
-                console.log('GameUI - Grid dimensions:', grid[0]?.length || 0, grid.length);
-                console.log('GameUI - Moving:', direction);
+
                 
                 switch(direction) {
                   case 'up': 
@@ -235,7 +232,7 @@ export default function GameUI() {
                     break;
                 }
                 
-                console.log('GameUI - New position:', newX, newY);
+
                 
                 // Use updatePlayer directly instead of processPlayerMove
                 if (newX !== player.x || newY !== player.y) {

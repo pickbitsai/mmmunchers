@@ -42,15 +42,12 @@ export default function GameBoard() {
     if (isMobile) {
       // Mobile: Closer, more angled view
       camera.position.set(0, 12, 8);
-      camera.fov = 75;
     } else if (isTablet) {
       // Tablet: Medium distance
       camera.position.set(0, 14, 10);
-      camera.fov = 65;
     } else {
       // Desktop: Original view
       camera.position.set(0, 10, 10);
-      camera.fov = 60;
     }
     camera.updateProjectionMatrix();
   }, [size, camera]);
@@ -94,7 +91,7 @@ export default function GameBoard() {
   });
 
   if (!grid.length || !currentChallenge) {
-    console.log('GameBoard: Missing data', { gridLength: grid.length, hasChallenge: !!currentChallenge });
+
     return null;
   }
 
