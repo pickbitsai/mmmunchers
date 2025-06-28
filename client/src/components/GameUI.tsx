@@ -28,7 +28,11 @@ export default function GameUI() {
   const isMovingRef = useRef<boolean>(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      console.log('Mobile detection:', mobile, 'Width:', window.innerWidth);
+      setIsMobile(mobile);
+    };
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
