@@ -9,8 +9,8 @@ export interface GridCell {
 
 export abstract class TopicProvider {
   abstract getName(): string;
-  abstract generateChallenge(level: number): Challenge;
-  abstract generateGrid(width: number, height: number, challenge: Challenge): GridCell[][];
+  abstract generateChallenge(level: number): Challenge | Promise<Challenge>;
+  abstract generateGrid(width: number, height: number, challenge: Challenge): GridCell[][] | Promise<GridCell[][]>;
   
   // Optional category methods
   setCategory?(category: string): void;

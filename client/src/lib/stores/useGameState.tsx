@@ -5,9 +5,10 @@ import { MathTopic } from "../topics/MathTopic";
 import { WordTopic } from "../topics/WordTopic";
 import { MarvelTopic } from "../topics/MarvelTopic";
 import { MovieTopic } from "../topics/MovieTopic";
+import { CustomTopic } from "../topics/CustomTopic";
 import { useAudio } from "./useAudio";
 
-export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over";
+export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over" | "loading";
 export type RenderMode = "2d" | "3d";
 
 export interface GridCell {
@@ -62,7 +63,7 @@ interface GameState {
   // Actions
   initializeGame: () => void;
   selectTopic: (topicId: string | null) => void;
-  startGame: () => void;
+  startGame: () => Promise<void>;
   restartGame: () => void;
   togglePause: () => void;
   gameOver: () => void;
@@ -146,6 +147,10 @@ export const useGameState = create<GameState>()(
         case 'movies':
           provider = new MovieTopic();
           break;
+        case 'custom':
+          const customTopicName = localStorage.getItem('customTopic') || 'Custom Topic';
+          provider = new CustomTopic(customTopicName);
+          break;
         default:
           console.error(`Unknown topic: ${topicId}`);
           return;
@@ -165,31 +170,44 @@ export const useGameState = create<GameState>()(
       get().startGame();
     },
     
-    startGame: () => {
+    startGame: async () => {
       const { topicProvider, selectedTopic, level: currentLevel } = get();
       if (!topicProvider) return;
+      
+      // Show loading state for custom topics
+      if (selectedTopic === 'custom') {
+        set({ gamePhase: "loading" });
+      }
       
       // Use current level if continuing, otherwise randomize starting level (1-3)
       const gameLevel = currentLevel > 0 ? currentLevel : Math.floor(Math.random() * 3) + 1;
       
-      // Generate challenge and grid for the current level
-      const challenge = topicProvider.generateChallenge(gameLevel);
-      const grid = topicProvider.generateGrid(GRID_WIDTH, GRID_HEIGHT, challenge);
-      
-
-      
-      set((state) => ({
-        gamePhase: "playing",
-        currentChallenge: challenge,
-        grid,
-        player: { x: 4, y: 3, moveX: 0, moveY: 0, isMoving: false },
-        enemies: [],
-        level: gameLevel,
-        // Preserve score and lives when continuing to next level
-        score: state.score > 0 ? state.score : 0,
-        lives: state.lives > 0 ? state.lives : 3,
-        timeRemaining: 60 + (gameLevel * 10) // More time for higher levels
-      }));
+      try {
+        // Generate challenge and grid for the current level
+        const challenge = await Promise.resolve(topicProvider.generateChallenge(gameLevel));
+        const grid = await Promise.resolve(topicProvider.generateGrid(GRID_WIDTH, GRID_HEIGHT, challenge));
+        
+        set((state) => ({
+          gamePhase: "playing",
+          currentChallenge: challenge,
+          grid,
+          player: { x: 4, y: 3, moveX: 0, moveY: 0, isMoving: false },
+          enemies: [],
+          level: gameLevel,
+          // Preserve score and lives when continuing to next level
+          score: state.score > 0 ? state.score : 0,
+          lives: state.lives > 0 ? state.lives : 3,
+          timeRemaining: 60 + (gameLevel * 10) // More time for higher levels
+        }));
+      } catch (error) {
+        console.error('Failed to generate game content:', error);
+        // Return to topic selection on error
+        set({
+          gamePhase: "topic_selection",
+          selectedTopic: null,
+          topicProvider: null
+        });
+      }
     },
     
     restartGame: () => {

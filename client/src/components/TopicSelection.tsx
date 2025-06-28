@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { MobileSelect } from "./ui/mobile-select";
 import { useGameState } from "../lib/stores/useGameState";
-import { Calculator, BookOpen, Zap, HelpCircle, Gamepad2, Box } from "lucide-react";
+import { Calculator, BookOpen, Zap, HelpCircle, Gamepad2, Box, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function TopicSelection() {
@@ -13,6 +13,8 @@ export default function TopicSelection() {
     marvel: 'random',
     movies: 'random'
   });
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customTopic, setCustomTopic] = useState('');
 
   useEffect(() => {
     // Enable scrolling when topic selection is active
@@ -54,10 +56,24 @@ export default function TopicSelection() {
       icon: HelpCircle,
       color: 'bg-purple-500 hover:bg-purple-600',
       available: true
+    },
+    {
+      id: 'custom',
+      name: 'Create Custom Board',
+      description: 'Generate a board about any topic you choose!',
+      icon: Sparkles,
+      color: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
+      available: true,
+      isCustom: true
     }
   ];
 
   const handleTopicSelect = (topicId: string) => {
+    if (topicId === 'custom') {
+      setShowCustomModal(true);
+      return;
+    }
+    
     // Store the selected category for this topic
     const selectedCategory = selectedCategories[topicId] || 'random';
     
@@ -65,6 +81,15 @@ export default function TopicSelection() {
     localStorage.setItem(`category_${topicId}`, selectedCategory);
     
     selectTopic(topicId);
+  };
+  
+  const handleCustomTopicCreate = () => {
+    if (customTopic.trim()) {
+      // Store the custom topic
+      localStorage.setItem('customTopic', customTopic);
+      selectTopic('custom');
+      setShowCustomModal(false);
+    }
   };
 
   const getTopicCategories = (topicId: string) => {
@@ -189,24 +214,26 @@ export default function TopicSelection() {
                         
                         {topic.available ? (
                           <div className="space-y-3">
-                            <div className="relative">
-                              <MobileSelect
-                                value={selectedCategories[topic.id] || 'random'}
-                                onValueChange={(value) => {
-                                  setSelectedCategories(prev => ({...prev, [topic.id]: value}));
-                                }}
-                                options={getTopicCategories(topic.id)}
-                                placeholder="Random Mix"
-                                triggerClassName="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
-                                contentClassName="bg-gray-800 text-white border-gray-600"
-                              />
-                            </div>
+                            {!topic.isCustom && (
+                              <div className="relative">
+                                <MobileSelect
+                                  value={selectedCategories[topic.id] || 'random'}
+                                  onValueChange={(value) => {
+                                    setSelectedCategories(prev => ({...prev, [topic.id]: value}));
+                                  }}
+                                  options={getTopicCategories(topic.id)}
+                                  placeholder="Random Mix"
+                                  triggerClassName="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
+                                  contentClassName="bg-gray-800 text-white border-gray-600"
+                                />
+                              </div>
+                            )}
                             
                             <Button 
                               className={`w-full ${topic.color} text-white border-none`}
                               onClick={() => handleTopicSelect(topic.id)}
                             >
-                              Start Playing
+                              {topic.isCustom ? 'Create Board' : 'Start Playing'}
                             </Button>
                           </div>
                         ) : (
@@ -226,6 +253,67 @@ export default function TopicSelection() {
           </Card>
         </div>
       </div>
+      
+      {/* Custom Topic Modal */}
+      {showCustomModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <Card className="bg-gray-900 border-gray-700 w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-white text-center">Create Custom Board</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-300 mb-2 block">
+                    What topic would you like to learn about?
+                  </label>
+                  <input
+                    type="text"
+                    value={customTopic}
+                    onChange={(e) => setCustomTopic(e.target.value)}
+                    placeholder="e.g., Dinosaurs, Space, Ancient Egypt..."
+                    className="w-full px-3 py-2 bg-black/40 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCustomTopicCreate();
+                      }
+                    }}
+                  />
+                </div>
+                
+                <div className="text-xs text-gray-400">
+                  <p className="mb-2">✨ Powered by OpenAI GPT-3.5 for intelligent content!</p>
+                  <p>📚 Generates facts, trivia, and related items</p>
+                  <p>🎮 Difficulty adapts to your level</p>
+                  <p>♾️ Infinite levels with fresh AI-generated content</p>
+                  <p className="mt-2 text-yellow-400">💡 Try topics like: Ancient Egypt, Space Exploration, Jazz Music, Quantum Physics</p>
+                </div>
+                
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
+                    onClick={() => {
+                      setShowCustomModal(false);
+                      setCustomTopic('');
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-none"
+                    onClick={handleCustomTopicCreate}
+                    disabled={!customTopic.trim()}
+                  >
+                    Create Board
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
