@@ -12,8 +12,13 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   const lastMoveTimeRef = useRef<number>(0);
   const isProcessingRef = useRef<boolean>(false);
 
-  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right') => {
-    console.log('Button press detected:', direction);
+  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right', event?: React.TouchEvent | React.MouseEvent) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    console.log('OnscreenControls - Button press detected:', direction);
     
     // Add haptic feedback for mobile devices
     if ('vibrate' in navigator) {
@@ -24,14 +29,14 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
     
     // Prevent rapid-fire movements (debounce to 200ms)
     if (isProcessingRef.current || now - lastMoveTimeRef.current < 200) {
-      console.log('Button press blocked by debounce');
+      console.log('OnscreenControls - Button press blocked by debounce');
       return;
     }
     
     isProcessingRef.current = true;
     lastMoveTimeRef.current = now;
     
-    console.log('Executing move:', direction);
+    console.log('OnscreenControls - Executing move:', direction);
     setPressedButton(direction);
     onMove(direction);
     
@@ -70,8 +75,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Up */}
           <button
             className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md`}
-            onTouchStart={() => handleButtonPress('up')}
-            onClick={() => handleButtonPress('up')}
+            onTouchStart={(e) => handleButtonPress('up', e)}
+            onClick={(e) => handleButtonPress('up', e)}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation' }}
           >
@@ -81,8 +86,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Left */}
           <button
             className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md`}
-            onTouchStart={() => handleButtonPress('left')}
-            onClick={() => handleButtonPress('left')}
+            onTouchStart={(e) => handleButtonPress('left', e)}
+            onClick={(e) => handleButtonPress('left', e)}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation' }}
           >
@@ -95,8 +100,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Right */}
           <button
             className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md`}
-            onTouchStart={() => handleButtonPress('right')}
-            onClick={() => handleButtonPress('right')}
+            onTouchStart={(e) => handleButtonPress('right', e)}
+            onClick={(e) => handleButtonPress('right', e)}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation' }}
           >
@@ -106,8 +111,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Down */}
           <button
             className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md`}
-            onTouchStart={() => handleButtonPress('down')}
-            onClick={() => handleButtonPress('down')}
+            onTouchStart={(e) => handleButtonPress('down', e)}
+            onClick={(e) => handleButtonPress('down', e)}
             onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation' }}
           >

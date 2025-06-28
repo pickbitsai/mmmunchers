@@ -228,9 +228,12 @@ export const useGameState = create<GameState>()(
     },
     
     updatePlayer: (playerUpdate: Partial<Player>) => {
+      console.log('updatePlayer called with:', playerUpdate);
+      console.log('Current player before update:', get().player);
       set((state) => ({
         player: { ...state.player, ...playerUpdate }
       }));
+      console.log('Player after update:', get().player);
     },
     
     updateEnemies: (enemies: Enemy[]) => {
