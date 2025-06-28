@@ -4,7 +4,7 @@ import { Card, CardContent } from "./ui/card";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useAudio } from "../lib/stores/useAudio";
 import OnscreenControls from "./OnscreenControls";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function GameUI() {
   const {
@@ -21,9 +21,11 @@ export default function GameUI() {
     munchCurrentCell
   } = useGameState();
 
-  const { isMuted, toggleMute } = useAudio();
+  const { isMuted, toggleMute, playMove } = useAudio();
   const [isMobile, setIsMobile] = useState(false);
   const [gameOverSelectedIndex, setGameOverSelectedIndex] = useState(0);
+  const lastMoveTimeRef = useRef<number>(0);
+  const isMovingRef = useRef<boolean>(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -189,15 +191,26 @@ export default function GameUI() {
       {isMobile && gamePhase === 'playing' && (
         <OnscreenControls 
           onMove={(direction) => {
+            // Play sound immediately on touch/click
+            playMove();
+            
+            const now = Date.now();
+            
+            // Prevent rapid-fire movements (debounce to 200ms)
+            if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
+              console.log('OnscreenControls - Movement blocked by debounce');
+              return;
+            }
+            
             const state = useGameState.getState();
             const player = state.player;
             const grid = state.grid;
             let newX = player.x;
             let newY = player.y;
             
-            console.log('Current player position:', player.x, player.y);
-            console.log('Grid dimensions:', grid[0]?.length || 0, grid.length);
-            console.log('Moving:', direction);
+            console.log('OnscreenControls - Current player position:', player.x, player.y);
+            console.log('OnscreenControls - Grid dimensions:', grid[0]?.length || 0, grid.length);
+            console.log('OnscreenControls - Moving:', direction);
             
             switch(direction) {
               case 'up': 
@@ -214,8 +227,19 @@ export default function GameUI() {
                 break;
             }
             
-            console.log('New position:', newX, newY);
-            processPlayerMove(newX, newY);
+            console.log('OnscreenControls - New position:', newX, newY);
+            
+            // Use updatePlayer directly instead of processPlayerMove
+            if (newX !== player.x || newY !== player.y) {
+              isMovingRef.current = true;
+              lastMoveTimeRef.current = now;
+              state.updatePlayer({ x: newX, y: newY });
+              
+              // Reset movement flag after animation completes
+              setTimeout(() => {
+                isMovingRef.current = false;
+              }, 150);
+            }
           }}
           onMunch={munchCurrentCell}
         />
