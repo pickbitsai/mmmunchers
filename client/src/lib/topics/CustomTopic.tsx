@@ -8,6 +8,7 @@ export class CustomTopic extends TopicProvider {
   private currentSubtopic: string = 'all';
   private contentCache: Map<string, string[]> = new Map();
   private currentLevel: number = 1;
+  private currentChallengeData: any = null;
   
   constructor(userTopic: string) {
     super();
@@ -128,8 +129,8 @@ export class CustomTopic extends TopicProvider {
       level
     );
     
-    // Store correct answers for validation
-    this.generatedContent = challenge.correctAnswers;
+    // Store the challenge data for use in generateGrid
+    this.currentChallengeData = challenge;
     
     return {
       description: challenge.description,
@@ -140,12 +141,13 @@ export class CustomTopic extends TopicProvider {
   async generateGrid(width: number, height: number, challenge: Challenge): Promise<GridCell[][]> {
     const grid = this.createEmptyGrid(width, height);
     
-    // Get the challenge data
-    const challengeData = await aiService.generateChallenge(
-      this.userTopic,
-      this.generatedContent,
-      this.currentLevel
-    );
+    // Use the stored challenge data from generateChallenge
+    if (!this.currentChallengeData) {
+      console.error('No challenge data available for grid generation');
+      return grid;
+    }
+    
+    const challengeData = this.currentChallengeData;
     
     // Calculate total cells and how many should be filled
     const totalCells = width * height;

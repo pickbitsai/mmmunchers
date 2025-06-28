@@ -78,9 +78,17 @@ class AIService {
     items: string[],
     level: number
   ): Promise<AIGeneratedContent> {
-    // Generate dynamic challenges based on level
-    const difficulty = Math.min(level / 10, 1); // 0 to 1 scale
+    // If we don't have enough items, use what we have
+    if (items.length === 0) {
+      console.warn('No items available for challenge generation');
+      return {
+        description: `Find items about ${topic}`,
+        correctAnswers: [`${topic} item`],
+        incorrectAnswers: ['Wrong answer']
+      };
+    }
     
+    // Generate dynamic challenges based on level
     const challengeTemplates = [
       `Find all items related to ${topic}`,
       `Select everything about ${topic}`,
@@ -94,10 +102,10 @@ class AIService {
     // More specific challenges at higher levels
     if (level > 5) {
       challengeTemplates.push(
-        `Find items that start with the same letter as ${topic}`,
-        `Select items from the same category as ${topic}`,
-        `Identify items created in the same era as ${topic}`,
-        `Find items with similar properties to ${topic}`
+        `Find specific ${topic} items`,
+        `Select advanced ${topic} concepts`,
+        `Identify expert ${topic} knowledge`,
+        `Find complex ${topic} examples`
       );
     }
     
@@ -106,24 +114,40 @@ class AIService {
     ];
     
     // Determine number of correct answers based on level
-    const minCorrect = 3 + Math.floor(level / 3);
+    const minCorrect = Math.min(3 + Math.floor(level / 3), items.length);
     const maxCorrect = Math.min(minCorrect + 5, items.length);
-    const numCorrect = Math.floor(
-      minCorrect + Math.random() * (maxCorrect - minCorrect)
+    const numCorrect = Math.min(
+      Math.floor(minCorrect + Math.random() * (maxCorrect - minCorrect + 1)),
+      items.length
     );
     
-    // Select correct answers
+    // Select correct answers from the AI-generated items
     const shuffled = [...items].sort(() => Math.random() - 0.5);
     const correctAnswers = shuffled.slice(0, numCorrect);
     
-    // Generate distractors
+    // Generate distractors - use remaining items if available
+    const remainingItems = shuffled.slice(numCorrect);
     const numIncorrect = Math.max(10, 20 - numCorrect);
-    const incorrectAnswers = this.generateDistractors(
-      topic, 
-      numIncorrect, 
-      level,
-      correctAnswers
-    );
+    
+    let incorrectAnswers: string[] = [];
+    
+    // If we have AI-generated items left, modify them to be wrong
+    if (remainingItems.length > 0 && this.apiKey) {
+      incorrectAnswers = this.generateSmartDistractors(
+        topic,
+        remainingItems,
+        numIncorrect,
+        level
+      );
+    } else {
+      // Fall back to generic distractors
+      incorrectAnswers = this.generateDistractors(
+        topic, 
+        numIncorrect, 
+        level,
+        correctAnswers
+      );
+    }
     
     return {
       description,
@@ -211,48 +235,127 @@ Requirements:
     const categories: string[] = [];
     const facts: string[] = [];
     
-    // Generate categories
-    const categoryTypes = ['Types', 'Groups', 'Classes', 'Varieties', 'Kinds'];
-    for (let i = 0; i < 5; i++) {
-      categories.push(`${topic} ${categoryTypes[i]}`);
-    }
+    // Try to generate somewhat relevant mock content based on common topics
+    const topicLower = topic.toLowerCase();
     
-    // Generate items based on subtopic
-    const itemCount = 20 + Math.floor(level / 2);
-    for (let i = 0; i < itemCount; i++) {
-      switch (subtopic) {
-        case 'facts':
-          items.push(`${topic} fact #${i + 1}`);
-          items.push(`True about ${topic}: Detail ${i + 1}`);
-          break;
-        case 'trivia':
-          items.push(`${topic} trivia ${i + 1}`);
-          items.push(`Question ${i + 1} about ${topic}`);
-          break;
-        case 'related':
-          items.push(`Related to ${topic} #${i + 1}`);
-          items.push(`${topic} connection ${i + 1}`);
-          break;
-        default:
-          items.push(`${topic} item ${i + 1}`);
-          items.push(`${topic} example ${i + 1}`);
+    // Space-related mock content
+    if (topicLower.includes('space') || topicLower.includes('astro') || topicLower.includes('planet')) {
+      items.push(
+        'Mars', 'Venus', 'Jupiter', 'Saturn', 'Mercury', 'Neptune', 'Uranus', 'Earth',
+        'Moon', 'Sun', 'Asteroid', 'Comet', 'Galaxy', 'Star', 'Nebula', 'Black hole',
+        'Satellite', 'Orbit', 'Gravity', 'Rocket', 'Astronaut', 'Space station',
+        'Telescope', 'Constellation', 'Meteor', 'Eclipse', 'Cosmos', 'Universe'
+      );
+      categories.push('Planets', 'Stars', 'Galaxies', 'Space Objects', 'Space Tech');
+      facts.push(
+        'Mars is red', 'Saturn has rings', 'Sun is a star',
+        'Moon orbits Earth', 'Space is vast', 'Stars are hot'
+      );
+    }
+    // Animal-related mock content
+    else if (topicLower.includes('animal') || topicLower.includes('zoo') || topicLower.includes('wildlife')) {
+      items.push(
+        'Lion', 'Tiger', 'Bear', 'Elephant', 'Giraffe', 'Zebra', 'Monkey', 'Penguin',
+        'Dolphin', 'Whale', 'Shark', 'Eagle', 'Parrot', 'Snake', 'Crocodile', 'Kangaroo',
+        'Koala', 'Panda', 'Wolf', 'Fox', 'Deer', 'Rabbit', 'Squirrel', 'Owl'
+      );
+      categories.push('Mammals', 'Birds', 'Reptiles', 'Fish', 'Predators');
+      facts.push(
+        'Lions roar', 'Birds fly', 'Fish swim',
+        'Snakes slither', 'Dolphins jump', 'Owls are nocturnal'
+      );
+    }
+    // Default generic content
+    else {
+      // Generate categories
+      const categoryTypes = ['Types', 'Groups', 'Classes', 'Examples', 'Varieties'];
+      for (let i = 0; i < 5; i++) {
+        categories.push(`${topic} ${categoryTypes[i]}`);
+      }
+      
+      // Generate items based on subtopic
+      const itemCount = 20 + Math.floor(level / 2);
+      for (let i = 0; i < Math.min(itemCount, 15); i++) {
+        switch (subtopic) {
+          case 'facts':
+            items.push(`${topic} fact ${i + 1}`);
+            break;
+          case 'trivia':
+            items.push(`${topic} trivia ${i + 1}`);
+            break;
+          case 'related':
+            items.push(`${topic} related ${i + 1}`);
+            break;
+          default:
+            items.push(`${topic} item ${i + 1}`);
+        }
+      }
+      
+      // Generate facts
+      const factCount = Math.min(10, 5 + Math.floor(level / 5));
+      for (let i = 0; i < factCount; i++) {
+        facts.push(`${topic} fact #${i + 1}`);
       }
     }
     
-    // Generate facts
-    const factCount = 10 + Math.floor(level / 5);
-    for (let i = 0; i < factCount; i++) {
-      facts.push(`Interesting fact about ${topic} #${i + 1}`);
-    }
-    
     // Add level-specific advanced content
-    if (level > 10) {
-      items.push(`Advanced ${topic} concept`);
-      items.push(`Complex ${topic} theory`);
-      facts.push(`Expert-level ${topic} knowledge`);
+    if (level > 10 && items.length < 30) {
+      items.push(`Advanced ${topic}`, `Complex ${topic}`, `Expert ${topic}`);
+      facts.push(`Expert ${topic} fact`);
     }
     
-    return { items, categories, facts };
+    return { 
+      items: items.slice(0, 30), 
+      categories: categories.slice(0, 8), 
+      facts: facts.slice(0, 15) 
+    };
+  }
+  
+  private generateSmartDistractors(
+    topic: string,
+    remainingItems: string[],
+    count: number,
+    level: number
+  ): string[] {
+    const distractors: string[] = [];
+    
+    // Use some of the remaining AI items as-is (they're related but not correct)
+    const useFromRemaining = Math.min(remainingItems.length, Math.floor(count * 0.6));
+    distractors.push(...remainingItems.slice(0, useFromRemaining));
+    
+    // Generate variations of the topic that are wrong
+    const wrongVariations = [
+      `Ancient ${topic}`,
+      `Modern ${topic}`,
+      `Fake ${topic}`,
+      `Anti-${topic}`,
+      `Non-${topic}`,
+      `Pseudo-${topic}`,
+      `Former ${topic}`,
+      `Future ${topic}`
+    ];
+    
+    // Add some wrong variations
+    const neededVariations = Math.min(wrongVariations.length, count - distractors.length);
+    for (let i = 0; i < neededVariations; i++) {
+      distractors.push(wrongVariations[i]);
+    }
+    
+    // If we still need more, add generic space-related wrong answers
+    const genericWrong = [
+      'Black hole', 'Wormhole', 'Dark matter', 'Antimatter',
+      'Parallel universe', 'Time travel', 'Alien life', 'UFO',
+      'Teleportation', 'Invisibility', 'Perpetual motion', 'Cold fusion'
+    ];
+    
+    while (distractors.length < count) {
+      const randomWrong = genericWrong[Math.floor(Math.random() * genericWrong.length)];
+      if (!distractors.includes(randomWrong)) {
+        distractors.push(randomWrong);
+      }
+    }
+    
+    return distractors.slice(0, count);
   }
   
   private generateDistractors(
