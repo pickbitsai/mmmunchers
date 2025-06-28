@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -9,15 +9,27 @@ interface OnscreenControlsProps {
 
 export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsProps) {
   const [pressedButton, setPressedButton] = useState<string | null>(null);
+  const [touchCount, setTouchCount] = useState(0);
   const lastMoveTimeRef = useRef<number>(0);
   const isProcessingRef = useRef<boolean>(false);
 
-  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right', event?: React.TouchEvent | React.MouseEvent) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  // Add global touch detection for debugging
+  React.useEffect(() => {
+    const handleGlobalTouch = (e: TouchEvent) => {
+      console.log('Global touch detected:', e.type, e.touches.length);
+      setTouchCount(prev => prev + 1);
+    };
+
+    document.addEventListener('touchstart', handleGlobalTouch);
+    document.addEventListener('touchend', handleGlobalTouch);
     
+    return () => {
+      document.removeEventListener('touchstart', handleGlobalTouch);
+      document.removeEventListener('touchend', handleGlobalTouch);
+    };
+  }, []);
+
+  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right') => {
     console.log('OnscreenControls - Button press detected:', direction);
     
     // Add haptic feedback for mobile devices
@@ -69,29 +81,58 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
 
   return (
     <>
+      {/* Debug indicator */}
+      <div className="fixed top-4 left-4 z-50 bg-red-500 text-white p-2 rounded text-xs">
+        Touch count: {touchCount}
+      </div>
+      
       {/* D-pad directional controls - centered below grid */}
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50" style={{ touchAction: 'none' }}>
         <div className="relative">
           {/* Up */}
           <button
             className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md`}
-            onTouchStart={(e) => handleButtonPress('up', e)}
-            onClick={(e) => handleButtonPress('up', e)}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('up');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('up');
+            }}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
-            <ChevronUp className="w-6 h-6" />
+            <ChevronUp className="w-6 h-6 pointer-events-none" />
           </button>
 
           {/* Left */}
           <button
             className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md`}
-            onTouchStart={(e) => handleButtonPress('left', e)}
-            onClick={(e) => handleButtonPress('left', e)}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('left');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('left');
+            }}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-6 h-6 pointer-events-none" />
           </button>
 
           {/* Center (visual reference) */}
@@ -100,23 +141,47 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Right */}
           <button
             className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md`}
-            onTouchStart={(e) => handleButtonPress('right', e)}
-            onClick={(e) => handleButtonPress('right', e)}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('right');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('right');
+            }}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-6 h-6 pointer-events-none" />
           </button>
 
           {/* Down */}
           <button
             className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md`}
-            onTouchStart={(e) => handleButtonPress('down', e)}
-            onClick={(e) => handleButtonPress('down', e)}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('down');
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleButtonPress('down');
+            }}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'manipulation' }}
+            style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
-            <ChevronDown className="w-6 h-6" />
+            <ChevronDown className="w-6 h-6 pointer-events-none" />
           </button>
         </div>
       </div>
@@ -127,10 +192,22 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           className={`w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
                      text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg select-none
                      ${pressedButton === 'munch' ? 'bg-yellow-600 scale-95' : ''}`}
-          onTouchStart={() => handleMunchPress()}
-          onClick={() => handleMunchPress()}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMunchPress();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMunchPress();
+          }}
           onContextMenu={(e) => e.preventDefault()}
-          style={{ touchAction: 'manipulation' }}
+          style={{ touchAction: 'manipulation', userSelect: 'none' }}
         >
           MUNCH
         </button>
