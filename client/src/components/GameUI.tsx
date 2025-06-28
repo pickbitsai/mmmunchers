@@ -189,17 +189,32 @@ export default function GameUI() {
       {isMobile && gamePhase === 'playing' && (
         <OnscreenControls 
           onMove={(direction) => {
-            const player = useGameState.getState().player;
+            const state = useGameState.getState();
+            const player = state.player;
+            const grid = state.grid;
             let newX = player.x;
             let newY = player.y;
             
+            console.log('Current player position:', player.x, player.y);
+            console.log('Grid dimensions:', grid[0]?.length || 0, grid.length);
+            console.log('Moving:', direction);
+            
             switch(direction) {
-              case 'up': newY = Math.max(0, player.y - 1); break;
-              case 'down': newY = Math.min(6, player.y + 1); break;
-              case 'left': newX = Math.max(0, player.x - 1); break;
-              case 'right': newX = Math.min(8, player.x + 1); break;
+              case 'up': 
+                newY = Math.max(0, player.y - 1); 
+                break;
+              case 'down': 
+                newY = Math.min(grid.length - 1, player.y + 1); 
+                break;
+              case 'left': 
+                newX = Math.max(0, player.x - 1); 
+                break;
+              case 'right': 
+                newX = Math.min((grid[0]?.length || 9) - 1, player.x + 1); 
+                break;
             }
             
+            console.log('New position:', newX, newY);
             processPlayerMove(newX, newY);
           }}
           onMunch={munchCurrentCell}

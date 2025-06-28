@@ -244,14 +244,22 @@ export const useGameState = create<GameState>()(
     processPlayerMove: (newX: number, newY: number) => {
       const { grid } = get();
       
-      // Check bounds
-      if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) {
+      console.log('processPlayerMove called:', newX, newY);
+      console.log('Grid bounds:', grid[0]?.length || 0, grid.length);
+      
+      // Check bounds using actual grid dimensions
+      const gridWidth = grid[0]?.length || 0;
+      const gridHeight = grid.length || 0;
+      
+      if (newX < 0 || newX >= gridWidth || newY < 0 || newY >= gridHeight) {
+        console.log('Move blocked - out of bounds');
         return;
       }
       
       // Just move the player - no auto-munching
       const { playMove } = useAudio.getState();
       playMove();
+      console.log('Moving player to:', newX, newY);
       get().updatePlayer({ x: newX, y: newY });
     },
     
