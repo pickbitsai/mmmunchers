@@ -13,19 +13,38 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   const lastMoveTimeRef = useRef<number>(0);
   const isProcessingRef = useRef<boolean>(false);
 
-  // Add global touch detection for debugging
+  // Custom touch handler for mobile controls
   React.useEffect(() => {
-    const handleGlobalTouch = (e: TouchEvent) => {
-      console.log('Global touch detected:', e.type, e.touches.length);
-      setTouchCount(prev => prev + 1);
+    const handleTouch = (e: TouchEvent) => {
+      if (e.type !== 'touchstart') return;
+      
+      const touch = e.touches[0];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY) as Element;
+      
+      if (!element) return;
+      
+      const controlElement = element.closest('[data-control]') as HTMLElement;
+      if (controlElement) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const direction = controlElement.getAttribute('data-control');
+        console.log('Touch control detected:', direction);
+        
+        if (direction === 'munch') {
+          handleMunchPress();
+        } else if (direction && ['up', 'down', 'left', 'right'].includes(direction)) {
+          handleButtonPress(direction as 'up' | 'down' | 'left' | 'right');
+        }
+        
+        setTouchCount(prev => prev + 1);
+      }
     };
 
-    document.addEventListener('touchstart', handleGlobalTouch);
-    document.addEventListener('touchend', handleGlobalTouch);
+    document.addEventListener('touchstart', handleTouch, { passive: false });
     
     return () => {
-      document.removeEventListener('touchstart', handleGlobalTouch);
-      document.removeEventListener('touchend', handleGlobalTouch);
+      document.removeEventListener('touchstart', handleTouch);
     };
   }, []);
 
@@ -91,19 +110,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
         <div className="relative">
           {/* Up */}
           <div
+            data-control="up"
             className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md cursor-pointer flex items-center justify-center`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Up button touched');
-              handleButtonPress('up');
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Up button clicked');
-              handleButtonPress('up');
-            }}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronUp className="w-6 h-6 pointer-events-none" />
@@ -111,19 +119,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
 
           {/* Left */}
           <div
+            data-control="left"
             className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md cursor-pointer flex items-center justify-center`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Left button touched');
-              handleButtonPress('left');
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Left button clicked');
-              handleButtonPress('left');
-            }}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronLeft className="w-6 h-6 pointer-events-none" />
@@ -134,19 +131,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
 
           {/* Right */}
           <div
+            data-control="right"
             className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md cursor-pointer flex items-center justify-center`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Right button touched');
-              handleButtonPress('right');
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Right button clicked');
-              handleButtonPress('right');
-            }}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronRight className="w-6 h-6 pointer-events-none" />
@@ -154,19 +140,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
 
           {/* Down */}
           <div
+            data-control="down"
             className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md cursor-pointer flex items-center justify-center`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Down button touched');
-              handleButtonPress('down');
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Down button clicked');
-              handleButtonPress('down');
-            }}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronDown className="w-6 h-6 pointer-events-none" />
@@ -177,22 +152,11 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       {/* Munch Button - right side of screen */}
       <div className="fixed right-4 bottom-20 z-50" style={{ touchAction: 'none' }}>
         <div
+          data-control="munch"
           className={`w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
                      text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg select-none
                      cursor-pointer flex items-center justify-center
                      ${pressedButton === 'munch' ? 'bg-yellow-600 scale-95' : ''}`}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Munch button touched');
-            handleMunchPress();
-          }}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Munch button clicked');
-            handleMunchPress();
-          }}
           style={{ touchAction: 'manipulation', userSelect: 'none' }}
         >
           MUNCH
