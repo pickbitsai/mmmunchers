@@ -90,127 +90,113 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50" style={{ touchAction: 'none' }}>
         <div className="relative">
           {/* Up */}
-          <button
-            className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md`}
+          <div
+            className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md cursor-pointer flex items-center justify-center`}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              console.log('Up button touched');
               handleButtonPress('up');
             }}
-            onTouchEnd={(e) => {
+            onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+              console.log('Up button clicked');
               handleButtonPress('up');
             }}
-            onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronUp className="w-6 h-6 pointer-events-none" />
-          </button>
+          </div>
 
           {/* Left */}
-          <button
-            className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md`}
+          <div
+            className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md cursor-pointer flex items-center justify-center`}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              console.log('Left button touched');
               handleButtonPress('left');
             }}
-            onTouchEnd={(e) => {
+            onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+              console.log('Left button clicked');
               handleButtonPress('left');
             }}
-            onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronLeft className="w-6 h-6 pointer-events-none" />
-          </button>
+          </div>
 
           {/* Center (visual reference) */}
           <div className="w-14 h-14 bg-black/20 border-2 border-white/20 rounded-md" />
 
           {/* Right */}
-          <button
-            className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md`}
+          <div
+            className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md cursor-pointer flex items-center justify-center`}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              console.log('Right button touched');
               handleButtonPress('right');
             }}
-            onTouchEnd={(e) => {
+            onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+              console.log('Right button clicked');
               handleButtonPress('right');
             }}
-            onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronRight className="w-6 h-6 pointer-events-none" />
-          </button>
+          </div>
 
           {/* Down */}
-          <button
-            className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md`}
+          <div
+            className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md cursor-pointer flex items-center justify-center`}
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              console.log('Down button touched');
               handleButtonPress('down');
             }}
-            onTouchEnd={(e) => {
+            onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+              console.log('Down button clicked');
               handleButtonPress('down');
             }}
-            onContextMenu={(e) => e.preventDefault()}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
           >
             <ChevronDown className="w-6 h-6 pointer-events-none" />
-          </button>
+          </div>
         </div>
       </div>
 
       {/* Munch Button - right side of screen */}
       <div className="fixed right-4 bottom-20 z-50" style={{ touchAction: 'none' }}>
-        <button
+        <div
           className={`w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
                      text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg select-none
+                     cursor-pointer flex items-center justify-center
                      ${pressedButton === 'munch' ? 'bg-yellow-600 scale-95' : ''}`}
           onTouchStart={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            console.log('Munch button touched');
             handleMunchPress();
           }}
-          onTouchEnd={(e) => {
+          onMouseDown={(e) => {
             e.preventDefault();
             e.stopPropagation();
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+            console.log('Munch button clicked');
             handleMunchPress();
           }}
-          onContextMenu={(e) => e.preventDefault()}
           style={{ touchAction: 'manipulation', userSelect: 'none' }}
         >
           MUNCH
-        </button>
+        </div>
       </div>
     </>
   );
