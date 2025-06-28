@@ -12,13 +12,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   const lastMoveTimeRef = useRef<number>(0);
   const isProcessingRef = useRef<boolean>(false);
 
-  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right', event?: React.MouseEvent | React.TouchEvent) => {
-    console.log('Button press detected:', direction, event?.type);
-    
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const handleButtonPress = (direction: 'up' | 'down' | 'left' | 'right') => {
+    console.log('Button press detected:', direction);
     
     // Add haptic feedback for mobile devices
     if ('vibrate' in navigator) {
@@ -47,13 +42,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
     }, 150);
   };
 
-  const handleMunchPress = (event?: React.MouseEvent | React.TouchEvent) => {
-    console.log('Munch button press detected:', event?.type);
-    
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+  const handleMunchPress = () => {
+    console.log('Munch button press detected');
     
     // Add haptic feedback for mobile devices
     if ('vibrate' in navigator) {
@@ -80,16 +70,10 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Up */}
           <button
             className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              handleButtonPress('up', e);
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleButtonPress('up', e);
-            }}
+            onTouchStart={() => handleButtonPress('up')}
+            onClick={() => handleButtonPress('up')}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'none' }}
+            style={{ touchAction: 'manipulation' }}
           >
             <ChevronUp className="w-6 h-6" />
           </button>
@@ -97,16 +81,10 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Left */}
           <button
             className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              handleButtonPress('left', e);
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleButtonPress('left', e);
-            }}
+            onTouchStart={() => handleButtonPress('left')}
+            onClick={() => handleButtonPress('left')}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'none' }}
+            style={{ touchAction: 'manipulation' }}
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -117,16 +95,10 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Right */}
           <button
             className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              handleButtonPress('right', e);
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleButtonPress('right', e);
-            }}
+            onTouchStart={() => handleButtonPress('right')}
+            onClick={() => handleButtonPress('right')}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'none' }}
+            style={{ touchAction: 'manipulation' }}
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -134,16 +106,10 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           {/* Down */}
           <button
             className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md`}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              handleButtonPress('down', e);
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              handleButtonPress('down', e);
-            }}
+            onTouchStart={() => handleButtonPress('down')}
+            onClick={() => handleButtonPress('down')}
             onContextMenu={(e) => e.preventDefault()}
-            style={{ touchAction: 'none' }}
+            style={{ touchAction: 'manipulation' }}
           >
             <ChevronDown className="w-6 h-6" />
           </button>
@@ -156,16 +122,10 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
           className={`w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-600 border-2 border-yellow-300 
                      text-white shadow-lg transition-all duration-150 text-base font-bold rounded-lg select-none
                      ${pressedButton === 'munch' ? 'bg-yellow-600 scale-95' : ''}`}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            handleMunchPress(e);
-          }}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            handleMunchPress(e);
-          }}
+          onTouchStart={() => handleMunchPress()}
+          onClick={() => handleMunchPress()}
           onContextMenu={(e) => e.preventDefault()}
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: 'manipulation' }}
         >
           MUNCH
         </button>
