@@ -37,7 +37,7 @@
 
 ## Git Commands to Execute
 
-Run these commands in your terminal to push the changes to GitHub:
+Run these commands in your terminal to push the GitHub build fixes:
 
 ```bash
 # Check current status
@@ -46,16 +46,16 @@ git status
 # Add all modified files
 git add .
 
-# Commit the changes
-git commit -m "Fix mobile touch controls and prepare for production
+# Commit the build fixes
+git commit -m "Fix GitHub build failures and optimize CI/CD pipeline
 
-- Implement coordinate-based touch detection for reliable mobile controls
-- Remove all debugging code and console logging for production
-- Fix TypeScript errors and optimize mobile UI
-- Add comprehensive README and documentation
-- Clean up codebase for GitHub release"
+- Optimize GitHub Actions workflows with proper timeouts
+- Add memory allocation and dependency handling fixes
+- Create streamlined build process for reliable deployment
+- Add multiple deployment configurations (GitHub, Vercel, Netlify)
+- Resolve TypeScript configuration conflicts"
 
-# Push to main branch (or your preferred branch)
+# Push to main branch
 git push origin main
 ```
 

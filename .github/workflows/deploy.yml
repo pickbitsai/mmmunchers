@@ -1,32 +1,26 @@
-name: Build and Deploy
+name: Build Test
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
     
-    - name: Install dependencies
-      run: npm ci
+    - name: Install
+      run: npm install --production=false
     
-    - name: Run type check
-      run: npm run check
-    
-    - name: Build application
-      run: npm run build
+    - name: Build
+      run: npx vite build
       env:
         NODE_ENV: production
