@@ -8,6 +8,7 @@ import { MovieTopic } from "../topics/MovieTopic";
 import { useAudio } from "./useAudio";
 
 export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over";
+export type RenderMode = "2d" | "3d";
 
 export interface GridCell {
   value: string;
@@ -44,6 +45,7 @@ interface GameState {
   gamePhase: GamePhase;
   selectedTopic: string | null;
   topicProvider: TopicProvider | null;
+  renderMode: RenderMode;
   
   // Game data
   grid: GridCell[][];
@@ -64,6 +66,7 @@ interface GameState {
   restartGame: () => void;
   togglePause: () => void;
   gameOver: () => void;
+  toggleRenderMode: () => void;
   
   // Game mechanics
   updatePlayer: (player: Partial<Player>) => void;
@@ -91,6 +94,7 @@ export const useGameState = create<GameState>()(
     gamePhase: "topic_selection",
     selectedTopic: null,
     topicProvider: null,
+    renderMode: "3d",
     
     grid: [],
     player: { x: 4, y: 3, moveX: 0, moveY: 0, isMoving: false },
@@ -220,6 +224,12 @@ export const useGameState = create<GameState>()(
         gamePhase: "game_over",
         enemies: []
       });
+    },
+    
+    toggleRenderMode: () => {
+      set((state) => ({
+        renderMode: state.renderMode === "3d" ? "2d" : "3d"
+      }));
     },
     
     updatePlayer: (playerUpdate: Partial<Player>) => {

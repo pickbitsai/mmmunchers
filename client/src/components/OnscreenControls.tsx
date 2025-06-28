@@ -128,6 +128,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
             data-control="up"
             className={`${buttonClass('up')} absolute -top-16 left-1/2 transform -translate-x-1/2 rounded-md cursor-pointer flex items-center justify-center`}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
+            onClick={() => handleButtonPress('up')}
+            onTouchStart={(e) => { e.preventDefault(); handleButtonPress('up'); }}
           >
             <ChevronUp className="w-6 h-6 pointer-events-none" />
           </div>
@@ -137,6 +139,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
             data-control="left"
             className={`${buttonClass('left')} absolute top-0 -left-16 rounded-md cursor-pointer flex items-center justify-center`}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
+            onClick={() => handleButtonPress('left')}
+            onTouchStart={(e) => { e.preventDefault(); handleButtonPress('left'); }}
           >
             <ChevronLeft className="w-6 h-6 pointer-events-none" />
           </div>
@@ -149,6 +153,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
             data-control="right"
             className={`${buttonClass('right')} absolute top-0 -right-16 rounded-md cursor-pointer flex items-center justify-center`}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
+            onClick={() => handleButtonPress('right')}
+            onTouchStart={(e) => { e.preventDefault(); handleButtonPress('right'); }}
           >
             <ChevronRight className="w-6 h-6 pointer-events-none" />
           </div>
@@ -158,6 +164,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
             data-control="down"
             className={`${buttonClass('down')} absolute -bottom-16 left-1/2 transform -translate-x-1/2 rounded-md cursor-pointer flex items-center justify-center`}
             style={{ touchAction: 'manipulation', userSelect: 'none' }}
+            onClick={() => handleButtonPress('down')}
+            onTouchStart={(e) => { e.preventDefault(); handleButtonPress('down'); }}
           >
             <ChevronDown className="w-6 h-6 pointer-events-none" />
           </div>
@@ -173,6 +181,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
                      cursor-pointer flex items-center justify-center
                      ${pressedButton === 'munch' ? 'bg-yellow-600 scale-95' : ''}`}
           style={{ touchAction: 'manipulation', userSelect: 'none' }}
+          onClick={handleMunchPress}
+          onTouchStart={(e) => { e.preventDefault(); handleMunchPress(); }}
         >
           MUNCH
         </div>

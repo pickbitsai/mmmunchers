@@ -18,7 +18,8 @@ export default function GameUI() {
     restartGame,
     selectTopic,
     processPlayerMove,
-    munchCurrentCell
+    munchCurrentCell,
+    renderMode
   } = useGameState();
 
   const { isMuted, toggleMute, playMove } = useAudio();
@@ -190,22 +191,17 @@ export default function GameUI() {
         </div>
       )}
 
-      {/* Mobile controls */}
+      {/* Mobile controls - only for 3D mode */}
       {(() => {
 
-        if (isMobile && gamePhase === 'playing') {
+        if (isMobile && gamePhase === 'playing' && renderMode === '3d') {
           return (
             <OnscreenControls 
               onMove={(direction) => {
-
-                // Play sound immediately on touch/click
-                playMove();
-                
                 const now = Date.now();
                 
                 // Prevent rapid-fire movements (debounce to 200ms)
                 if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
-
                   return;
                 }
                 
@@ -214,8 +210,6 @@ export default function GameUI() {
                 const grid = state.grid;
                 let newX = player.x;
                 let newY = player.y;
-                
-
                 
                 switch(direction) {
                   case 'up': 
@@ -232,13 +226,11 @@ export default function GameUI() {
                     break;
                 }
                 
-
-                
-                // Use updatePlayer directly instead of processPlayerMove
+                // Use processPlayerMove which includes bounds checking and sound
                 if (newX !== player.x || newY !== player.y) {
                   isMovingRef.current = true;
                   lastMoveTimeRef.current = now;
-                  state.updatePlayer({ x: newX, y: newY });
+                  processPlayerMove(newX, newY);
                   
                   // Reset movement flag after animation completes
                   setTimeout(() => {
@@ -253,8 +245,8 @@ export default function GameUI() {
         return null;
       })()}
 
-      {/* Mobile hint */}
-      {isMobile && gamePhase === 'playing' && (
+      {/* Mobile hint - only for 3D mode */}
+      {isMobile && gamePhase === 'playing' && renderMode === '3d' && (
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 pointer-events-none">
           <p className="text-white text-xs bg-black/60 px-2 py-1 rounded">
             Use controls to move • Center button to munch

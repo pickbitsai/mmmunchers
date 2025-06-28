@@ -2,11 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { MobileSelect } from "./ui/mobile-select";
 import { useGameState } from "../lib/stores/useGameState";
-import { Calculator, BookOpen, Zap, HelpCircle } from "lucide-react";
+import { Calculator, BookOpen, Zap, HelpCircle, Gamepad2, Box } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function TopicSelection() {
-  const { selectTopic, topicProvider } = useGameState();
+  const { selectTopic, topicProvider, renderMode, toggleRenderMode } = useGameState();
   const [selectedCategories, setSelectedCategories] = useState<{[key: string]: string}>({
     math: 'random',
     words: 'random', 
@@ -125,6 +125,36 @@ export default function TopicSelection() {
           <Card className="bg-black/40 border-gray-600 backdrop-blur-sm">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-center text-white">Choose Your Topic</CardTitle>
+              <div className="flex justify-center mt-4">
+                <div className="inline-flex items-center bg-black/40 rounded-lg p-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`px-3 py-1 text-xs ${
+                      renderMode === '2d' 
+                        ? 'bg-white/20 text-white' 
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    onClick={() => renderMode !== '2d' && toggleRenderMode()}
+                  >
+                    <Gamepad2 className="w-4 h-4 mr-1" />
+                    2D Mode
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`px-3 py-1 text-xs ${
+                      renderMode === '3d' 
+                        ? 'bg-white/20 text-white' 
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                    onClick={() => renderMode !== '3d' && toggleRenderMode()}
+                  >
+                    <Box className="w-4 h-4 mr-1" />
+                    3D Mode
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

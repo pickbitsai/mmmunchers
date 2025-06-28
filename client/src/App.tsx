@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Game from "./components/Game";
+import GameBoard2D from "./components/GameBoard2D";
 import SoundManager from "./components/SoundManager";
 import TopicSelection from "./components/TopicSelection";
 import GameUI from "./components/GameUI";
@@ -20,7 +21,7 @@ const queryClient = new QueryClient({
 });
 
 function GameContainer() {
-  const { gamePhase, initializeGame } = useGameState();
+  const { gamePhase, initializeGame, renderMode } = useGameState();
 
   // Initialize game once on mount
   React.useEffect(() => {
@@ -35,20 +36,24 @@ function GameContainer() {
       {/* UI Layer - Always on top */}
       {gamePhase === 'topic_selection' && <TopicSelection />}
       
-      {/* 3D Canvas Layer - Only when playing */}
+      {/* Game Board - 2D or 3D based on renderMode */}
       {(gamePhase === 'playing' || gamePhase === 'paused' || gamePhase === 'game_over') && (
         <>
-          <Canvas
-            shadows
-            camera={{ position: [0, 10, 10], fov: 60 }}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-          >
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-            <Suspense fallback={null}>
-              <Game />
-            </Suspense>
-          </Canvas>
+          {renderMode === '3d' ? (
+            <Canvas
+              shadows
+              camera={{ position: [0, 10, 10], fov: 60 }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            >
+              <ambientLight intensity={0.5} />
+              <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+              <Suspense fallback={null}>
+                <Game />
+              </Suspense>
+            </Canvas>
+          ) : (
+            <GameBoard2D />
+          )}
           <GameUI />
         </>
       )}

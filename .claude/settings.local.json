@@ -1,24 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rg:*)",
-      "Bash(grep:*)",
-      "Bash(npm install)",
-      "Bash(ls:*)",
-      "Bash(npm run dev:*)",
-      "Bash(npm config:*)",
-<<<<<<< HEAD
-      "Bash(npm install:*)"
-=======
-      "Bash(npm install:*)",
-      "Bash(curl:*)",
-<<<<<<< Updated upstream
-      "Bash(ss:*)"
->>>>>>> 8dfa9d15082776f0965b94f8640826bd7e21a1e5
-=======
-      "Bash(ss:*)",
-      "Bash(git config:*)"
->>>>>>> Stashed changes
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }
