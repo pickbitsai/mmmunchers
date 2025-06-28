@@ -192,62 +192,69 @@ export default function GameUI() {
       )}
 
       {/* Mobile controls */}
-      {isMobile && gamePhase === 'playing' && (
-        <OnscreenControls 
-          onMove={(direction) => {
-            // Play sound immediately on touch/click
-            playMove();
-            
-            const now = Date.now();
-            
-            // Prevent rapid-fire movements (debounce to 200ms)
-            if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
-              console.log('OnscreenControls - Movement blocked by debounce');
-              return;
-            }
-            
-            const state = useGameState.getState();
-            const player = state.player;
-            const grid = state.grid;
-            let newX = player.x;
-            let newY = player.y;
-            
-            console.log('OnscreenControls - Current player position:', player.x, player.y);
-            console.log('OnscreenControls - Grid dimensions:', grid[0]?.length || 0, grid.length);
-            console.log('OnscreenControls - Moving:', direction);
-            
-            switch(direction) {
-              case 'up': 
-                newY = Math.max(0, player.y - 1); 
-                break;
-              case 'down': 
-                newY = Math.min(grid.length - 1, player.y + 1); 
-                break;
-              case 'left': 
-                newX = Math.max(0, player.x - 1); 
-                break;
-              case 'right': 
-                newX = Math.min((grid[0]?.length || 9) - 1, player.x + 1); 
-                break;
-            }
-            
-            console.log('OnscreenControls - New position:', newX, newY);
-            
-            // Use updatePlayer directly instead of processPlayerMove
-            if (newX !== player.x || newY !== player.y) {
-              isMovingRef.current = true;
-              lastMoveTimeRef.current = now;
-              state.updatePlayer({ x: newX, y: newY });
-              
-              // Reset movement flag after animation completes
-              setTimeout(() => {
-                isMovingRef.current = false;
-              }, 150);
-            }
-          }}
-          onMunch={munchCurrentCell}
-        />
-      )}
+      {(() => {
+        console.log('Mobile controls check - isMobile:', isMobile, 'gamePhase:', gamePhase);
+        if (isMobile && gamePhase === 'playing') {
+          return (
+            <OnscreenControls 
+              onMove={(direction) => {
+                console.log('GameUI - Mobile control onMove called:', direction);
+                // Play sound immediately on touch/click
+                playMove();
+                
+                const now = Date.now();
+                
+                // Prevent rapid-fire movements (debounce to 200ms)
+                if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
+                  console.log('GameUI - Movement blocked by debounce');
+                  return;
+                }
+                
+                const state = useGameState.getState();
+                const player = state.player;
+                const grid = state.grid;
+                let newX = player.x;
+                let newY = player.y;
+                
+                console.log('GameUI - Current player position:', player.x, player.y);
+                console.log('GameUI - Grid dimensions:', grid[0]?.length || 0, grid.length);
+                console.log('GameUI - Moving:', direction);
+                
+                switch(direction) {
+                  case 'up': 
+                    newY = Math.max(0, player.y - 1); 
+                    break;
+                  case 'down': 
+                    newY = Math.min(grid.length - 1, player.y + 1); 
+                    break;
+                  case 'left': 
+                    newX = Math.max(0, player.x - 1); 
+                    break;
+                  case 'right': 
+                    newX = Math.min((grid[0]?.length || 9) - 1, player.x + 1); 
+                    break;
+                }
+                
+                console.log('GameUI - New position:', newX, newY);
+                
+                // Use updatePlayer directly instead of processPlayerMove
+                if (newX !== player.x || newY !== player.y) {
+                  isMovingRef.current = true;
+                  lastMoveTimeRef.current = now;
+                  state.updatePlayer({ x: newX, y: newY });
+                  
+                  // Reset movement flag after animation completes
+                  setTimeout(() => {
+                    isMovingRef.current = false;
+                  }, 150);
+                }
+              }}
+              onMunch={munchCurrentCell}
+            />
+          );
+        }
+        return null;
+      })()}
 
       {/* Mobile hint */}
       {isMobile && gamePhase === 'playing' && (
