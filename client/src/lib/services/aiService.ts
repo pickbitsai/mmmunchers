@@ -127,7 +127,8 @@ class AIService {
     
     // Generate distractors - use remaining items if available
     const remainingItems = shuffled.slice(numCorrect);
-    const numIncorrect = Math.max(10, 20 - numCorrect);
+    // For a 9x7 grid (63 cells), we need plenty of distractors
+    const numIncorrect = Math.max(40, 63 - numCorrect);
     
     let incorrectAnswers: string[] = [];
     
@@ -318,40 +319,68 @@ Requirements:
     level: number
   ): string[] {
     const distractors: string[] = [];
+    const topicLower = topic.toLowerCase();
     
-    // Use some of the remaining AI items as-is (they're related but not correct)
-    const useFromRemaining = Math.min(remainingItems.length, Math.floor(count * 0.6));
-    distractors.push(...remainingItems.slice(0, useFromRemaining));
+    // Use ALL remaining AI items first (they're related but not correct)
+    distractors.push(...remainingItems);
     
-    // Generate variations of the topic that are wrong
-    const wrongVariations = [
-      `Ancient ${topic}`,
-      `Modern ${topic}`,
-      `Fake ${topic}`,
-      `Anti-${topic}`,
-      `Non-${topic}`,
-      `Pseudo-${topic}`,
-      `Former ${topic}`,
-      `Future ${topic}`
-    ];
+    // Topic-specific wrong answers
+    let topicDistracters: string[] = [];
     
-    // Add some wrong variations
-    const neededVariations = Math.min(wrongVariations.length, count - distractors.length);
-    for (let i = 0; i < neededVariations; i++) {
-      distractors.push(wrongVariations[i]);
+    if (topicLower.includes('space') || topicLower.includes('astro')) {
+      topicDistracters = [
+        'Flat Earth', 'Geocentric model', 'Aether', 'Phlogiston',
+        'Crystal spheres', 'Firmament', 'Turtles all the way', 'Sky dome',
+        'Cheese moon', 'Canals on Mars', 'Planet X', 'Nibiru',
+        'Hollow Earth', 'Space whales', 'Star gates', 'Sky cities'
+      ];
+    } else if (topicLower.includes('animal')) {
+      topicDistracters = [
+        'Dragon', 'Unicorn', 'Phoenix', 'Griffin', 'Pegasus', 'Chimera',
+        'Minotaur', 'Centaur', 'Kraken', 'Yeti', 'Bigfoot', 'Loch Ness',
+        'Chupacabra', 'Jackalope', 'Drop bear', 'Snipe', 'Dodo clone', 'Megalodon'
+      ];
+    } else {
+      // Generate topic variations that are wrong
+      topicDistracters = [
+        `Fake ${topic}`, `Anti-${topic}`, `Non-${topic}`, `Pseudo-${topic}`,
+        `Mock ${topic}`, `Faux ${topic}`, `Quasi-${topic}`, `Semi-${topic}`,
+        `Ultra ${topic}`, `Mega ${topic}`, `Super ${topic}`, `Hyper ${topic}`,
+        `Proto-${topic}`, `Neo-${topic}`, `Post-${topic}`, `Pre-${topic}`
+      ];
     }
     
-    // If we still need more, add generic space-related wrong answers
-    const genericWrong = [
-      'Black hole', 'Wormhole', 'Dark matter', 'Antimatter',
-      'Parallel universe', 'Time travel', 'Alien life', 'UFO',
-      'Teleportation', 'Invisibility', 'Perpetual motion', 'Cold fusion'
+    // Add topic-specific distractors
+    for (const distractor of topicDistracters) {
+      if (distractors.length >= count) break;
+      if (!distractors.includes(distractor)) {
+        distractors.push(distractor);
+      }
+    }
+    
+    // Generate more contextual distractors if needed
+    const contextualDistracters = [
+      'Unknown item', 'Mystery object', 'Classified info', 'Redacted',
+      'Error 404', 'Missing data', 'Corrupted file', 'Access denied',
+      'Top secret', 'Restricted', 'Confidential', 'Eyes only',
+      'Coming soon', 'Under construction', 'Beta version', 'Prototype'
     ];
     
+    // Add contextual distractors
+    for (const distractor of contextualDistracters) {
+      if (distractors.length >= count) break;
+      if (!distractors.includes(distractor)) {
+        distractors.push(distractor);
+      }
+    }
+    
+    // If we STILL need more, create numbered variants
+    let variantCount = 1;
     while (distractors.length < count) {
-      const randomWrong = genericWrong[Math.floor(Math.random() * genericWrong.length)];
-      if (!distractors.includes(randomWrong)) {
-        distractors.push(randomWrong);
+      const variant = `Unknown ${topic} #${variantCount}`;
+      if (!distractors.includes(variant)) {
+        distractors.push(variant);
+        variantCount++;
       }
     }
     

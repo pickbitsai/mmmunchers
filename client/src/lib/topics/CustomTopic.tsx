@@ -149,18 +149,28 @@ export class CustomTopic extends TopicProvider {
     
     const challengeData = this.currentChallengeData;
     
-    // Calculate total cells and how many should be filled
+    // Calculate total cells - we want to fill ALL of them
     const totalCells = width * height;
-    const filledCells = Math.min(
-      Math.floor(totalCells * 0.7), // Fill 70% of the grid
-      challengeData.correctAnswers.length + challengeData.incorrectAnswers.length
-    );
     
-    // Combine and shuffle all answers
-    const allAnswers = [
+    // Get all available answers
+    let allAnswers = [
       ...challengeData.correctAnswers,
       ...challengeData.incorrectAnswers
-    ].slice(0, filledCells);
+    ];
+    
+    // If we don't have enough answers, generate more distractors
+    while (allAnswers.length < totalCells) {
+      // Add variations or duplicates with slight modifications
+      const additionalDistractors = this.generateAdditionalDistractors(
+        this.userTopic,
+        totalCells - allAnswers.length,
+        challengeData.correctAnswers
+      );
+      allAnswers = [...allAnswers, ...additionalDistractors];
+    }
+    
+    // Ensure we have exactly the right number of items
+    allAnswers = allAnswers.slice(0, totalCells);
     
     const shuffledAnswers = this.shuffleArray(allAnswers);
     
@@ -188,6 +198,72 @@ export class CustomTopic extends TopicProvider {
     }
     
     return grid;
+  }
+  
+  private generateAdditionalDistractors(
+    topic: string,
+    count: number,
+    correctAnswers: string[]
+  ): string[] {
+    const distractors: string[] = [];
+    const topicLower = topic.toLowerCase();
+    
+    // Generate contextually relevant distractors based on the topic
+    let additionalPool: string[] = [];
+    
+    if (topicLower.includes('space') || topicLower.includes('astro')) {
+      additionalPool = [
+        'Quasar', 'Pulsar', 'Supernova', 'Red giant', 'White dwarf',
+        'Neutron star', 'Solar wind', 'Aurora', 'Cosmic rays', 'Dark energy',
+        'Exoplanet', 'Binary star', 'Spiral galaxy', 'Elliptical galaxy',
+        'Space debris', 'Lunar eclipse', 'Solar flare', 'Asteroid belt',
+        'Kuiper belt', 'Oort cloud', 'Space probe', 'Ion drive', 'Warp drive',
+        'Light year', 'Parsec', 'Red shift', 'Blue shift', 'Big Bang'
+      ];
+    } else if (topicLower.includes('animal') || topicLower.includes('zoo')) {
+      additionalPool = [
+        'Cheetah', 'Leopard', 'Jaguar', 'Cougar', 'Lynx', 'Bobcat',
+        'Gazelle', 'Antelope', 'Wildebeest', 'Hyena', 'Jackal', 'Coyote',
+        'Otter', 'Beaver', 'Muskrat', 'Badger', 'Raccoon', 'Opossum',
+        'Platypus', 'Echidna', 'Wombat', 'Tasmanian devil', 'Dingo',
+        'Lemur', 'Gorilla', 'Chimpanzee', 'Orangutan', 'Gibbon', 'Baboon'
+      ];
+    } else if (topicLower.includes('movie') || topicLower.includes('film')) {
+      additionalPool = [
+        'Action', 'Drama', 'Comedy', 'Horror', 'Thriller', 'Romance',
+        'Sci-Fi', 'Fantasy', 'Animation', 'Documentary', 'Musical', 'Western',
+        'Director', 'Producer', 'Actor', 'Actress', 'Screenplay', 'Cinema',
+        'Box office', 'Premiere', 'Sequel', 'Prequel', 'Remake', 'Adaptation',
+        'Oscar', 'Emmy', 'Golden Globe', 'Cannes', 'Sundance', 'Festival'
+      ];
+    } else {
+      // Generic distractors for any topic
+      additionalPool = [
+        `${topic} variant`, `${topic} type`, `${topic} model`, `${topic} version`,
+        `${topic} style`, `${topic} form`, `${topic} method`, `${topic} approach`,
+        `Alternative ${topic}`, `Classic ${topic}`, `Modern ${topic}`, `Traditional ${topic}`,
+        `Popular ${topic}`, `Rare ${topic}`, `Common ${topic}`, `Unique ${topic}`,
+        `Basic ${topic}`, `Advanced ${topic}`, `Simple ${topic}`, `Complex ${topic}`,
+        `Original ${topic}`, `Modified ${topic}`, `Enhanced ${topic}`, `Standard ${topic}`
+      ];
+    }
+    
+    // Shuffle the pool and take what we need
+    const shuffled = additionalPool.sort(() => Math.random() - 0.5);
+    
+    for (let i = 0; i < count && i < shuffled.length; i++) {
+      if (!correctAnswers.includes(shuffled[i])) {
+        distractors.push(shuffled[i]);
+      }
+    }
+    
+    // If we still need more, create numbered variants
+    while (distractors.length < count) {
+      const variant = `${topic} option ${distractors.length + 1}`;
+      distractors.push(variant);
+    }
+    
+    return distractors;
   }
   
   private shuffleArray<T>(array: T[]): T[] {
