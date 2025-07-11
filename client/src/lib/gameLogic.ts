@@ -84,7 +84,7 @@ export function updateGameLogic({
   }
   
   // Update enemy AI with level-based timing
-  const updatedEnemies = enemies.map(enemy => updateEnemyAI(enemy, player, delta, grid, level));
+  const updatedEnemies = enemies.map(enemy => updateEnemyAI(enemy, player, delta, grid, level || 1));
   
   // Check for collisions between player and enemies
   const collision = updatedEnemies.some(enemy => 
@@ -109,7 +109,8 @@ function updateEnemyAI(enemy: Enemy, player: Player, delta: number, grid: GridCe
   
   // Calculate move interval based on level (2 seconds base, decreasing by 0.1s per level, min 0.5s)
   const baseMoveInterval = 2000; // 2 seconds
-  const levelSpeedIncrease = Math.min(level - 1, 15) * 100; // Max 1.5s reduction
+  const currentLevel = level || 1;
+  const levelSpeedIncrease = Math.min(currentLevel - 1, 15) * 100; // Max 1.5s reduction
   const moveInterval = Math.max(500, baseMoveInterval - levelSpeedIncrease); // Minimum 0.5s
   
   // Check if enough time has passed since last move
