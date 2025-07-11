@@ -1,38 +1,75 @@
-import { users, type User, type InsertUser } from "@shared/schema";
+import { 
+  type InsertTopicContentCache, 
+  type TopicContentCache 
+} from "@shared/schema";
 
-// modify the interface with any CRUD methods
-// you might need
-
+// Storage interface for topic content caching
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Topic content cache methods
+  getTopicContent(topic: string, subtopic: string): Promise<TopicContentCache | undefined>;
+  saveTopicContent(content: InsertTopicContentCache): Promise<TopicContentCache>;
+  updateTopicUsage(id: number): Promise<void>;
+  getPopularTopics(limit: number): Promise<Array<{ topic: string; usageCount: number }>>;
 }
 
+// In-memory storage implementation
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  currentId: number;
+  private topicContent: Map<string, TopicContentCache>;
+  private currentId: number;
 
   constructor() {
-    this.users = new Map();
+    this.topicContent = new Map();
     this.currentId = 1;
   }
 
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+  private getTopicKey(topic: string, subtopic: string): string {
+    return `${topic}:::${subtopic}`;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async getTopicContent(topic: string, subtopic: string): Promise<TopicContentCache | undefined> {
+    const key = this.getTopicKey(topic, subtopic);
+    return this.topicContent.get(key);
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async saveTopicContent(content: InsertTopicContentCache): Promise<TopicContentCache> {
     const id = this.currentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    const now = new Date();
+    const topicContent: TopicContentCache = {
+      id,
+      ...content,
+      usageCount: 1,
+      lastUsed: now,
+      createdAt: now
+    };
+    
+    const key = this.getTopicKey(content.topic, content.subtopic || 'all');
+    this.topicContent.set(key, topicContent);
+    
+    return topicContent;
+  }
+
+  async updateTopicUsage(id: number): Promise<void> {
+    // Find the topic by id and update usage
+    for (const [key, content] of this.topicContent.entries()) {
+      if (content.id === id) {
+        content.usageCount++;
+        content.lastUsed = new Date();
+        this.topicContent.set(key, content);
+        break;
+      }
+    }
+  }
+
+  async getPopularTopics(limit: number): Promise<Array<{ topic: string; usageCount: number }>> {
+    const topics = Array.from(this.topicContent.values())
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .slice(0, limit)
+      .map(content => ({
+        topic: content.topic,
+        usageCount: content.usageCount
+      }));
+    
+    return topics;
   }
 }
 

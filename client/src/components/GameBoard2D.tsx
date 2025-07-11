@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGameState } from "../lib/stores/useGameState";
 import { useAudio } from "../lib/stores/useAudio";
 import { updateGameLogic } from "../lib/gameLogic";
@@ -9,6 +9,7 @@ export default function GameBoard2D() {
   const lastTimeRef = useRef<number>(0);
   const lastMoveTimeRef = useRef<number>(0);
   const isMovingRef = useRef<boolean>(false);
+  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
   
   const {
     gamePhase,
@@ -29,6 +30,16 @@ export default function GameBoard2D() {
   
   const { playMove, playMunch } = useAudio();
 
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({ width: window.innerWidth, height: window.innerHeight });
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Initialize enemies when game starts
   useEffect(() => {
     if (gamePhase === 'playing' && enemies.length === 0) {
@@ -48,18 +59,44 @@ export default function GameBoard2D() {
       lastTimeRef.current = currentTime;
 
       if (delta < 0.1) { // Cap delta to prevent large jumps
-        updateGameLogic({
-          delta,
-          player,
-          enemies,
-          grid,
-          currentChallenge,
-          updatePlayer,
-          updateEnemies,
-          updateGrid,
-          processPlayerMove,
-          gameOver
+        // For 2D mode, only update enemies - player movement is handled by keyboard events
+        const updatedEnemies = enemies.map(enemy => {
+          // Simple enemy movement logic
+          const moveSpeed = enemy.speed * delta * 1.5;
+          const dx = player.x - enemy.x;
+          const dy = player.y - enemy.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance > 0.5) {
+            let newX = enemy.x;
+            let newY = enemy.y;
+            
+            if (Math.abs(dx) > Math.abs(dy)) {
+              newX = enemy.x + (dx > 0 ? moveSpeed : -moveSpeed);
+            } else {
+              newY = enemy.y + (dy > 0 ? moveSpeed : -moveSpeed);
+            }
+            
+            return {
+              ...enemy,
+              x: Math.max(0, Math.min(gridWidth - 1, newX)),
+              y: Math.max(0, Math.min(gridHeight - 1, newY))
+            };
+          }
+          
+          return enemy;
         });
+        
+        updateEnemies(updatedEnemies);
+        
+        // Check collisions
+        const collision = updatedEnemies.some(enemy => 
+          Math.abs(enemy.x - player.x) < 0.5 && Math.abs(enemy.y - player.y) < 0.5
+        );
+        
+        if (collision) {
+          gameOver();
+        }
       }
 
       animationRef.current = requestAnimationFrame(gameLoop);
@@ -78,13 +115,29 @@ export default function GameBoard2D() {
 
   if (!grid.length || !currentChallenge) return null;
 
-  const cellSize = 50; // Balanced size for good visibility and fit
+  // Calculate responsive cell size
+  const isMobile = dimensions.width < 768;
+  const isTablet = dimensions.width < 1024;
+  
+  // Use different grid sizes for mobile
   const gridWidth = grid[0]?.length || 9;
   const gridHeight = grid.length || 7;
+  
+  // Calculate optimal cell size based on available space
+  const maxBoardWidth = dimensions.width - (isMobile ? 20 : 80); // Less padding for bigger tiles
+  const maxBoardHeight = dimensions.height - (isMobile ? 180 : 240); // Less space reserved
+  
+  const cellSizeByWidth = Math.floor(maxBoardWidth / gridWidth);
+  const cellSizeByHeight = Math.floor(maxBoardHeight / gridHeight);
+  const cellSize = Math.min(cellSizeByWidth, cellSizeByHeight, isMobile ? 100 : 140); // Much larger max size
+  
   const boardWidth = gridWidth * cellSize;
   const boardHeight = gridHeight * cellSize;
-
-
+  
+  // Calculate font size based on cell size - more conservative for better fit
+  const baseFontSize = Math.max(cellSize * 0.22, 12); // Slightly smaller base
+  const fontSize = baseFontSize;
+  const isCellTooSmall = cellSize < 50;
 
   const handleMunch = () => {
     const currentCell = grid[player.y]?.[player.x];
@@ -104,11 +157,10 @@ export default function GameBoard2D() {
         })
       );
       updateGrid(newGrid);
-      
-      // Award points based on level
-      addScore(10 * level);
-      
-      // Check if all correct answers have been munched (level complete)
+      addScore(10 + level * 5); // Higher scores for higher levels
+      playMunch();
+
+      // Check if level complete
       const remainingCorrect = newGrid.flat().some(cell => cell.isCorrect && !cell.isMunched);
       if (!remainingCorrect) {
         // All correct answers munched - advance to next level
@@ -122,117 +174,80 @@ export default function GameBoard2D() {
     }
   };
 
-  // Keyboard controls
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (gamePhase !== 'playing') return;
+
+    let newX = player.x;
+    let newY = player.y;
+    let shouldMove = false;
+    let shouldMunch = false;
+
+    // Play sounds immediately on key press before any logic
+    switch (event.code) {
+      case 'ArrowUp':
+      case 'KeyW':
+        event.preventDefault();
+        playMove();
+        newY = Math.max(0, player.y - 1);
+        shouldMove = true;
+        break;
+      case 'ArrowDown':
+      case 'KeyS':
+        event.preventDefault();
+        playMove();
+        newY = Math.min(gridHeight - 1, player.y + 1);
+        shouldMove = true;
+        break;
+      case 'ArrowLeft':
+      case 'KeyA':
+        event.preventDefault();
+        playMove();
+        newX = Math.max(0, player.x - 1);
+        shouldMove = true;
+        break;
+      case 'ArrowRight':
+      case 'KeyD':
+        event.preventDefault();
+        playMove();
+        newX = Math.min(gridWidth - 1, player.x + 1);
+        shouldMove = true;
+        break;
+      case 'Space':
+      case 'Enter':
+        event.preventDefault();
+        playMunch();
+        shouldMunch = true;
+        break;
+      default:
+        return;
+    }
+
+    const now = Date.now();
+    
+    // Handle movement logic after sound
+    if (shouldMove && (newX !== player.x || newY !== player.y)) {
+      // Prevent rapid-fire movements (debounce to 200ms)
+      if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
+        return;
+      }
+      
+      isMovingRef.current = true;
+      lastMoveTimeRef.current = now;
+      updatePlayer({ x: newX, y: newY });
+      
+      // Reset movement flag after animation completes
+      setTimeout(() => {
+        isMovingRef.current = false;
+      }, 150);
+    }
+    
+    // Handle munch logic after sound
+    if (shouldMunch) {
+      handleMunch();
+    }
+  };
+
   useEffect(() => {
-    const handleMunchAction = () => {
-      const currentCell = grid[player.y]?.[player.x];
-      if (!currentCell || currentCell.isEmpty || currentCell.isMunched) {
-        return; // Nothing to munch
-      }
-
-      // Check if the answer is correct
-      if (currentCell.isCorrect) {
-        // Correct answer - mark as munched and award points
-        const newGrid = grid.map((row, rowIndex) =>
-          row.map((cell, colIndex) => {
-            if (rowIndex === player.y && colIndex === player.x) {
-              return { ...cell, isMunched: true };
-            }
-            return cell;
-          })
-        );
-        updateGrid(newGrid);
-        
-        // Award points based on level
-        addScore(10 * level);
-        
-        // Check if all correct answers have been munched (level complete)
-        const remainingCorrect = newGrid.flat().some(cell => cell.isCorrect && !cell.isMunched);
-        if (!remainingCorrect) {
-          // All correct answers munched - advance to next level
-          setTimeout(() => {
-            nextLevel();
-          }, 500); // Small delay for visual feedback
-        }
-      } else {
-        // Wrong answer - game over
-        gameOver();
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (gamePhase !== 'playing') return;
-
-      let newX = player.x;
-      let newY = player.y;
-      let shouldMove = false;
-      let shouldMunch = false;
-
-      // Play sounds immediately on key press before any logic
-      switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-          event.preventDefault();
-          playMove();
-          newY = Math.max(0, player.y - 1);
-          shouldMove = true;
-          break;
-        case 'ArrowDown':
-        case 'KeyS':
-          event.preventDefault();
-          playMove();
-          newY = Math.min(gridHeight - 1, player.y + 1);
-          shouldMove = true;
-          break;
-        case 'ArrowLeft':
-        case 'KeyA':
-          event.preventDefault();
-          playMove();
-          newX = Math.max(0, player.x - 1);
-          shouldMove = true;
-          break;
-        case 'ArrowRight':
-        case 'KeyD':
-          event.preventDefault();
-          playMove();
-          newX = Math.min(gridWidth - 1, player.x + 1);
-          shouldMove = true;
-          break;
-        case 'Space':
-        case 'Enter':
-          event.preventDefault();
-          playMunch();
-          shouldMunch = true;
-          break;
-        default:
-          return;
-      }
-
-      const now = Date.now();
-      
-      // Handle movement logic after sound
-      if (shouldMove && (newX !== player.x || newY !== player.y)) {
-        // Prevent rapid-fire movements (debounce to 200ms)
-        if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
-          return;
-        }
-        
-        isMovingRef.current = true;
-        lastMoveTimeRef.current = now;
-        updatePlayer({ x: newX, y: newY });
-        
-        // Reset movement flag after animation completes
-        setTimeout(() => {
-          isMovingRef.current = false;
-        }, 150);
-      }
-      
-      // Handle munch logic after sound
-      if (shouldMunch) {
-        handleMunch();
-      }
-    };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gamePhase, player.x, player.y, gridWidth, gridHeight, updatePlayer, gameOver, updateGrid, grid]);
@@ -295,104 +310,113 @@ export default function GameBoard2D() {
           row.map((cell, colIndex) => (
             <div
               key={`${rowIndex}-${colIndex}`}
-              className={`absolute border-2 flex items-center justify-center text-xs font-bold ${
+              className={`absolute border-2 flex items-center justify-center font-semibold rounded-md ${
                 cell.isEmpty || cell.isMunched 
-                  ? 'border-green-700 bg-green-900/20' 
-                  : 'border-gray-400 bg-white text-black shadow-lg'
+                  ? 'bg-gray-800 border-gray-700' 
+                  : 'bg-yellow-50 border-yellow-500 hover:bg-yellow-100 shadow-md'
+              } transition-all duration-200 ${
+                cell.isMunched ? 'opacity-50' : ''
               }`}
               style={{
-                left: colIndex * cellSize,
-                top: rowIndex * cellSize,
-                width: cellSize - 2,
-                height: cellSize - 2,
-                transition: 'all 0.2s ease',
-                fontSize: Math.min(cellSize / 10, 7) + 'px',
-                padding: '2px',
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                lineHeight: '1',
-                wordWrap: 'break-word',
-                hyphens: 'auto',
-                wordBreak: 'break-all'
+                left: colIndex * cellSize + 2,
+                top: rowIndex * cellSize + 2,
+                width: cellSize - 6,
+                height: cellSize - 6,
+                fontSize: `${fontSize}px`,
+                padding: '4px',
+                lineHeight: 1.2
               }}
-              title={cell.value} // Show full text on hover
             >
               {!cell.isEmpty && !cell.isMunched && (
-                <div style={{
-                  fontSize: 'inherit',
-                  wordBreak: 'break-all',
-                  overflowWrap: 'anywhere',
-                  lineHeight: '0.9',
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'normal',
-                  display: '-webkit-box',
-                  WebkitLineClamp: cell.value.length > 12 ? 3 : 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}>
-                  {cell.value.length > 15 ? cell.value.substring(0, 12) + '...' : cell.value}
-                </div>
+                <span 
+                  className="text-center block w-full h-full flex items-center justify-center"
+                  style={{
+                    fontSize: (() => {
+                      // Calculate optimal font size to avoid word wrap
+                      const text = cell.value;
+                      const charCount = text.length;
+                      const hasSpaces = text.includes(' ');
+                      const availableWidth = cellSize - 12; // Account for padding
+                      
+                      // Estimate character width (rough approximation)
+                      const charWidth = fontSize * 0.6;
+                      const textWidth = charCount * charWidth;
+                      
+                      // If text is too wide, scale down
+                      if (textWidth > availableWidth) {
+                        const scaleFactor = availableWidth / textWidth;
+                        return `${Math.max(fontSize * scaleFactor, 10)}px`; // Min 10px
+                      }
+                      
+                      // Additional scaling for multi-word content
+                      if (hasSpaces) {
+                        if (charCount > 15) return `${fontSize * 0.7}px`;
+                        if (charCount > 10) return `${fontSize * 0.85}px`;
+                      }
+                      
+                      return `${fontSize}px`;
+                    })(),
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    lineHeight: 1,
+                    padding: '2px'
+                  }}
+                >
+                  {cell.value}
+                </span>
               )}
             </div>
           ))
         )}
-
+        
         {/* Player */}
         <div
-          className="absolute bg-green-400 border-3 border-green-200 rounded-lg flex items-center justify-center text-2xl shadow-lg transition-all duration-200 z-10"
+          className="absolute bg-blue-500 rounded-full border-2 border-blue-700 flex items-center justify-center text-white font-bold transition-all duration-150"
           style={{
-            left: player.x * cellSize + 4,
-            top: player.y * cellSize + 4,
-            width: cellSize - 8,
-            height: cellSize - 8,
+            left: player.x * cellSize + cellSize / 4,
+            top: player.y * cellSize + cellSize / 4,
+            width: cellSize / 2,
+            height: cellSize / 2,
+            fontSize: `${cellSize / 3}px`
           }}
         >
-          🎮
+          M
         </div>
-
+        
         {/* Enemies */}
         {enemies.map((enemy) => (
           <div
             key={enemy.id}
-            className={`absolute border-3 rounded-lg flex items-center justify-center text-xl shadow-lg transition-all duration-100 z-10 ${
+            className={`absolute rounded-full border-2 flex items-center justify-center text-white font-bold transition-all ${
               enemy.type === 'fast' 
-                ? 'bg-orange-500 border-orange-300' 
+                ? 'bg-orange-500 border-orange-700' 
                 : enemy.type === 'smart'
-                ? 'bg-purple-500 border-purple-300'
-                : 'bg-red-500 border-red-300'
+                ? 'bg-purple-500 border-purple-700'
+                : 'bg-red-500 border-red-700'
             }`}
             style={{
-              left: enemy.x * cellSize + 6,
-              top: enemy.y * cellSize + 6,
-              width: cellSize - 12,
-              height: cellSize - 12,
+              left: enemy.x * cellSize + cellSize / 4,
+              top: enemy.y * cellSize + cellSize / 4,
+              width: cellSize / 2,
+              height: cellSize / 2,
+              fontSize: `${cellSize / 3}px`,
+              transitionDuration: enemy.type === 'fast' ? '75ms' : '150ms'
             }}
           >
-            👾
+            {enemy.type === 'fast' ? 'F' : enemy.type === 'smart' ? 'S' : 'E'}
           </div>
         ))}
-
-        {/* Grid overlay for visual clarity */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: `${cellSize}px ${cellSize}px`
-          }}
-        />
         </div>
       </div>
       
-      {/* Onscreen Controls - positioned outside game board */}
-      <OnscreenControls onMove={handleOnscreenMove} onMunch={handleMunch} />
+      {/* Mobile controls */}
+      {isMobile && (
+        <OnscreenControls 
+          onMove={handleOnscreenMove}
+          onMunch={handleMunch}
+        />
+      )}
     </>
   );
 }

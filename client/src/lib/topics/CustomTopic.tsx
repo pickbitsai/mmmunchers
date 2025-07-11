@@ -58,11 +58,11 @@ export class CustomTopic extends TopicProvider {
       this.currentLevel
     );
     
-    // Combine all generated items
+    // Combine all generated items (no prefixes to save space)
     const allItems = [
       ...topicContent.items,
-      ...topicContent.facts.map(fact => `Fact: ${fact}`),
-      ...topicContent.categories.map(cat => `Category: ${cat}`)
+      ...topicContent.facts,
+      ...topicContent.categories
     ];
     
     // Cache the results
@@ -208,10 +208,21 @@ export class CustomTopic extends TopicProvider {
     const distractors: string[] = [];
     const topicLower = topic.toLowerCase();
     
+    // Normalize topic to handle typos
+    const normalizedTopic = this.normalizeTopic(topicLower);
+    
     // Generate contextually relevant distractors based on the topic
     let additionalPool: string[] = [];
     
-    if (topicLower.includes('space') || topicLower.includes('astro')) {
+    if (normalizedTopic.includes('egypt')) {
+      additionalPool = [
+        'Babylon', 'Mesopotamia', 'Atlantis', 'Troy', 'Pompeii', 'Machu Picchu',
+        'Zeus', 'Odin', 'Thor', 'Apollo', 'Athena', 'Jupiter',
+        'Colosseum', 'Parthenon', 'Great Wall', 'Taj Mahal', 'Eiffel Tower',
+        'Vikings', 'Samurai', 'Knights', 'Spartans', 'Romans', 'Greeks',
+        'Stonehenge', 'Easter Island', 'Petra', 'Angkor Wat', 'Chichen Itza'
+      ];
+    } else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro')) {
       additionalPool = [
         'Quasar', 'Pulsar', 'Supernova', 'Red giant', 'White dwarf',
         'Neutron star', 'Solar wind', 'Aurora', 'Cosmic rays', 'Dark energy',
@@ -228,6 +239,16 @@ export class CustomTopic extends TopicProvider {
         'Platypus', 'Echidna', 'Wombat', 'Tasmanian devil', 'Dingo',
         'Lemur', 'Gorilla', 'Chimpanzee', 'Orangutan', 'Gibbon', 'Baboon'
       ];
+    } else if (normalizedTopic.includes('dinosaur') || normalizedTopic.includes('dino') || normalizedTopic.includes('prehistoric')) {
+      additionalPool = [
+        'Brontosaurus', 'Apatosaurus', 'Gallimimus', 'Protoceratops', 'Styracosaurus',
+        'Dilophosaurus', 'Ceratosaurus', 'Megalosaurus', 'Oviraptor', 'Ornithomimus',
+        'Quetzalcoatlus', 'Dimorphodon', 'Rhamphorhynchus', 'Ichthyosaurus', 'Kronosaurus',
+        'Dimetrodon', 'Edaphosaurus', 'Coelophysis', 'Herrerasaurus', 'Plateosaurus',
+        'Mesozoic Era', 'Pangaea', 'Gondwana', 'Laurasia', 'Mass extinction',
+        'Meteor impact', 'Volcanic eruption', 'Climate change', 'Sea level rise',
+        'Fossilization', 'Paleontologist', 'Excavation', 'Carbon dating', 'Sedimentary rock'
+      ];
     } else if (topicLower.includes('movie') || topicLower.includes('film')) {
       additionalPool = [
         'Action', 'Drama', 'Comedy', 'Horror', 'Thriller', 'Romance',
@@ -235,6 +256,15 @@ export class CustomTopic extends TopicProvider {
         'Director', 'Producer', 'Actor', 'Actress', 'Screenplay', 'Cinema',
         'Box office', 'Premiere', 'Sequel', 'Prequel', 'Remake', 'Adaptation',
         'Oscar', 'Emmy', 'Golden Globe', 'Cannes', 'Sundance', 'Festival'
+      ];
+    } else if (topicLower.includes('jazz') || topicLower.includes('music')) {
+      additionalPool = [
+        'Benny Goodman', 'Art Tatum', 'Sarah Vaughan', 'Nat King Cole', 'Chet Baker',
+        'Stan Getz', 'Herbie Hancock', 'Quincy Jones', 'Diana Krall', 'Wynton Marsalis',
+        'Ragtime', 'Dixieland', 'Big band', 'Hard bop', 'Modal jazz', 'Latin jazz',
+        'Trombone', 'Vibraphone', 'Hammond organ', 'Flugelhorn', 'Muted trumpet',
+        'Walking bass', 'Comping', 'Trading fours', 'Head arrangement', 'Fake book',
+        'Cotton Club', 'Birdland', 'Blue Note', 'Newport Festival', 'Preservation Hall'
       ];
     } else {
       // Generic distractors for any topic
@@ -257,10 +287,32 @@ export class CustomTopic extends TopicProvider {
       }
     }
     
-    // If we still need more, create numbered variants
+    // If we still need more, create more natural variants
+    const finalTemplates = [
+      'Experimental', 'Theoretical', 'Conceptual', 'Abstract', 'Concrete',
+      'Practical', 'Applied', 'Pure', 'Mixed', 'Hybrid',
+      'Derivative', 'Inspired', 'Influenced', 'Related', 'Associated'
+    ];
+    
+    let templateIndex = 0;
     while (distractors.length < count) {
-      const variant = `${topic} option ${distractors.length + 1}`;
-      distractors.push(variant);
+      if (templateIndex < finalTemplates.length) {
+        const variant = `${finalTemplates[templateIndex]} ${topic}`;
+        if (!distractors.includes(variant)) {
+          distractors.push(variant);
+        }
+        templateIndex++;
+      } else {
+        // Last resort: use synonyms and variations
+        const lastResort = [
+          'Unknown element', 'Mystery item', 'Unnamed piece',
+          'Unidentified object', 'Strange artifact', 'Curious finding'
+        ];
+        const item = lastResort[distractors.length % lastResort.length];
+        if (!distractors.includes(item)) {
+          distractors.push(item);
+        }
+      }
     }
     
     return distractors;
@@ -273,5 +325,38 @@ export class CustomTopic extends TopicProvider {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
+  }
+  
+  private normalizeTopic(topic: string): string {
+    // Common typo corrections - same as in AI service
+    const corrections: { [key: string]: string } = {
+      'egeypt': 'egypt',
+      'egpyt': 'egypt',
+      'egyp': 'egypt',
+      'egipt': 'egypt',
+      'ejypt': 'egypt',
+      'dinasour': 'dinosaur',
+      'dinasaur': 'dinosaur',
+      'dinosaurt': 'dinosaur',
+      'dinosour': 'dinosaur',
+      'dino': 'dinosaur',
+      'sapce': 'space',
+      'spce': 'space',
+      'spoace': 'space'
+    };
+    
+    // Check for exact match
+    if (corrections[topic]) {
+      return corrections[topic];
+    }
+    
+    // Check if topic contains any typos
+    for (const [typo, correct] of Object.entries(corrections)) {
+      if (topic.includes(typo)) {
+        return topic.replace(typo, correct);
+      }
+    }
+    
+    return topic;
   }
 }

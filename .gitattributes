@@ -1,0 +1,58 @@
+# Handle line endings automatically for files detected as text
+# and leave all files detected as binary untouched
+* text=auto
+
+# Force batch scripts to always use CRLF line endings
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Force bash scripts to always use LF line endings
+*.sh text eol=lf
+
+# Web files
+*.html text
+*.css text
+*.scss text
+*.js text
+*.jsx text
+*.ts text
+*.tsx text
+*.json text
+*.md text
+*.yml text
+*.yaml text
+
+# Config files
+.gitattributes text
+.gitignore text
+.editorconfig text
+
+# Documentation
+*.txt text
+LICENSE text
+README text
+
+# Graphics (binary)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Audio/Video (binary)
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.mp4 binary
+
+# 3D Models (binary)
+*.gltf binary
+*.glb binary
+*.obj binary
+
+# Fonts (binary)
+*.ttf binary
+*.eot binary
+*.woff binary
+*.woff2 binary

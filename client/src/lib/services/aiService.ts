@@ -22,6 +22,18 @@ class AIService {
     // OpenAI API configuration
     this.apiKey = import.meta.env.VITE_AI_API_KEY;
     this.apiEndpoint = 'https://api.openai.com/v1/chat/completions';
+    
+    // Debug logging
+    console.log('AI Service initialized:', {
+      hasApiKey: !!this.apiKey,
+      apiKeyLength: this.apiKey?.length || 0,
+      apiKeyPreview: this.apiKey ? `${this.apiKey.substring(0, 7)}...` : 'not set',
+      allEnvKeys: Object.keys(import.meta.env),
+      allEnvValues: import.meta.env,
+      mode: import.meta.env.MODE,
+      dev: import.meta.env.DEV,
+      prod: import.meta.env.PROD
+    });
   }
   
   async generateTopicContent(
@@ -29,9 +41,33 @@ class AIService {
     subtopic: string, 
     level: number
   ): Promise<AITopicContent> {
+    // First, try to get from cache
+    try {
+      const response = await fetch(`/api/topic-content/${encodeURIComponent(topic)}?subtopic=${subtopic}`);
+      if (response.ok) {
+        const cached = await response.json();
+        if (cached && cached.items) {
+          console.log('Using cached content for:', topic);
+          return {
+            items: cached.items,
+            categories: cached.categories,
+            facts: cached.facts
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Cache lookup failed:', error);
+    }
+    
     // If no API is configured, use advanced mock generation
-    if (!this.apiKey || !this.apiEndpoint) {
-      return this.generateMockContent(topic, subtopic, level);
+    if (!this.apiKey || !this.apiEndpoint || this.apiKey === 'undefined') {
+      console.log('No API key configured, using mock content for:', topic);
+      const mockContent = await this.generateMockContent(topic, subtopic, level);
+      
+      // Save mock content to cache
+      this.saveToCacheInBackground(topic, subtopic, mockContent, 'mock');
+      
+      return mockContent;
     }
     
     // OpenAI API call
@@ -66,10 +102,46 @@ class AIService {
       }
       
       const data = await response.json();
-      return this.parseOpenAIResponse(data);
+      const aiContent = this.parseOpenAIResponse(data);
+      
+      // Save AI-generated content to cache
+      this.saveToCacheInBackground(topic, subtopic, aiContent, 'openai');
+      
+      return aiContent;
     } catch (error) {
       console.error('AI generation failed, using mock content:', error);
-      return this.generateMockContent(topic, subtopic, level);
+      const mockContent = await this.generateMockContent(topic, subtopic, level);
+      
+      // Save mock content to cache
+      this.saveToCacheInBackground(topic, subtopic, mockContent, 'mock');
+      
+      return mockContent;
+    }
+  }
+  
+  private async saveToCacheInBackground(
+    topic: string,
+    subtopic: string,
+    content: AITopicContent,
+    generatedBy: string
+  ): Promise<void> {
+    try {
+      await fetch('/api/topic-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          topic,
+          subtopic,
+          items: content.items,
+          categories: content.categories,
+          facts: content.facts,
+          generatedBy
+        })
+      });
+    } catch (error) {
+      console.error('Failed to save to cache:', error);
     }
   }
   
@@ -113,9 +185,11 @@ class AIService {
       Math.floor(Math.random() * challengeTemplates.length)
     ];
     
-    // Determine number of correct answers based on level
-    const minCorrect = Math.min(3 + Math.floor(level / 3), items.length);
-    const maxCorrect = Math.min(minCorrect + 5, items.length);
+    // Determine number of correct answers based on level and grid size
+    // For smaller grids, we need fewer correct answers
+    const totalCells = 48; // Average grid size
+    const minCorrect = Math.min(2 + Math.floor(level / 4), Math.floor(totalCells * 0.2), items.length);
+    const maxCorrect = Math.min(minCorrect + 3, Math.floor(totalCells * 0.35), items.length);
     const numCorrect = Math.min(
       Math.floor(minCorrect + Math.random() * (maxCorrect - minCorrect + 1)),
       items.length
@@ -181,16 +255,18 @@ ${subtopicPrompt}
 
 Create a JSON object with EXACTLY this structure:
 {
-  "items": [array of 25-30 short items/phrases related to ${topic}, each 1-4 words],
-  "categories": [array of 5-8 category names that group these items],
-  "facts": [array of 10-15 interesting facts about ${topic}, each under 50 characters]
+  "items": [array of 25-30 VERY SHORT items/phrases related to ${topic}, each 1-2 words MAX],
+  "categories": [array of 5-8 category names, each 1-2 words],
+  "facts": [array of 10-15 facts about ${topic}, each under 15 characters]
 }
 
-Requirements:
-- Keep all entries short and concise for game display
-- Make content educational and accurate
-- Vary difficulty based on level ${level}
-- No duplicate entries
+CRITICAL Requirements:
+- ALL items MUST be 1-2 words maximum (prefer single words)
+- NO phrases longer than 2 words
+- Categories: 1-2 words only
+- Facts: Maximum 15 characters each
+- Use abbreviations if needed
+- Single nouns preferred
 - Age-appropriate content`;
   }
   
@@ -239,8 +315,25 @@ Requirements:
     // Try to generate somewhat relevant mock content based on common topics
     const topicLower = topic.toLowerCase();
     
+    // Handle common typos and variations
+    const normalizedTopic = this.normalizeTopic(topicLower);
+    
+    // Egypt/Ancient civilization content
+    if (normalizedTopic.includes('egypt') || topicLower.includes('pyramid') || topicLower.includes('pharaoh')) {
+      items.push(
+        'Pyramids', 'Sphinx', 'Pharaoh', 'Mummy', 'Hieroglyphics', 'Nile River', 'Tutankhamun',
+        'Cleopatra', 'Ramses II', 'Cairo', 'Memphis', 'Thebes', 'Valley of Kings', 'Rosetta Stone',
+        'Papyrus', 'Sarcophagus', 'Canopic jars', 'Ankh', 'Scarab', 'Obelisk', 'Temple',
+        'Anubis', 'Ra', 'Isis', 'Osiris', 'Horus', 'Ancient Kingdom', 'Middle Kingdom', 'New Kingdom'
+      );
+      categories.push('Monuments', 'Pharaohs', 'Gods', 'Artifacts', 'Cities', 'Dynasties');
+      facts.push(
+        'Pyramids built 4500 years ago', 'Nile floods annually', 'Hieroglyphs are pictures',
+        'Mummies preserved bodies', 'Pharaohs were god-kings', 'Sphinx guards pyramids'
+      );
+    }
     // Space-related mock content
-    if (topicLower.includes('space') || topicLower.includes('astro') || topicLower.includes('planet')) {
+    else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro') || normalizedTopic.includes('planet')) {
       items.push(
         'Mars', 'Venus', 'Jupiter', 'Saturn', 'Mercury', 'Neptune', 'Uranus', 'Earth',
         'Moon', 'Sun', 'Asteroid', 'Comet', 'Galaxy', 'Star', 'Nebula', 'Black hole',
@@ -253,8 +346,25 @@ Requirements:
         'Moon orbits Earth', 'Space is vast', 'Stars are hot'
       );
     }
+    // Dinosaur-related mock content
+    else if (normalizedTopic.includes('dinosaur') || normalizedTopic.includes('dino') || normalizedTopic.includes('prehistoric')) {
+      items.push(
+        'T-Rex', 'Triceratops', 'Stegosaurus', 'Brachiosaurus', 'Velociraptor', 'Pterodactyl',
+        'Ankylosaurus', 'Diplodocus', 'Allosaurus', 'Spinosaurus', 'Pachycephalosaurus', 'Parasaurolophus',
+        'Iguanodon', 'Archaeopteryx', 'Compsognathus', 'Deinonychus', 'Baryonyx', 'Carnotaurus',
+        'Giganotosaurus', 'Therizinosaurus', 'Mosasaurus', 'Plesiosaur', 'Mammoth', 'Saber-tooth',
+        'Triassic', 'Jurassic', 'Cretaceous', 'Fossil', 'Extinction', 'Paleontology'
+      );
+      categories.push('Carnivores', 'Herbivores', 'Flying Reptiles', 'Marine Reptiles', 'Time Periods', 'Fossils');
+      facts.push(
+        'T-Rex tiny arms', 'Ruled 165M yrs', 'Birds from dinos',
+        'Asteroid end', 'Raptors=feathers', 'Stego plates',
+        '3 horns=Trike', '40ft tall', 'Terrible lizard',
+        'Found 1824', 'Some warm blood', '4 inch smallest'
+      );
+    }
     // Animal-related mock content
-    else if (topicLower.includes('animal') || topicLower.includes('zoo') || topicLower.includes('wildlife')) {
+    else if (normalizedTopic.includes('animal') || normalizedTopic.includes('zoo') || normalizedTopic.includes('wildlife')) {
       items.push(
         'Lion', 'Tiger', 'Bear', 'Elephant', 'Giraffe', 'Zebra', 'Monkey', 'Penguin',
         'Dolphin', 'Whale', 'Shark', 'Eagle', 'Parrot', 'Snake', 'Crocodile', 'Kangaroo',
@@ -266,37 +376,92 @@ Requirements:
         'Snakes slither', 'Dolphins jump', 'Owls are nocturnal'
       );
     }
-    // Default generic content
+    // Music-related mock content
+    else if (normalizedTopic.includes('music') || normalizedTopic.includes('jazz') || normalizedTopic.includes('rock') || normalizedTopic.includes('classical')) {
+      if (normalizedTopic.includes('jazz')) {
+        items.push(
+          'Louis Armstrong', 'Duke Ellington', 'Miles Davis', 'John Coltrane', 'Charlie Parker',
+          'Dizzy Gillespie', 'Billie Holiday', 'Ella Fitzgerald', 'Count Basie', 'Thelonious Monk',
+          'Saxophone', 'Trumpet', 'Piano', 'Double bass', 'Drums', 'Clarinet',
+          'Bebop', 'Swing', 'Cool jazz', 'Free jazz', 'Fusion', 'Blues',
+          'Improvisation', 'Syncopation', 'Blue notes', 'Scat singing', 'Jazz club', 'Jam session'
+        );
+        categories.push('Jazz Musicians', 'Instruments', 'Jazz Styles', 'Techniques', 'Venues');
+        facts.push(
+          'Jazz originated in New Orleans', 'Bebop emerged in 1940s', 'Blue notes define jazz',
+          'Improvisation is key', 'Swing era was 1930s-40s', 'Jazz influenced rock'
+        );
+      } else {
+        items.push(
+          'Guitar', 'Piano', 'Drums', 'Bass', 'Violin', 'Flute', 'Trumpet', 'Saxophone',
+          'Melody', 'Harmony', 'Rhythm', 'Tempo', 'Beat', 'Chord', 'Scale', 'Note',
+          'Concert', 'Album', 'Song', 'Band', 'Orchestra', 'Solo', 'Duet', 'Ensemble'
+        );
+        categories.push('Instruments', 'Music Theory', 'Performances', 'Ensembles', 'Elements');
+        facts.push(
+          'Music is universal', 'Rhythm drives music', 'Harmony creates depth',
+          'Melody tells story', 'Tempo sets pace', 'Dynamics add emotion'
+        );
+      }
+    }
+    // History-related mock content
+    else if (normalizedTopic.includes('history') || normalizedTopic.includes('ancient') || normalizedTopic.includes('war')) {
+      items.push(
+        'Ancient Egypt', 'Roman Empire', 'Greek City-States', 'Medieval Period', 'Renaissance',
+        'Industrial Revolution', 'World War I', 'World War II', 'Cold War', 'Space Race',
+        'Napoleon', 'Caesar', 'Cleopatra', 'Alexander', 'Churchill', 'Lincoln',
+        'Democracy', 'Monarchy', 'Republic', 'Empire', 'Revolution', 'Treaty'
+      );
+      categories.push('Time Periods', 'Leaders', 'Civilizations', 'Events', 'Governments');
+      facts.push(
+        'Rome fell in 476 AD', 'WWI ended in 1918', 'Moon landing 1969',
+        'Berlin Wall fell 1989', 'Renaissance began 1300s', 'USA founded 1776'
+      );
+    }
+    // Science-related mock content
+    else if (normalizedTopic.includes('science') || normalizedTopic.includes('physics') || normalizedTopic.includes('chemistry') || normalizedTopic.includes('biology')) {
+      items.push(
+        'Atom', 'Molecule', 'Cell', 'DNA', 'Evolution', 'Gravity', 'Energy', 'Matter',
+        'Force', 'Motion', 'Light', 'Heat', 'Electricity', 'Magnetism', 'Chemical', 'Reaction',
+        'Einstein', 'Newton', 'Darwin', 'Curie', 'Galileo', 'Hawking',
+        'Theory', 'Hypothesis', 'Experiment', 'Observation', 'Data', 'Conclusion'
+      );
+      categories.push('Concepts', 'Scientists', 'Methods', 'Forces', 'Particles');
+      facts.push(
+        'E=mc²', 'Gravity is universal', 'Cells are life units',
+        'DNA stores information', 'Energy is conserved', 'Light has dual nature'
+      );
+    }
+    // Default generic content - try to be more creative
     else {
-      // Generate categories
-      const categoryTypes = ['Types', 'Groups', 'Classes', 'Examples', 'Varieties'];
-      for (let i = 0; i < 5; i++) {
-        categories.push(`${topic} ${categoryTypes[i]}`);
-      }
+      // Try to extract keywords from the topic
+      const words = topic.toLowerCase().split(' ');
       
-      // Generate items based on subtopic
-      const itemCount = 20 + Math.floor(level / 2);
-      for (let i = 0; i < Math.min(itemCount, 15); i++) {
-        switch (subtopic) {
-          case 'facts':
-            items.push(`${topic} fact ${i + 1}`);
-            break;
-          case 'trivia':
-            items.push(`${topic} trivia ${i + 1}`);
-            break;
-          case 'related':
-            items.push(`${topic} related ${i + 1}`);
-            break;
-          default:
-            items.push(`${topic} item ${i + 1}`);
-        }
-      }
+      // Generate more natural items based on the topic
+      const templates = [
+        'Classic', 'Modern', 'Traditional', 'Contemporary', 'Popular',
+        'Famous', 'Notable', 'Essential', 'Important', 'Key',
+        'Primary', 'Major', 'Leading', 'Top', 'Best',
+        'Original', 'Authentic', 'Genuine', 'Real', 'True'
+      ];
       
-      // Generate facts
-      const factCount = Math.min(10, 5 + Math.floor(level / 5));
-      for (let i = 0; i < factCount; i++) {
-        facts.push(`${topic} fact #${i + 1}`);
+      // Create shorter items
+      items.push(topic, `${topic}s`, 'Basic', 'Advanced', 'Expert', 'Beginner');
+      
+      // Add more short items
+      const shortItems = topic.split(' ');
+      if (shortItems.length > 1) {
+        items.push(...shortItems);
       }
+      items.push('Type A', 'Type B', 'Type C', 'Method 1', 'Method 2', 'Level 1', 'Level 2');
+      
+      // Categories based on topic
+      categories.push('Types', 'Styles', 'Forms', 'Methods', 'Levels');
+      
+      // Facts about the topic
+      facts.push(
+        'Fascinating', 'Rich history', 'Many types', 'Evolving', 'Global study'
+      );
     }
     
     // Add level-specific advanced content
@@ -320,6 +485,7 @@ Requirements:
   ): string[] {
     const distractors: string[] = [];
     const topicLower = topic.toLowerCase();
+    const normalizedTopic = this.normalizeTopic(topicLower);
     
     // Use ALL remaining AI items first (they're related but not correct)
     distractors.push(...remainingItems);
@@ -327,18 +493,39 @@ Requirements:
     // Topic-specific wrong answers
     let topicDistracters: string[] = [];
     
-    if (topicLower.includes('space') || topicLower.includes('astro')) {
+    if (normalizedTopic.includes('egypt')) {
+      topicDistracters = [
+        'Aztec pyramid', 'Mayan temple', 'Roman forum', 'Greek agora',
+        'Viking longship', 'Samurai armor', 'Medieval castle', 'Renaissance art',
+        'Merlin', 'King Arthur', 'Robin Hood', 'Hercules', 'Perseus', 'Achilles',
+        'Excalibur', 'Holy Grail', 'Pandora box', 'Trojan horse'
+      ];
+    } else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro')) {
       topicDistracters = [
         'Flat Earth', 'Geocentric model', 'Aether', 'Phlogiston',
         'Crystal spheres', 'Firmament', 'Turtles all the way', 'Sky dome',
         'Cheese moon', 'Canals on Mars', 'Planet X', 'Nibiru',
         'Hollow Earth', 'Space whales', 'Star gates', 'Sky cities'
       ];
-    } else if (topicLower.includes('animal')) {
+    } else if (normalizedTopic.includes('dinosaur') || normalizedTopic.includes('dino')) {
+      topicDistracters = [
+        'Dragon', 'Godzilla', 'Barney', 'Yoshi', 'Dino from Flintstones', 'Land Before Time',
+        'Jurassic Park', 'King Kong', 'Mothra', 'Rodan', 'Mechagodzilla', 'Kaiju',
+        'Pokemon', 'Charizard', 'Aerodactyl clone', 'Time machine', 'Cave painting', 'Stone age',
+        'Ice age', 'Woolly rhino', 'Giant sloth', 'Terror bird', 'Megashark', 'Titanboa'
+      ];
+    } else if (normalizedTopic.includes('animal')) {
       topicDistracters = [
         'Dragon', 'Unicorn', 'Phoenix', 'Griffin', 'Pegasus', 'Chimera',
         'Minotaur', 'Centaur', 'Kraken', 'Yeti', 'Bigfoot', 'Loch Ness',
         'Chupacabra', 'Jackalope', 'Drop bear', 'Snipe', 'Dodo clone', 'Megalodon'
+      ];
+    } else if (normalizedTopic.includes('jazz') || normalizedTopic.includes('music')) {
+      topicDistracters = [
+        'Kenny G', 'Yanni', 'John Tesh', 'Nickelback', 'Kazoo orchestra',
+        'Air guitar', 'Vuvuzela', 'Triangle solo', 'Cowbell fever', 'Autotune jazz',
+        'Elevator music', 'Muzak', 'MIDI jazz', 'Karaoke jazz', 'Jazz hands',
+        'Smooth criminal', 'Jazz flute', 'Jazz fusion confusion', 'Nu-jazz', 'Jazzercise'
       ];
     } else {
       // Generate topic variations that are wrong
@@ -449,6 +636,54 @@ Requirements:
       `Think about what relates to ${topic}`,
       `Some answers may be tricky!`
     ];
+  }
+  
+  private normalizeTopic(topic: string): string {
+    // Common typo corrections and variations
+    const corrections: { [key: string]: string } = {
+      'egeypt': 'egypt',
+      'egpyt': 'egypt',
+      'egyp': 'egypt',
+      'egipt': 'egypt',
+      'ejypt': 'egypt',
+      'dinasour': 'dinosaur',
+      'dinasaur': 'dinosaur',
+      'dinosaurt': 'dinosaur',
+      'dinosour': 'dinosaur',
+      'dino': 'dinosaur',
+      'sapce': 'space',
+      'spce': 'space',
+      'spoace': 'space',
+      'msic': 'music',
+      'mucis': 'music',
+      'misuc': 'music',
+      'jaz': 'jazz',
+      'jazs': 'jazz',
+      'jasz': 'jazz',
+      'animl': 'animal',
+      'anmal': 'animal',
+      'animla': 'animal',
+      'hsitory': 'history',
+      'histry': 'history',
+      'histroy': 'history',
+      'scince': 'science',
+      'sceince': 'science',
+      'scienc': 'science'
+    };
+    
+    // Check for exact match first
+    if (corrections[topic]) {
+      return corrections[topic];
+    }
+    
+    // Check if topic contains any of the typos
+    for (const [typo, correct] of Object.entries(corrections)) {
+      if (topic.includes(typo)) {
+        return topic.replace(typo, correct);
+      }
+    }
+    
+    return topic;
   }
 }
 

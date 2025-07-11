@@ -17,7 +17,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   const allowedOrigin = process.env.NODE_ENV === 'production' 
     ? process.env.ALLOWED_ORIGIN || 'https://yourdomain.com'
-    : 'http://localhost:5000';
+    : 'http://localhost:3000';
   
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -83,16 +83,28 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
+  // ALWAYS serve the app on port 3000
   // this serves both the API and the client
-  const port = 5000;
+  const port = 3000;
   // Use environment variable for host, default to localhost for security
   const host = process.env.HOST || "127.0.0.1";
-  server.listen({
-    port,
-    host,
-    reusePort: true,
-  }, () => {
-    log(`serving on ${host}:${port}`);
-  });
+  
+  // Check if running on Windows (not WSL)
+  const isWindows = process.platform === 'win32';
+  
+  if (isWindows) {
+    // Windows doesn't support reusePort
+    server.listen(port, host, () => {
+      log(`serving on ${host}:${port}`);
+    });
+  } else {
+    // Unix-like systems (including WSL) support reusePort
+    server.listen({
+      port,
+      host,
+      reusePort: true,
+    }, () => {
+      log(`serving on ${host}:${port}`);
+    });
+  }
 })();

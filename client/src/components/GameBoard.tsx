@@ -70,10 +70,16 @@ export default function GameBoard() {
       gameOver
     });
 
+    // Calculate dynamic center offsets for camera
+    const gridWidth = grid[0]?.length || 8;
+    const gridHeight = grid.length || 6;
+    const centerX = (gridWidth - 1) / 2;
+    const centerY = (gridHeight - 1) / 2;
+
     // Smooth camera follow on mobile/tablet
     if (size.width < 1024) {
-      const playerWorldX = (player.x - 4) * 2;
-      const playerWorldZ = (player.y - 3) * 2;
+      const playerWorldX = (player.x - centerX) * 2;
+      const playerWorldZ = (player.y - centerY) * 2;
       
       // Update camera target
       cameraTarget.current.lerp(
@@ -95,11 +101,23 @@ export default function GameBoard() {
     return null;
   }
 
+  // Calculate grid dimensions
+  const gridWidth = grid[0]?.length || 8;
+  const gridHeight = grid.length || 6;
+  
+  // Calculate center offsets
+  const centerX = (gridWidth - 1) / 2;
+  const centerY = (gridHeight - 1) / 2;
+  
+  // Calculate ground plane size (slightly larger than grid)
+  const groundWidth = gridWidth * 2 + 1;
+  const groundHeight = gridHeight * 2 + 1;
+
   return (
     <group ref={groupRef}>
-      {/* Ground plane */}
+      {/* Ground plane - sized to match actual grid */}
       <mesh position={[0, -0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[20, 16]} />
+        <planeGeometry args={[groundWidth, groundHeight]} />
         <meshLambertMaterial color="#2c3e50" />
       </mesh>
 
@@ -110,9 +128,9 @@ export default function GameBoard() {
             key={`${rowIndex}-${colIndex}`}
             cell={cell}
             position={[
-              (colIndex - 4) * 2,
+              (colIndex - centerX) * 2,
               0,
-              (rowIndex - 3) * 2
+              (rowIndex - centerY) * 2
             ]}
           />
         ))
@@ -121,9 +139,9 @@ export default function GameBoard() {
       {/* Player */}
       <Player
         position={[
-          (player.x - 4) * 2,
+          (player.x - centerX) * 2,
           0.5,
-          (player.y - 3) * 2
+          (player.y - centerY) * 2
         ]}
       />
 
@@ -133,9 +151,9 @@ export default function GameBoard() {
           key={enemy.id}
           enemy={enemy}
           position={[
-            (enemy.x - 4) * 2,
+            (enemy.x - centerX) * 2,
             0.5,
-            (enemy.y - 3) * 2
+            (enemy.y - centerY) * 2
           ]}
         />
       ))}

@@ -22,3 +22,34 @@ export const insertGameProgressSchema = createInsertSchema(gameProgress).pick({
 
 export type InsertGameProgress = z.infer<typeof insertGameProgressSchema>;
 export type GameProgress = typeof gameProgress.$inferSelect;
+
+// AI-generated topic content cache
+export const topicContentCache = pgTable("topic_content_cache", {
+  id: serial("id").primaryKey(),
+  topic: text("topic").notNull(), // The topic/search term (normalized)
+  subtopic: text("subtopic").notNull().default('all'), // Subtopic variant
+  items: jsonb("items").$type<string[]>().notNull(), // Array of items
+  categories: jsonb("categories").$type<string[]>().notNull(), // Array of categories
+  facts: jsonb("facts").$type<string[]>().notNull(), // Array of facts
+  generatedBy: text("generated_by").notNull().default('mock'), // 'openai' or 'mock'
+  usageCount: integer("usage_count").notNull().default(1),
+  lastUsed: timestamp("last_used").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Create indexes for fast lookup
+export const topicContentCacheIndexes = {
+  topicSubtopicIdx: text("topic_subtopic_idx").notNull(),
+};
+
+export const insertTopicContentCacheSchema = createInsertSchema(topicContentCache).pick({
+  topic: true,
+  subtopic: true,
+  items: true,
+  categories: true,
+  facts: true,
+  generatedBy: true,
+});
+
+export type InsertTopicContentCache = z.infer<typeof insertTopicContentCacheSchema>;
+export type TopicContentCache = typeof topicContentCache.$inferSelect;

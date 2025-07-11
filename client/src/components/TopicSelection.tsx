@@ -30,7 +30,8 @@ export default function TopicSelection() {
       name: 'Mathematics',
       description: 'Practice arithmetic, multiples, factors, and more!',
       icon: Calculator,
-      color: 'bg-blue-500 hover:bg-blue-600',
+      color: 'from-cyan-500 to-blue-600',
+      glowColor: 'shadow-cyan-500/50',
       available: true
     },
     {
@@ -38,7 +39,8 @@ export default function TopicSelection() {
       name: 'Word Games', 
       description: 'Find nouns, verbs, adjectives, and word patterns!',
       icon: BookOpen,
-      color: 'bg-green-500 hover:bg-green-600',
+      color: 'from-green-500 to-emerald-600',
+      glowColor: 'shadow-green-500/50',
       available: true
     },
     {
@@ -46,7 +48,8 @@ export default function TopicSelection() {
       name: 'Marvel Universe',
       description: 'Heroes, villains, teams, and superpowers!',
       icon: Zap,
-      color: 'bg-red-500 hover:bg-red-600',
+      color: 'from-red-500 to-pink-600',
+      glowColor: 'shadow-red-500/50',
       available: true
     },
     {
@@ -54,7 +57,8 @@ export default function TopicSelection() {
       name: 'Movie Trivia',
       description: 'Test your knowledge of films, actors, and directors!',
       icon: HelpCircle,
-      color: 'bg-purple-500 hover:bg-purple-600',
+      color: 'from-purple-500 to-indigo-600',
+      glowColor: 'shadow-purple-500/50',
       available: true
     },
     {
@@ -62,7 +66,8 @@ export default function TopicSelection() {
       name: 'Create Custom Board',
       description: 'Generate a board about any topic you choose!',
       icon: Sparkles,
-      color: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
+      color: 'from-pink-500 to-violet-600',
+      glowColor: 'shadow-pink-500/50',
       available: true,
       isCustom: true
     }
@@ -100,9 +105,8 @@ export default function TopicSelection() {
           { id: 'multiples', name: 'Multiples' },
           { id: 'factors', name: 'Factors' },
           { id: 'primes', name: 'Prime Numbers' },
-          { id: 'squares', name: 'Perfect Squares' },
-          { id: 'even_odd', name: 'Even/Odd' },
-          { id: 'greater_less', name: 'Greater/Less Than' }
+          { id: 'equations', name: 'Equations' },
+          { id: 'inequalities', name: 'Inequalities' }
         ];
       case 'words':
         return [
@@ -110,28 +114,26 @@ export default function TopicSelection() {
           { id: 'nouns', name: 'Nouns' },
           { id: 'verbs', name: 'Verbs' },
           { id: 'adjectives', name: 'Adjectives' },
-          { id: 'word_length', name: 'Word Length' },
-          { id: 'word_endings', name: 'Word Endings' },
-          { id: 'vowel_patterns', name: 'Vowel Patterns' }
+          { id: 'vowels', name: 'Vowel Sounds' },
+          { id: 'rhyming', name: 'Rhyming Words' }
         ];
       case 'marvel':
         return [
           { id: 'random', name: 'Random Mix' },
-          { id: 'heroes', name: 'Superheroes' },
+          { id: 'heroes', name: 'Heroes' },
           { id: 'villains', name: 'Villains' },
+          { id: 'powers', name: 'Super Powers' },
           { id: 'teams', name: 'Teams' },
-          { id: 'powers', name: 'Superpowers' },
-          { id: 'locations', name: 'Locations' }
+          { id: 'movies', name: 'MCU Movies' }
         ];
       case 'movies':
         return [
           { id: 'random', name: 'Random Mix' },
-          { id: 'actors', name: 'Famous Actors' },
+          { id: 'action', name: 'Action Movies' },
+          { id: 'scifi', name: 'Sci-Fi Movies' },
+          { id: 'animated', name: 'Animated Films' },
           { id: 'directors', name: 'Directors' },
-          { id: 'genres', name: 'Movie Genres' },
-          { id: 'decades', name: 'Movie Decades' },
-          { id: 'franchises', name: 'Movie Franchises' },
-          { id: 'awards', name: 'Award Winners' }
+          { id: 'actors', name: 'Actors & Actresses' }
         ];
       default:
         return [];
@@ -139,179 +141,241 @@ export default function TopicSelection() {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 topic-selection-container">
-      <div className="flex items-center justify-center min-h-full p-4" style={{ paddingTop: 'max(env(safe-area-inset-top), 8rem)', paddingBottom: 'max(env(safe-area-inset-bottom), 2rem)' }}>
-        <div className="container max-w-3xl mx-auto">
-          <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold text-white mb-2">Number Munchers</h1>
-            <p className="text-lg text-gray-300">Educational Adventure Game</p>
-          </div>
-
-          <Card className="bg-black/40 border-gray-600 backdrop-blur-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-center text-white">Choose Your Topic</CardTitle>
-              <div className="flex justify-center mt-4">
-                <div className="inline-flex items-center bg-black/40 rounded-lg p-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`px-3 py-1 text-xs ${
-                      renderMode === '2d' 
-                        ? 'bg-white/20 text-white' 
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                    onClick={() => renderMode !== '2d' && toggleRenderMode()}
-                  >
-                    <Gamepad2 className="w-4 h-4 mr-1" />
-                    2D Mode
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`px-3 py-1 text-xs ${
-                      renderMode === '3d' 
-                        ? 'bg-white/20 text-white' 
-                        : 'text-gray-400 hover:text-white'
-                    }`}
-                    onClick={() => renderMode !== '3d' && toggleRenderMode()}
-                  >
-                    <Box className="w-4 h-4 mr-1" />
-                    3D Mode
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {topics.map((topic) => {
-                  const IconComponent = topic.icon;
-                  
-                  return (
-                    <Card 
-                      key={topic.id} 
-                      className={`border-2 transition-all duration-200 ${
-                        topic.available 
-                          ? 'border-gray-600 hover:border-gray-400 bg-black/60' 
-                          : 'border-gray-800 bg-black/20 opacity-50'
-                      }`}
-                    >
-                      <CardContent className="p-4">
-                        <div className="text-center mb-4">
-                          <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-3 ${
-                            topic.available ? topic.color : 'bg-gray-600'
-                          }`}>
-                            <IconComponent className="h-6 w-6 text-white" />
-                          </div>
-                          
-                          <h3 className="text-lg font-bold text-white mb-2">
-                            {topic.name}
-                          </h3>
-                          
-                          <p className="text-gray-300 text-xs mb-3">
-                            {topic.description}
-                          </p>
-                        </div>
-                        
-                        {topic.available ? (
-                          <div className="space-y-3">
-                            {!topic.isCustom && (
-                              <div className="relative">
-                                <MobileSelect
-                                  value={selectedCategories[topic.id] || 'random'}
-                                  onValueChange={(value) => {
-                                    setSelectedCategories(prev => ({...prev, [topic.id]: value}));
-                                  }}
-                                  options={getTopicCategories(topic.id)}
-                                  placeholder="Random Mix"
-                                  triggerClassName="w-full bg-black/40 text-white border-gray-600 hover:bg-black/60"
-                                  contentClassName="bg-gray-800 text-white border-gray-600"
-                                />
-                              </div>
-                            )}
-                            
-                            <Button 
-                              className={`w-full ${topic.color} text-white border-none`}
-                              onClick={() => handleTopicSelect(topic.id)}
-                            >
-                              {topic.isCustom ? 'Create Board' : 'Start Playing'}
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button 
-                            disabled 
-                            className="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
-                          >
-                            Coming Soon
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+    <div 
+      className="fixed inset-0 flex items-center justify-center p-4 overflow-auto"
+      style={{
+        background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f1e 100%)',
+        fontFamily: 'Rajdhani, sans-serif'
+      }}
+    >
+      {/* Animated background particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute w-full h-full opacity-20">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${3 + Math.random() * 4}s`
+              }}
+            />
+          ))}
         </div>
       </div>
-      
-      {/* Custom Topic Modal */}
-      {showCustomModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <Card className="bg-gray-900 border-gray-700 w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-white text-center">Create Custom Board</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-300 mb-2 block">
-                    What topic would you like to learn about?
-                  </label>
-                  <input
-                    type="text"
-                    value={customTopic}
-                    onChange={(e) => setCustomTopic(e.target.value)}
-                    placeholder="e.g., Dinosaurs, Space, Ancient Egypt..."
-                    className="w-full px-3 py-2 bg-black/40 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleCustomTopicCreate();
-                      }
-                    }}
-                  />
-                </div>
+
+      <div className="w-full max-w-6xl">
+        <div className="text-center mb-8">
+          <h1 
+            className="text-5xl md:text-6xl font-bold mb-2 tracking-wider"
+            style={{
+              background: 'linear-gradient(45deg, #00f0ff 0%, #ff00aa 50%, #ffcc00 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 0 40px rgba(0, 240, 255, 0.5)'
+            }}
+          >
+            NUMBER MUNCHERS 3D
+          </h1>
+          <p className="text-cyan-300 text-lg tracking-wide">Choose your learning adventure</p>
+        </div>
+
+        {/* Render mode toggle */}
+        <div className="flex justify-center mb-6">
+          <div 
+            className="inline-flex items-center p-1 rounded-lg"
+            style={{
+              background: 'rgba(0, 240, 255, 0.1)',
+              border: '1px solid rgba(0, 240, 255, 0.3)',
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`px-4 py-2 text-sm font-medium transition-all ${
+                renderMode === '2d' 
+                  ? 'bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20' 
+                  : 'text-gray-400 hover:text-cyan-300'
+              }`}
+              onClick={() => renderMode !== '2d' && toggleRenderMode()}
+            >
+              <Gamepad2 className="w-4 h-4 mr-2" />
+              2D Mode
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`px-4 py-2 text-sm font-medium transition-all ${
+                renderMode === '3d' 
+                  ? 'bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20' 
+                  : 'text-gray-400 hover:text-cyan-300'
+              }`}
+              onClick={() => renderMode !== '3d' && toggleRenderMode()}
+            >
+              <Box className="w-4 h-4 mr-2" />
+              3D Mode
+            </Button>
+          </div>
+        </div>
+
+        {/* Topic cards grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {topics.map((topic) => {
+            const IconComponent = topic.icon;
+            
+            return (
+              <div
+                key={topic.id}
+                className={`relative group ${!topic.available && 'opacity-50'}`}
+              >
+                {/* Glow effect */}
+                <div 
+                  className={`absolute inset-0 bg-gradient-to-r ${topic.color} opacity-0 group-hover:opacity-20 
+                    rounded-xl blur-xl transition-opacity duration-500 ${topic.available ? '' : 'hidden'}`}
+                />
                 
-                <div className="text-xs text-gray-400">
-                  <p className="mb-2">✨ Powered by OpenAI GPT-3.5 for intelligent content!</p>
-                  <p>📚 Generates facts, trivia, and related items</p>
-                  <p>🎮 Difficulty adapts to your level</p>
-                  <p>♾️ Infinite levels with fresh AI-generated content</p>
-                  <p className="mt-2 text-yellow-400">💡 Try topics like: Ancient Egypt, Space Exploration, Jazz Music, Quantum Physics</p>
-                </div>
-                
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
-                    onClick={() => {
-                      setShowCustomModal(false);
-                      setCustomTopic('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-none"
-                    onClick={handleCustomTopicCreate}
-                    disabled={!customTopic.trim()}
-                  >
-                    Create Board
-                  </Button>
+                {/* Card content */}
+                <div 
+                  className="relative p-6 rounded-xl transition-all duration-300 transform group-hover:translate-y-[-2px]"
+                  style={{
+                    background: 'rgba(18, 18, 37, 0.8)',
+                    border: '1px solid rgba(0, 240, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: topic.available 
+                      ? '0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                      : 'none'
+                  }}
+                >
+                  {/* Icon */}
+                  <div className="flex justify-center mb-4">
+                    <div 
+                      className={`w-16 h-16 rounded-full bg-gradient-to-br ${topic.color} 
+                        flex items-center justify-center shadow-lg ${topic.glowColor}
+                        ${topic.available ? 'group-hover:shadow-xl group-hover:scale-110' : ''} 
+                        transition-all duration-300`}
+                    >
+                      <IconComponent className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-white text-center mb-2 tracking-wide">
+                    {topic.name}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-gray-400 text-sm text-center mb-4 leading-relaxed">
+                    {topic.description}
+                  </p>
+                  
+                  {/* Category selector and button */}
+                  {topic.available ? (
+                    <div className="space-y-3">
+                      {!topic.isCustom && (
+                        <MobileSelect
+                          value={selectedCategories[topic.id] || 'random'}
+                          onValueChange={(value) => {
+                            setSelectedCategories(prev => ({...prev, [topic.id]: value}));
+                          }}
+                          options={getTopicCategories(topic.id)}
+                          placeholder="Random Mix"
+                          triggerClassName="w-full bg-black/40 text-cyan-300 border-cyan-900/50 hover:border-cyan-700/50 hover:bg-black/60"
+                          contentClassName="bg-gray-900 text-white border-cyan-900/50"
+                        />
+                      )}
+                      
+                      <Button 
+                        className={`w-full bg-gradient-to-r ${topic.color} text-white font-bold 
+                          py-3 rounded-lg transform transition-all duration-200 
+                          hover:scale-105 hover:shadow-lg ${topic.glowColor}`}
+                        onClick={() => handleTopicSelect(topic.id)}
+                      >
+                        {topic.isCustom ? 'CREATE BOARD' : 'START GAME'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      disabled 
+                      className="w-full bg-gray-800 text-gray-500 cursor-not-allowed py-3 rounded-lg"
+                    >
+                      COMING SOON
+                    </Button>
+                  )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Custom Topic Modal */}
+      {showCustomModal && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50"
+          onClick={() => setShowCustomModal(false)}
+        >
+          <div 
+            className="relative max-w-md w-full p-8 rounded-2xl"
+            style={{
+              background: 'rgba(18, 18, 37, 0.95)',
+              border: '1px solid rgba(0, 240, 255, 0.3)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 80px rgba(0, 240, 255, 0.2)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 
+              className="text-3xl font-bold text-center mb-6"
+              style={{
+                background: 'linear-gradient(45deg, #00f0ff, #ff00aa)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}
+            >
+              Create Custom Board
+            </h2>
+            
+            <p className="text-gray-400 text-center mb-6">
+              Enter any topic and our AI will generate a unique learning experience!
+            </p>
+            
+            <input
+              type="text"
+              value={customTopic}
+              onChange={(e) => setCustomTopic(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCustomTopicCreate()}
+              placeholder="e.g., Dinosaurs, Space, Music..."
+              className="w-full px-4 py-3 rounded-lg bg-black/50 border border-cyan-900/50 
+                text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 
+                focus:shadow-lg focus:shadow-cyan-500/20 transition-all duration-200"
+              autoFocus
+            />
+            
+            <div className="flex gap-3 mt-6">
+              <Button
+                onClick={() => setShowCustomModal(false)}
+                className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-3 rounded-lg transition-all"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCustomTopicCreate}
+                disabled={!customTopic.trim()}
+                className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-lg 
+                  transform transition-all duration-200 hover:scale-105 hover:shadow-lg 
+                  shadow-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                Create Board
+              </Button>
+            </div>
+            
+            <p className="text-xs text-gray-500 text-center mt-4">
+              {import.meta.env.VITE_AI_API_KEY ? 'AI-powered' : 'Mock content'} generation
+            </p>
+          </div>
         </div>
       )}
     </div>

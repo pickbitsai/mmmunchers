@@ -8,6 +8,7 @@ import SoundManager from "./components/SoundManager";
 import TopicSelection from "./components/TopicSelection";
 import GameUI from "./components/GameUI";
 import { useGameState } from "./lib/stores/useGameState";
+import { Toaster } from "./components/ui/sonner";
 import "@fontsource/inter";
 
 const queryClient = new QueryClient({
@@ -70,6 +71,7 @@ function GameContainer() {
       )}
       
       <SoundManager />
+      <Toaster position="top-center" />
     </div>
   );
 }

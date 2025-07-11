@@ -142,7 +142,7 @@ export class WordTopic extends TopicProvider {
   generateGrid(width: number, height: number, challenge: Challenge): GridCell[][] {
     const grid = this.createEmptyGrid(width, height);
     const totalCells = width * height;
-    const cellsToFill = Math.floor(totalCells * 0.7);
+    const cellsToFill = totalCells; // Fill 100% of cells
     
     // Generate words to place in grid
     const words: string[] = [];
@@ -205,12 +205,10 @@ export class WordTopic extends TopicProvider {
     const positions: Array<{x: number, y: number}> = [];
     const allPositions: Array<{x: number, y: number}> = [];
     
-    // Generate all possible positions (avoid center where player starts)
+    // Generate all possible positions
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        if (!(x === Math.floor(width/2) && y === Math.floor(height/2))) {
-          allPositions.push({ x, y });
-        }
+        allPositions.push({ x, y });
       }
     }
     

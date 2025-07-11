@@ -190,7 +190,7 @@ export class MarvelTopic extends TopicProvider {
   generateGrid(width: number, height: number, challenge: Challenge): GridCell[][] {
     const grid = this.createEmptyGrid(width, height);
     const totalCells = width * height;
-    const cellsToFill = Math.floor(totalCells * 0.7);
+    const cellsToFill = totalCells; // Fill 100% of cells
     
     // Generate Marvel items to place in grid
     const items: string[] = [];

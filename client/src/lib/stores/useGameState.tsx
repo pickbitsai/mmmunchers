@@ -7,6 +7,7 @@ import { MarvelTopic } from "../topics/MarvelTopic";
 import { MovieTopic } from "../topics/MovieTopic";
 import { CustomTopic } from "../topics/CustomTopic";
 import { useAudio } from "./useAudio";
+import { toast } from "sonner";
 
 export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over" | "loading";
 export type RenderMode = "2d" | "3d";
@@ -80,14 +81,41 @@ interface GameState {
   addScore: (points: number) => void;
 }
 
-const GRID_WIDTH = 9;
-const GRID_HEIGHT = 7;
+// Responsive grid sizes - smaller grids for bigger tiles
+const getGridDimensions = () => {
+  const width = window.innerWidth;
+  if (width < 640) { // Mobile
+    return { width: 5, height: 4 };
+  } else if (width < 768) { // Small tablet
+    return { width: 6, height: 5 };
+  } else if (width < 1024) { // Tablet
+    return { width: 7, height: 5 };
+  } else { // Desktop
+    return { width: 8, height: 6 };
+  }
+};
+
+const GRID_DIMENSIONS = getGridDimensions();
+const GRID_WIDTH = GRID_DIMENSIONS.width;
+const GRID_HEIGHT = GRID_DIMENSIONS.height;
 
 // Pre-calculated enemy spawn positions to avoid using Math.random in render
-const enemySpawnPositions = [
-  { x: 0, y: 0 }, { x: 8, y: 0 }, { x: 0, y: 6 }, { x: 8, y: 6 },
-  { x: 4, y: 0 }, { x: 4, y: 6 }, { x: 0, y: 3 }, { x: 8, y: 3 }
-];
+const getEnemySpawnPositions = (gridWidth: number, gridHeight: number) => {
+  const midX = Math.floor(gridWidth / 2);
+  const midY = Math.floor(gridHeight / 2);
+  return [
+    { x: 0, y: 0 }, 
+    { x: gridWidth - 1, y: 0 }, 
+    { x: 0, y: gridHeight - 1 }, 
+    { x: gridWidth - 1, y: gridHeight - 1 },
+    { x: midX, y: 0 }, 
+    { x: midX, y: gridHeight - 1 }, 
+    { x: 0, y: midY }, 
+    { x: gridWidth - 1, y: midY }
+  ];
+};
+
+const enemySpawnPositions = getEnemySpawnPositions(GRID_WIDTH, GRID_HEIGHT);
 
 export const useGameState = create<GameState>()(
   subscribeWithSelector((set, get) => ({
@@ -183,15 +211,20 @@ export const useGameState = create<GameState>()(
       const gameLevel = currentLevel > 0 ? currentLevel : Math.floor(Math.random() * 3) + 1;
       
       try {
+        // Get current grid dimensions based on window size
+        const currentDimensions = getGridDimensions();
+        const gridWidth = currentDimensions.width;
+        const gridHeight = currentDimensions.height;
+        
         // Generate challenge and grid for the current level
         const challenge = await Promise.resolve(topicProvider.generateChallenge(gameLevel));
-        const grid = await Promise.resolve(topicProvider.generateGrid(GRID_WIDTH, GRID_HEIGHT, challenge));
+        const grid = await Promise.resolve(topicProvider.generateGrid(gridWidth, gridHeight, challenge));
         
         set((state) => ({
           gamePhase: "playing",
           currentChallenge: challenge,
           grid,
-          player: { x: 4, y: 3, moveX: 0, moveY: 0, isMoving: false },
+          player: { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2), moveX: 0, moveY: 0, isMoving: false },
           enemies: [],
           level: gameLevel,
           // Preserve score and lives when continuing to next level
@@ -201,6 +234,14 @@ export const useGameState = create<GameState>()(
         }));
       } catch (error) {
         console.error('Failed to generate game content:', error);
+        
+        // Show error message to user
+        if (selectedTopic === 'custom') {
+          toast.error('Failed to generate custom board. Please try a different topic or check your spelling.');
+        } else {
+          toast.error('Failed to start game. Please try again.');
+        }
+        
         // Return to topic selection on error
         set({
           gamePhase: "topic_selection",
@@ -276,7 +317,6 @@ export const useGameState = create<GameState>()(
       const gridHeight = grid.length || 0;
       
       if (newX < 0 || newX >= gridWidth || newY < 0 || newY >= gridHeight) {
-
         return;
       }
       
@@ -315,10 +355,7 @@ export const useGameState = create<GameState>()(
         const totalCorrect = newGrid.flat().filter(c => c.isCorrect).length;
         const munchedCorrect = newGrid.flat().filter(c => c.isCorrect && c.isMunched).length;
         
-
-        
         if (!remainingCorrect) {
-
           get().nextLevel();
         }
       } else {
@@ -336,12 +373,19 @@ export const useGameState = create<GameState>()(
     },
     
     spawnEnemies: () => {
-      const { level } = get();
+      const { level, grid } = get();
       const numEnemies = Math.min(1 + Math.floor(level / 3), 4);
       const enemies: Enemy[] = [];
       
+      // Get actual grid dimensions from current grid
+      const gridWidth = grid[0]?.length || 8;
+      const gridHeight = grid.length || 6;
+      
+      // Generate spawn positions based on actual grid size
+      const dynamicSpawnPositions = getEnemySpawnPositions(gridWidth, gridHeight);
+      
       for (let i = 0; i < numEnemies; i++) {
-        const spawnPos = enemySpawnPositions[i % enemySpawnPositions.length];
+        const spawnPos = dynamicSpawnPositions[i % dynamicSpawnPositions.length];
         const enemyType = level > 5 ? (i % 2 === 0 ? 'fast' : 'smart') : 'basic';
         
         enemies.push({
