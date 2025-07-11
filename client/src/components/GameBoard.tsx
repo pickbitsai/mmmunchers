@@ -168,12 +168,7 @@ export default function GameBoard() {
 
   if (!grid.length || !currentChallenge) {
     console.log("GameBoard: Missing grid or challenge - returning null");
-    return (
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial color="red" />
-      </mesh>
-    );
+    return null;
   }
 
   // Calculate grid dimensions

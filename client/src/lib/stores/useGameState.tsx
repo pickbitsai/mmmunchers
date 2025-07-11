@@ -222,6 +222,13 @@ export const useGameState = create<GameState>()(
         const challenge = await Promise.resolve(topicProvider.generateChallenge(gameLevel));
         const grid = await Promise.resolve(topicProvider.generateGrid(gridWidth, gridHeight, challenge));
         
+        console.log("Generated game content:", { 
+          challenge: challenge?.description, 
+          gridSize: `${gridWidth}x${gridHeight}`, 
+          gridLength: grid.length,
+          hasChallenge: !!challenge
+        });
+        
         set((state) => ({
           gamePhase: "playing",
           currentChallenge: challenge,
