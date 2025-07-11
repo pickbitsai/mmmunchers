@@ -99,7 +99,7 @@ export default function GameBoard() {
   });
 
   if (!grid.length || !currentChallenge) {
-
+    console.log("GameBoard: Missing grid or challenge", { gridLength: grid.length, hasChallenge: !!currentChallenge });
     return null;
   }
 

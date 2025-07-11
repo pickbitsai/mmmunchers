@@ -11,6 +11,8 @@ interface EnemyType {
   targetY: number;
   speed: number;
   type: 'basic' | 'fast' | 'smart';
+  lastMoveTime: number;
+  isMoving: boolean;
 }
 
 interface EnemyProps {
