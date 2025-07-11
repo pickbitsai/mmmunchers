@@ -386,12 +386,23 @@ export const useGameState = create<GameState>()(
       const numEnemies = Math.min(1 + Math.floor(level / 3), 4);
       const enemies: Enemy[] = [];
       
+      console.log("Spawning enemies:", { level, numEnemies, gridSize: `${grid[0]?.length}x${grid.length}` });
+      
       // Get actual grid dimensions from current grid
       const gridWidth = grid[0]?.length || 8;
       const gridHeight = grid.length || 6;
       
       // Generate spawn positions based on actual grid size
-      const dynamicSpawnPositions = getEnemySpawnPositions(gridWidth, gridHeight);
+      const dynamicSpawnPositions = [
+        { x: 0, y: 0 },
+        { x: gridWidth - 1, y: 0 },
+        { x: 0, y: gridHeight - 1 },
+        { x: gridWidth - 1, y: gridHeight - 1 },
+        { x: Math.floor(gridWidth / 2), y: 0 },
+        { x: Math.floor(gridWidth / 2), y: gridHeight - 1 },
+        { x: 0, y: Math.floor(gridHeight / 2) },
+        { x: gridWidth - 1, y: Math.floor(gridHeight / 2) }
+      ];
       
       for (let i = 0; i < numEnemies; i++) {
         const spawnPos = dynamicSpawnPositions[i % dynamicSpawnPositions.length];
@@ -410,6 +421,7 @@ export const useGameState = create<GameState>()(
         });
       }
       
+      console.log("Created enemies:", enemies);
       set({ enemies });
     },
     

@@ -38,7 +38,7 @@ export default function GameBoard() {
 
   // Keyboard controls
   const lastMoveTimeRef = useRef<number>(0);
-  const MOVE_DEBOUNCE = 200; // 200ms debounce for movement
+  const MOVE_DEBOUNCE = 300; // 300ms debounce for movement
   
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,21 +54,25 @@ export default function GameBoard() {
         case 'ArrowUp':
         case 'w':
         case 'W':
+          e.preventDefault();
           newY = Math.max(0, player.y - 1);
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
+          e.preventDefault();
           newY = Math.min((grid.length || 6) - 1, player.y + 1);
           break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
+          e.preventDefault();
           newX = Math.max(0, player.x - 1);
           break;
         case 'ArrowRight':
         case 'd':
         case 'D':
+          e.preventDefault();
           newX = Math.min((grid[0]?.length || 8) - 1, player.x + 1);
           break;
         case ' ':
