@@ -26,7 +26,7 @@ export default function GridCell({ cell, position }: GridCellProps) {
     }
   });
 
-  if (cell.isEmpty || cell.isMunched) {
+  if (cell.isMunched) {
     return null;
   }
   
@@ -38,25 +38,27 @@ export default function GridCell({ cell, position }: GridCellProps) {
       <mesh ref={meshRef} position={position} receiveShadow castShadow>
         <boxGeometry args={[1.5, 0.2, 1.5]} />
         <meshLambertMaterial 
-          color="#4A90E2"
+          color={cell.isEmpty ? "#2c3e50" : "#4A90E2"}
           transparent
           opacity={0.8}
         />
       </mesh>
       
       {/* Cell value text */}
-      <Text
-        position={[position[0], position[1] + 0.5, position[2]]}
-        fontSize={0.4}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={1.4}
-        textAlign="center"
-        overflowWrap="break-word"
-      >
-        {cell.value || "TEST"}
-      </Text>
+      {!cell.isEmpty && (
+        <Text
+          position={[position[0], position[1] + 0.5, position[2]]}
+          fontSize={0.4}
+          color="white"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={1.4}
+          textAlign="center"
+          overflowWrap="break-word"
+        >
+          {cell.value}
+        </Text>
+      )}
     </group>
   );
 }

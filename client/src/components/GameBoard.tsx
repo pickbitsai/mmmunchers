@@ -32,7 +32,7 @@ export default function GameBoard() {
   useEffect(() => {
     if (gamePhase === 'playing' && enemies.length === 0) {
       console.log("3D GameBoard: Spawning enemies");
-      spawnEnemies();
+      setTimeout(() => spawnEnemies(), 1000); // Delay enemy spawn slightly
     }
   }, [gamePhase, enemies.length, spawnEnemies]);
 
