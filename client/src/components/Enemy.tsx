@@ -31,6 +31,8 @@ export default function Enemy({ enemy, position }: EnemyProps) {
     }
   });
 
+  console.log("Enemy rendering:", { id: enemy.id, type: enemy.type, position });
+
   // Different colors for enemy types
   const bodyColor = enemy.type === 'fast' ? "#FF6B35" : enemy.type === 'smart' ? "#9C27B0" : "#8B0000";
   const skinColor = enemy.type === 'fast' ? "#FF8C69" : enemy.type === 'smart' ? "#BA68C8" : "#CD5C5C";

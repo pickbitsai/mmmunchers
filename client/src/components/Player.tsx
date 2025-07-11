@@ -19,6 +19,8 @@ export default function Player({ position }: PlayerProps) {
     }
   });
 
+  console.log("Player rendering at position:", position);
+
   return (
     <group ref={groupRef} position={position}>
       {/* Body */}

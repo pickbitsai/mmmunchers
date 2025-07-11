@@ -72,7 +72,7 @@ function GameContainer() {
       )}
       
       {/* Debug info */}
-      <div style={{ position: 'fixed', top: 10, left: 10, color: 'white', fontSize: '12px', zIndex: 1000 }}>
+      <div style={{ position: 'fixed', top: 10, left: 10, color: 'white', fontSize: '12px', zIndex: 1000, backgroundColor: 'rgba(0,0,0,0.8)', padding: '5px' }}>
         Phase: {gamePhase} | Mode: {renderMode} | Grid: {grid?.length || 0} | Challenge: {currentChallenge ? 'Yes' : 'No'}
       </div>
       

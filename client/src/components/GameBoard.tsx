@@ -31,6 +31,7 @@ export default function GameBoard() {
   // Initialize enemies when game starts
   useEffect(() => {
     if (gamePhase === 'playing' && enemies.length === 0) {
+      console.log("3D GameBoard: Spawning enemies");
       spawnEnemies();
     }
   }, [gamePhase, enemies.length, spawnEnemies]);
@@ -56,6 +57,11 @@ export default function GameBoard() {
   // Game loop with camera follow
   useFrame((state, delta) => {
     if (gamePhase !== 'playing') return;
+
+    // Debug game loop
+    if (Math.random() < 0.01) { // Log occasionally to avoid spam
+      console.log("3D Game loop running", { delta, playerPos: `${player.x},${player.y}`, enemyCount: enemies.length });
+    }
 
     updateGameLogic({
       delta,
