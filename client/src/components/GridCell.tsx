@@ -48,14 +48,14 @@ export default function GridCell({ cell, position }: GridCellProps) {
       <Text
         position={[position[0], position[1] + 0.5, position[2]]}
         fontSize={0.4}
-        color="black"
+        color="white"
         anchorX="center"
         anchorY="middle"
         maxWidth={1.4}
         textAlign="center"
         overflowWrap="break-word"
       >
-        {cell.value || "???"}
+        {cell.value || "TEST"}
       </Text>
     </group>
   );

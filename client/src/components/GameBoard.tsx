@@ -195,17 +195,22 @@ export default function GameBoard() {
 
       {/* Grid cells */}
       {grid.map((row, rowIndex) =>
-        row.map((cell, colIndex) => (
-          <GridCell
-            key={`${rowIndex}-${colIndex}`}
-            cell={cell}
-            position={[
-              (colIndex - centerX) * 2,
-              0,
-              (rowIndex - centerY) * 2
-            ]}
-          />
-        ))
+        row.map((cell, colIndex) => {
+          if (!cell.isEmpty) {
+            console.log(`Rendering cell at ${colIndex},${rowIndex} with value:`, cell.value);
+          }
+          return (
+            <GridCell
+              key={`${rowIndex}-${colIndex}`}
+              cell={cell}
+              position={[
+                (colIndex - centerX) * 2,
+                0,
+                (rowIndex - centerY) * 2
+              ]}
+            />
+          );
+        })
       )}
 
       {/* Player */}
