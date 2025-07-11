@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
 });
 
 function GameContainer() {
-  const { gamePhase, initializeGame, renderMode } = useGameState();
+  const { gamePhase, initializeGame, renderMode, grid, currentChallenge } = useGameState();
 
   // Initialize game once on mount
   React.useEffect(() => {
@@ -56,10 +56,11 @@ function GameContainer() {
               shadows
               camera={{ position: [0, 10, 10], fov: 60 }}
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+              onCreated={() => console.log("Canvas created successfully")}
             >
               <ambientLight intensity={0.5} />
               <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-              <Suspense fallback={null}>
+              <Suspense fallback={<mesh><boxGeometry args={[1,1,1]} /><meshBasicMaterial color="red" /></mesh>}>
                 <Game />
               </Suspense>
             </Canvas>
@@ -69,6 +70,11 @@ function GameContainer() {
           <GameUI />
         </>
       )}
+      
+      {/* Debug info */}
+      <div style={{ position: 'fixed', top: 10, left: 10, color: 'white', fontSize: '12px', zIndex: 1000 }}>
+        Phase: {gamePhase} | Mode: {renderMode} | Grid: {grid?.length || 0} | Challenge: {currentChallenge ? 'Yes' : 'No'}
+      </div>
       
       <SoundManager />
       <Toaster position="top-center" />
