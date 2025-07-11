@@ -73,9 +73,11 @@ export default function GameUI() {
   }, [gamePhase]);
 
   if (gamePhase === 'topic_selection') return null;
+  
+  console.log("GameUI rendering with phase:", gamePhase, "renderMode:", renderMode);
 
   return (
-    <div className="fixed inset-0 pointer-events-none">
+    <div className="fixed inset-0 pointer-events-none z-50">
       {/* Mobile-friendly top HUD */}
       <div className="absolute top-2 left-2 right-2 pointer-events-auto flex flex-col sm:flex-row gap-2">
         {/* Stats */}

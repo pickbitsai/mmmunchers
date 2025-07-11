@@ -27,7 +27,6 @@ export default function GridCell({ cell, position }: GridCellProps) {
   });
 
   if (cell.isEmpty || cell.isMunched) {
-    console.log("GridCell: Skipping empty/munched cell", { isEmpty: cell.isEmpty, isMunched: cell.isMunched });
     return null;
   }
   
@@ -48,24 +47,15 @@ export default function GridCell({ cell, position }: GridCellProps) {
       {/* Cell value text */}
       <Text
         position={[position[0], position[1] + 0.5, position[2]]}
-        fontSize={(() => {
-          const len = cell.value.length;
-          if (len <= 3) return 0.6;      // "42", "Cat"
-          if (len <= 4) return 0.5;      // "Blue", "1234"
-          if (len <= 5) return 0.45;     // "Crime", "Drama"
-          if (len <= 6) return 0.4;      // "Romans", "Action"
-          if (len <= 7) return 0.35;     // "Quickly", "Mystery"
-          if (len <= 10) return 0.3;     // "Beautiful"
-          return 0.25;                    // Very long words
-        })()}
-        color="white"
+        fontSize={0.4}
+        color="black"
         anchorX="center"
         anchorY="middle"
         maxWidth={1.4}
         textAlign="center"
         overflowWrap="break-word"
       >
-        {cell.value}
+        {cell.value || "???"}
       </Text>
     </group>
   );

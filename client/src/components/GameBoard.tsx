@@ -36,6 +36,59 @@ export default function GameBoard() {
     }
   }, [gamePhase, enemies.length, spawnEnemies]);
 
+  // Keyboard controls
+  const lastMoveTimeRef = useRef<number>(0);
+  const MOVE_DEBOUNCE = 200; // 200ms debounce for movement
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (gamePhase !== 'playing') return;
+      
+      const now = Date.now();
+      if (now - lastMoveTimeRef.current < MOVE_DEBOUNCE) return;
+      
+      let newX = player.x;
+      let newY = player.y;
+      
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          newY = Math.max(0, player.y - 1);
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          newY = Math.min((grid.length || 6) - 1, player.y + 1);
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          newX = Math.max(0, player.x - 1);
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          newX = Math.min((grid[0]?.length || 8) - 1, player.x + 1);
+          break;
+        case ' ':
+        case 'Enter':
+          e.preventDefault();
+          munchCurrentCell();
+          lastMoveTimeRef.current = now;
+          return;
+      }
+      
+      if (newX !== player.x || newY !== player.y) {
+        processPlayerMove(newX, newY);
+        lastMoveTimeRef.current = now;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gamePhase, player, grid, processPlayerMove, munchCurrentCell]);
+
   // Adjust camera based on screen size
   useEffect(() => {
     const isMobile = size.width < 768;
@@ -170,17 +223,20 @@ export default function GameBoard() {
       />
 
       {/* Enemies */}
-      {enemies.map((enemy) => (
-        <Enemy
-          key={enemy.id}
-          enemy={enemy}
-          position={[
-            (enemy.x - centerX) * 2,
-            0.5,
-            (enemy.y - centerY) * 2
-          ]}
-        />
-      ))}
+      {enemies.map((enemy) => {
+        console.log("Rendering enemy in GameBoard:", { id: enemy.id, pos: `${enemy.x},${enemy.y}` });
+        return (
+          <Enemy
+            key={enemy.id}
+            enemy={enemy}
+            position={[
+              (enemy.x - centerX) * 2,
+              0.5,
+              (enemy.y - centerY) * 2
+            ]}
+          />
+        );
+      })}
     </group>
   );
 }

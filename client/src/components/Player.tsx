@@ -19,7 +19,10 @@ export default function Player({ position }: PlayerProps) {
     }
   });
 
-  console.log("Player rendering at position:", position);
+  // Log player position occasionally
+  if (Math.random() < 0.01) {
+    console.log("Player rendering at position:", position);
+  }
 
   return (
     <group ref={groupRef} position={position}>
