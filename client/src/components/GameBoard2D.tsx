@@ -22,6 +22,7 @@ export default function GameBoard2D() {
     updateEnemies,
     updateGrid,
     processPlayerMove,
+    munchCurrentCell,
     spawnEnemies,
     gameOver,
     nextLevel,
@@ -59,44 +60,20 @@ export default function GameBoard2D() {
       lastTimeRef.current = currentTime;
 
       if (delta < 0.1) { // Cap delta to prevent large jumps
-        // For 2D mode, only update enemies - player movement is handled by keyboard events
-        const updatedEnemies = enemies.map(enemy => {
-          // Simple enemy movement logic
-          const moveSpeed = enemy.speed * delta * 1.5;
-          const dx = player.x - enemy.x;
-          const dy = player.y - enemy.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance > 0.5) {
-            let newX = enemy.x;
-            let newY = enemy.y;
-            
-            if (Math.abs(dx) > Math.abs(dy)) {
-              newX = enemy.x + (dx > 0 ? moveSpeed : -moveSpeed);
-            } else {
-              newY = enemy.y + (dy > 0 ? moveSpeed : -moveSpeed);
-            }
-            
-            return {
-              ...enemy,
-              x: Math.max(0, Math.min(gridWidth - 1, newX)),
-              y: Math.max(0, Math.min(gridHeight - 1, newY))
-            };
-          }
-          
-          return enemy;
+        updateGameLogic({
+          delta,
+          player,
+          enemies,
+          grid,
+          currentChallenge,
+          level,
+          updatePlayer,
+          updateEnemies,
+          updateGrid,
+          processPlayerMove,
+          munchCurrentCell,
+          gameOver
         });
-        
-        updateEnemies(updatedEnemies);
-        
-        // Check collisions
-        const collision = updatedEnemies.some(enemy => 
-          Math.abs(enemy.x - player.x) < 0.5 && Math.abs(enemy.y - player.y) < 0.5
-        );
-        
-        if (collision) {
-          gameOver();
-        }
       }
 
       animationRef.current = requestAnimationFrame(gameLoop);
@@ -111,7 +88,7 @@ export default function GameBoard2D() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [gamePhase, player, enemies, grid, currentChallenge, updatePlayer, updateEnemies, updateGrid, processPlayerMove, gameOver]);
+  }, [gamePhase, player, enemies, grid, currentChallenge, level, updatePlayer, updateEnemies, updateGrid, processPlayerMove, munchCurrentCell, gameOver]);
 
   if (!grid.length || !currentChallenge) return null;
 
@@ -157,7 +134,7 @@ export default function GameBoard2D() {
         })
       );
       updateGrid(newGrid);
-      addScore(10 + level * 5); // Higher scores for higher levels
+      addScore(10 + (level || 1) * 5); // Higher scores for higher levels
       playMunch();
 
       // Check if level complete

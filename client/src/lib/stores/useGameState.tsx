@@ -35,6 +35,8 @@ export interface Enemy {
   targetY: number;
   speed: number;
   type: 'basic' | 'fast' | 'smart';
+  lastMoveTime: number;
+  isMoving: boolean;
 }
 
 export interface Challenge {
@@ -395,7 +397,9 @@ export const useGameState = create<GameState>()(
           targetX: spawnPos.x,
           targetY: spawnPos.y,
           speed: enemyType === 'fast' ? 1.5 : enemyType === 'smart' ? 1.2 : 1.0,
-          type: enemyType
+          type: enemyType,
+          lastMoveTime: 0,
+          isMoving: false
         });
       }
       
