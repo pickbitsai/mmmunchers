@@ -26,7 +26,12 @@ export default function GridCell({ cell, position }: GridCellProps) {
     }
   });
 
-  if (cell.isEmpty || cell.isMunched) return null;
+  if (cell.isEmpty || cell.isMunched) {
+    console.log("GridCell: Skipping empty/munched cell", { isEmpty: cell.isEmpty, isMunched: cell.isMunched });
+    return null;
+  }
+  
+  console.log("GridCell: Rendering cell", { value: cell.value, isCorrect: cell.isCorrect, position });
 
   return (
     <group>

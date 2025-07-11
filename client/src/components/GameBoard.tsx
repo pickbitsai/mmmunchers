@@ -98,9 +98,23 @@ export default function GameBoard() {
     }
   });
 
+  // Debug logging
+  console.log("GameBoard render check:", { 
+    gridLength: grid.length, 
+    hasChallenge: !!currentChallenge,
+    gamePhase,
+    playerPos: `${player.x},${player.y}`,
+    enemyCount: enemies.length
+  });
+
   if (!grid.length || !currentChallenge) {
-    console.log("GameBoard: Missing grid or challenge", { gridLength: grid.length, hasChallenge: !!currentChallenge });
-    return null;
+    console.log("GameBoard: Missing grid or challenge - returning null");
+    return (
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial color="red" />
+      </mesh>
+    );
   }
 
   // Calculate grid dimensions
@@ -114,6 +128,8 @@ export default function GameBoard() {
   // Calculate ground plane size (slightly larger than grid)
   const groundWidth = gridWidth * 2 + 1;
   const groundHeight = gridHeight * 2 + 1;
+
+  console.log("GameBoard: Rendering 3D scene with", { gridWidth, gridHeight, playerPos: `${player.x},${player.y}`, enemyCount: enemies.length });
 
   return (
     <group ref={groupRef}>
