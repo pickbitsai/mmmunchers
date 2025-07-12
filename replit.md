@@ -147,6 +147,8 @@ Changelog:
 - January 12, 2025. Added debug logging for answer validation to help identify incorrect answer checking issues
 - January 12, 2025. Added QA visual indicators: correct answers shown in green, incorrect in red, with color coding and small dot indicators
 - January 12, 2025. Added QA legend to game UI explaining the color coding system for easier testing
+- January 12, 2025. Fixed major answer validation bug: "Select everything about X" challenges now correctly mark ALL topic-related items as correct
+- January 12, 2025. Improved AI challenge generation to distinguish between "everything about" and specific subset challenges
 ```
 
 ## User Preferences

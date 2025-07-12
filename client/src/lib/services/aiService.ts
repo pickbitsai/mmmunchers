@@ -185,51 +185,76 @@ class AIService {
       Math.floor(Math.random() * challengeTemplates.length)
     ];
     
-    // Determine number of correct answers based on level and grid size
-    // For smaller grids, we need fewer correct answers
-    const totalCells = 48; // Average grid size
-    const minCorrect = Math.min(2 + Math.floor(level / 4), Math.floor(totalCells * 0.2), items.length);
-    const maxCorrect = Math.min(minCorrect + 3, Math.floor(totalCells * 0.35), items.length);
-    const numCorrect = Math.min(
-      Math.floor(minCorrect + Math.random() * (maxCorrect - minCorrect + 1)),
-      items.length
-    );
+    // Check if this is an "everything about" challenge
+    const isEverythingChallenge = description.includes('everything about') || 
+                                 description.includes('all items related to') ||
+                                 description.includes('all') && description.includes('examples');
     
-    // Select correct answers from the AI-generated items
-    const shuffled = [...items].sort(() => Math.random() - 0.5);
-    const correctAnswers = shuffled.slice(0, numCorrect);
+    let correctAnswers: string[];
+    let numCorrect: number;
     
-    // Generate distractors - use remaining items if available
-    const remainingItems = shuffled.slice(numCorrect);
-    // For a 9x7 grid (63 cells), we need plenty of distractors
+    if (isEverythingChallenge) {
+      // For "everything about" challenges, ALL generated items should be correct
+      correctAnswers = [...items];
+      numCorrect = items.length;
+      console.log(`Everything challenge: Using all ${items.length} items as correct answers`);
+    } else {
+      // For specific challenges, use a subset of items as correct answers
+      const totalCells = 48; // Average grid size
+      const minCorrect = Math.min(2 + Math.floor(level / 4), Math.floor(totalCells * 0.2), items.length);
+      const maxCorrect = Math.min(minCorrect + 3, Math.floor(totalCells * 0.35), items.length);
+      numCorrect = Math.min(
+        Math.floor(minCorrect + Math.random() * (maxCorrect - minCorrect + 1)),
+        items.length
+      );
+      
+      // Select correct answers from the AI-generated items
+      const shuffled = [...items].sort(() => Math.random() - 0.5);
+      correctAnswers = shuffled.slice(0, numCorrect);
+    }
+    
+    // Generate distractors based on challenge type
+    let incorrectAnswers: string[] = [];
     const numIncorrect = Math.max(40, 63 - numCorrect);
     
-    let incorrectAnswers: string[] = [];
-    
-    // ALWAYS use remaining AI-generated items as distractors (they're real but not correct for this challenge)
-    if (remainingItems.length > 0) {
-      console.log(`Using ${remainingItems.length} AI-generated items as distractors`);
-      incorrectAnswers = [...remainingItems];
-      
-      // If we need more distractors, add smart ones
-      if (incorrectAnswers.length < numIncorrect) {
-        const additionalNeeded = numIncorrect - incorrectAnswers.length;
-        const additionalDistractors = this.generateSmartDistractors(
-          topic,
-          [],
-          additionalNeeded,
-          level
-        );
-        incorrectAnswers.push(...additionalDistractors);
-      }
-    } else {
-      // Fall back to generic distractors only if no AI items available
-      incorrectAnswers = this.generateDistractors(
-        topic, 
-        numIncorrect, 
-        level,
-        correctAnswers
+    if (isEverythingChallenge) {
+      // For "everything about" challenges, generate completely unrelated distractors
+      // Don't use any AI-generated items as distractors since they're all correct
+      incorrectAnswers = this.generateSmartDistractors(
+        topic,
+        [],
+        numIncorrect,
+        level
       );
+      console.log(`Everything challenge: Generated ${incorrectAnswers.length} unrelated distractors`);
+    } else {
+      // For specific challenges, use remaining items as distractors
+      const remainingItems = items.filter(item => !correctAnswers.includes(item));
+      
+      if (remainingItems.length > 0) {
+        console.log(`Using ${remainingItems.length} AI-generated items as distractors`);
+        incorrectAnswers = [...remainingItems];
+        
+        // If we need more distractors, add smart ones
+        if (incorrectAnswers.length < numIncorrect) {
+          const additionalNeeded = numIncorrect - incorrectAnswers.length;
+          const additionalDistractors = this.generateSmartDistractors(
+            topic,
+            [],
+            additionalNeeded,
+            level
+          );
+          incorrectAnswers.push(...additionalDistractors);
+        }
+      } else {
+        // Fall back to generic distractors only if no AI items available
+        incorrectAnswers = this.generateDistractors(
+          topic, 
+          numIncorrect, 
+          level,
+          correctAnswers
+        );
+      }
     }
     
     return {
