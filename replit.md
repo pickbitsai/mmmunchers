@@ -145,6 +145,8 @@ Changelog:
 - January 12, 2025. Improved 2D game board text wrapping with intelligent word breaking to prevent single-letter wraps
 - January 12, 2025. Fixed level progression bug: game now always starts at level 1 instead of random level 1-3
 - January 12, 2025. Added debug logging for answer validation to help identify incorrect answer checking issues
+- January 12, 2025. Added QA visual indicators: correct answers shown in green, incorrect in red, with color coding and small dot indicators
+- January 12, 2025. Added QA legend to game UI explaining the color coding system for easier testing
 ```
 
 ## User Preferences

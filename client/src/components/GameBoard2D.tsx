@@ -260,7 +260,9 @@ export default function GameBoard2D() {
               className={`absolute border-2 flex items-center justify-center font-semibold rounded-md ${
                 cell.isEmpty || cell.isMunched 
                   ? 'bg-gray-800 border-gray-700' 
-                  : 'bg-yellow-50 border-yellow-500 hover:bg-yellow-100 shadow-md'
+                  : cell.isCorrect 
+                    ? 'bg-green-100 border-green-500 hover:bg-green-200 shadow-md' 
+                    : 'bg-red-100 border-red-500 hover:bg-red-200 shadow-md'
               } transition-all duration-200 ${
                 cell.isMunched ? 'opacity-50' : ''
               }`}
@@ -274,6 +276,19 @@ export default function GameBoard2D() {
                 lineHeight: 1.2
               }}
             >
+              {/* QA Indicator - top-right corner */}
+              {!cell.isEmpty && !cell.isMunched && (
+                <div 
+                  className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                    cell.isCorrect ? 'bg-green-600' : 'bg-red-600'
+                  }`}
+                  style={{
+                    fontSize: '8px',
+                    width: Math.max(8, cellSize * 0.08),
+                    height: Math.max(8, cellSize * 0.08)
+                  }}
+                />
+              )}
               {!cell.isEmpty && !cell.isMunched && (
                 <span 
                   className="text-center block w-full h-full flex items-center justify-center"

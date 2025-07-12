@@ -38,11 +38,23 @@ export default function GridCell({ cell, position }: GridCellProps) {
       <mesh ref={meshRef} position={position} receiveShadow castShadow>
         <boxGeometry args={[1.5, 0.2, 1.5]} />
         <meshLambertMaterial 
-          color={cell.isEmpty ? "#2c3e50" : "#4A90E2"}
+          color={cell.isEmpty ? "#2c3e50" : cell.isCorrect ? "#4CAF50" : "#F44336"}
           transparent
           opacity={0.8}
         />
       </mesh>
+      
+      {/* QA Indicator - small sphere above cell */}
+      {!cell.isEmpty && (
+        <mesh position={[position[0] + 0.5, position[1] + 0.4, position[2] + 0.5]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
+          <meshLambertMaterial 
+            color={cell.isCorrect ? "#2E7D32" : "#C62828"}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+      )}
       
       {/* Cell value text */}
       {!cell.isEmpty && cell.value && (
