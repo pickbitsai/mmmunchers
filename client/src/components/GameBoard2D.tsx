@@ -117,38 +117,8 @@ export default function GameBoard2D() {
   const isCellTooSmall = cellSize < 50;
 
   const handleMunch = () => {
-    const currentCell = grid[player.y]?.[player.x];
-    if (!currentCell || currentCell.isEmpty || currentCell.isMunched) {
-      return; // Nothing to munch
-    }
-
-    // Check if the answer is correct
-    if (currentCell.isCorrect) {
-      // Correct answer - mark as munched and award points
-      const newGrid = grid.map((row, rowIndex) =>
-        row.map((cell, colIndex) => {
-          if (rowIndex === player.y && colIndex === player.x) {
-            return { ...cell, isMunched: true };
-          }
-          return cell;
-        })
-      );
-      updateGrid(newGrid);
-      addScore(10 + (level || 1) * 5); // Higher scores for higher levels
-      playMunch();
-
-      // Check if level complete
-      const remainingCorrect = newGrid.flat().some(cell => cell.isCorrect && !cell.isMunched);
-      if (!remainingCorrect) {
-        // All correct answers munched - advance to next level
-        setTimeout(() => {
-          nextLevel();
-        }, 500); // Small delay for visual feedback
-      }
-    } else {
-      // Wrong answer - game over
-      gameOver();
-    }
+    // Use the store's munchCurrentCell function which has the correct logic
+    munchCurrentCell();
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
