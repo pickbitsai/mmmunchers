@@ -352,8 +352,9 @@ CRITICAL Requirements:
         'T-Rex', 'Triceratops', 'Stegosaurus', 'Brachiosaurus', 'Velociraptor', 'Pterodactyl',
         'Ankylosaurus', 'Diplodocus', 'Allosaurus', 'Spinosaurus', 'Pachycephalosaurus', 'Parasaurolophus',
         'Iguanodon', 'Archaeopteryx', 'Compsognathus', 'Deinonychus', 'Baryonyx', 'Carnotaurus',
-        'Giganotosaurus', 'Therizinosaurus', 'Mosasaurus', 'Plesiosaur', 'Mammoth', 'Saber-tooth',
-        'Triassic', 'Jurassic', 'Cretaceous', 'Fossil', 'Extinction', 'Paleontology'
+        'Giganotosaurus', 'Therizinosaurus', 'Mosasaurus', 'Plesiosaur', 'Utahraptor', 'Ceratosaurus',
+        'Kentrosaurus', 'Styracosaurus', 'Edmontosaurus', 'Maiasaura', 'Oviraptor', 'Gallimimus',
+        'Amargasaurus', 'Irritator', 'Acrocanthosaurus', 'Carcharodontosaurus', 'Mapusaurus', 'Rugops'
       );
       categories.push('Carnivores', 'Herbivores', 'Flying Reptiles', 'Marine Reptiles', 'Time Periods', 'Fossils');
       facts.push(
@@ -509,10 +510,13 @@ CRITICAL Requirements:
       ];
     } else if (normalizedTopic.includes('dinosaur') || normalizedTopic.includes('dino')) {
       topicDistracters = [
-        'Dragon', 'Godzilla', 'Barney', 'Yoshi', 'Dino from Flintstones', 'Land Before Time',
+        'Dragon', 'Godzilla', 'Barney', 'Yoshi', 'Dino Flintstone', 'Land Before Time',
         'Jurassic Park', 'King Kong', 'Mothra', 'Rodan', 'Mechagodzilla', 'Kaiju',
-        'Pokemon', 'Charizard', 'Aerodactyl clone', 'Time machine', 'Cave painting', 'Stone age',
-        'Ice age', 'Woolly rhino', 'Giant sloth', 'Terror bird', 'Megashark', 'Titanboa'
+        'Pokemon', 'Charizard', 'Aerodactyl', 'Time machine', 'Cave painting', 'Stone age',
+        'Ice age', 'Woolly rhino', 'Giant sloth', 'Terror bird', 'Megashark', 'Titanboa',
+        'Mammoth', 'Saber-tooth', 'Caveman', 'Neanderthal', 'Fossil fuel', 'Coal',
+        'Oil', 'Gas', 'Amber', 'Tar pit', 'Meteor', 'Asteroid', 'Comet', 'Volcano',
+        'Earthquake', 'Tsunami', 'Glacier', 'Pangaea', 'Gondwana', 'Laurasia'
       ];
     } else if (normalizedTopic.includes('animal')) {
       topicDistracters = [
@@ -581,52 +585,78 @@ CRITICAL Requirements:
     correctAnswers: string[]
   ): string[] {
     const distractors: string[] = [];
+    const topicLower = topic.toLowerCase();
+    const normalizedTopic = this.normalizeTopic(topicLower);
     
-    // Generate more realistic distractors based on common wrong answers
-    const distractorCategories = [
-      // Similar but different topics
-      ['Planets', 'Stars', 'Galaxies', 'Comets', 'Asteroids'],
-      ['Animals', 'Plants', 'Minerals', 'Elements', 'Compounds'],
-      ['Countries', 'Cities', 'Rivers', 'Mountains', 'Oceans'],
-      ['Artists', 'Musicians', 'Writers', 'Scientists', 'Athletes'],
-      ['Foods', 'Drinks', 'Desserts', 'Spices', 'Dishes'],
-      ['Colors', 'Shapes', 'Numbers', 'Letters', 'Symbols'],
-      ['Movies', 'Books', 'Songs', 'Games', 'Shows'],
-      ['Sports', 'Hobbies', 'Crafts', 'Skills', 'Activities']
+    // Generate topic-specific realistic distractors
+    let topicSpecificDistracters: string[] = [];
+    
+    if (normalizedTopic.includes('dinosaur') || normalizedTopic.includes('dino')) {
+      topicSpecificDistracters = [
+        'Dragon', 'Godzilla', 'Barney', 'Yoshi', 'Dino Flintstone', 'King Kong',
+        'Mothra', 'Rodan', 'Kaiju', 'Pokemon', 'Charizard', 'Aerodactyl',
+        'Mammoth', 'Saber-tooth', 'Caveman', 'Neanderthal', 'Stone age', 'Ice age',
+        'Woolly rhino', 'Giant sloth', 'Terror bird', 'Megashark', 'Titanboa',
+        'Fossil fuel', 'Coal', 'Oil', 'Gas', 'Amber', 'Tar pit', 'Meteor',
+        'Asteroid', 'Comet', 'Volcano', 'Earthquake', 'Tsunami', 'Glacier',
+        'Pangaea', 'Gondwana', 'Laurasia', 'Prehistoric', 'Ancient', 'Evolution',
+        'Extinction', 'Paleontology', 'Archaeology', 'Geology', 'Biology'
+      ];
+    } else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro')) {
+      topicSpecificDistracters = [
+        'Flat Earth', 'Geocentric', 'Aether', 'Phlogiston', 'Crystal spheres',
+        'Firmament', 'Sky dome', 'Cheese moon', 'Canals on Mars', 'Planet X',
+        'Nibiru', 'Hollow Earth', 'Space whales', 'Star gates', 'UFO', 'Alien',
+        'Martian', 'Venusian', 'Jupiterian', 'Saturnian', 'Mercurian',
+        'Neptunian', 'Uranian', 'Earthling', 'Moonman', 'Asteroid belt',
+        'Oort cloud', 'Kuiper belt', 'Dark matter', 'Dark energy'
+      ];
+    } else if (normalizedTopic.includes('animal') || normalizedTopic.includes('zoo')) {
+      topicSpecificDistracters = [
+        'Dragon', 'Unicorn', 'Phoenix', 'Griffin', 'Pegasus', 'Chimera',
+        'Minotaur', 'Centaur', 'Kraken', 'Yeti', 'Bigfoot', 'Loch Ness',
+        'Chupacabra', 'Jackalope', 'Drop bear', 'Snipe', 'Dodo', 'Megalodon',
+        'Sasquatch', 'Wendigo', 'Thunderbird', 'Banshee', 'Gargoyle', 'Sphinx',
+        'Hydra', 'Cerberus', 'Manticore', 'Wyvern', 'Basilisk', 'Cyclops'
+      ];
+    } else {
+      // Generic cross-category distractors
+      topicSpecificDistracters = [
+        'Jupiter', 'Saturn', 'Mars', 'Venus', 'Mercury', 'Neptune', 'Uranus',
+        'Lion', 'Tiger', 'Bear', 'Elephant', 'Giraffe', 'Zebra', 'Monkey',
+        'Paris', 'London', 'Tokyo', 'New York', 'Berlin', 'Rome', 'Madrid',
+        'Mozart', 'Einstein', 'Newton', 'Darwin', 'Shakespeare', 'Picasso',
+        'Pizza', 'Burger', 'Sushi', 'Pasta', 'Tacos', 'Salad', 'Soup',
+        'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Pink',
+        'Football', 'Basketball', 'Tennis', 'Soccer', 'Baseball', 'Golf',
+        'Guitar', 'Piano', 'Violin', 'Drums', 'Trumpet', 'Saxophone'
+      ];
+    }
+    
+    // Add topic-specific distractors first
+    for (const distractor of topicSpecificDistracters) {
+      if (distractors.length >= count) break;
+      if (!correctAnswers.includes(distractor) && !distractors.includes(distractor)) {
+        distractors.push(distractor);
+      }
+    }
+    
+    // If we still need more, add some generic ones
+    const genericDistracters = [
+      'Unknown', 'Mystery', 'Secret', 'Hidden', 'Lost', 'Found', 'Ancient',
+      'Modern', 'Classic', 'New', 'Old', 'Rare', 'Common', 'Special',
+      'Unique', 'Regular', 'Normal', 'Strange', 'Weird', 'Odd', 'Unusual'
     ];
     
-    // Pick a random category that's likely different from the topic
-    const randomCategory = distractorCategories[Math.floor(Math.random() * distractorCategories.length)];
-    
-    // Better wrong answer patterns - short and clear
-    const wrongPatterns = [
-      'Fake',
-      'Wrong',
-      'False',
-      'Myth',
-      'Unreal',
-      'Incorrect',
-      'Bogus',
-      'Untrue'
-    ];
-    
-    // Generate distractors
-    for (let i = 0; i < count; i++) {
-      if (i < randomCategory.length && level > 5) {
-        // Use items from different categories for harder levels
-        distractors.push(randomCategory[i]);
-      } else if (i < wrongPatterns.length) {
-        // Use short wrong patterns
-        distractors.push(wrongPatterns[i]);
-      } else {
-        // Generate numbered distractors with short base
-        const baseDistractor = wrongPatterns[i % wrongPatterns.length];
-        distractors.push(`${baseDistractor} ${Math.floor(i / wrongPatterns.length) + 2}`);
+    for (const distractor of genericDistracters) {
+      if (distractors.length >= count) break;
+      if (!correctAnswers.includes(distractor) && !distractors.includes(distractor)) {
+        distractors.push(distractor);
       }
     }
     
     // Shuffle to make it less predictable
-    return distractors.sort(() => Math.random() - 0.5);
+    return distractors.sort(() => Math.random() - 0.5).slice(0, count);
   }
   
   private generateHints(topic: string, correctAnswers: string[]): string[] {
