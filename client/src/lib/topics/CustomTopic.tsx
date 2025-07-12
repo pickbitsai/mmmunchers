@@ -259,22 +259,20 @@ export class CustomTopic extends TopicProvider {
       ];
     } else if (topicLower.includes('jazz') || topicLower.includes('music')) {
       additionalPool = [
-        'Benny Goodman', 'Art Tatum', 'Sarah Vaughan', 'Nat King Cole', 'Chet Baker',
-        'Stan Getz', 'Herbie Hancock', 'Quincy Jones', 'Diana Krall', 'Wynton Marsalis',
-        'Ragtime', 'Dixieland', 'Big band', 'Hard bop', 'Modal jazz', 'Latin jazz',
-        'Trombone', 'Vibraphone', 'Hammond organ', 'Flugelhorn', 'Muted trumpet',
-        'Walking bass', 'Comping', 'Trading fours', 'Head arrangement', 'Fake book',
-        'Cotton Club', 'Birdland', 'Blue Note', 'Newport Festival', 'Preservation Hall'
+        'Banjo', 'Harp', 'Organ', 'Cello', 'Oboe', 'Tuba', 'Xylophone', 'Bassoon',
+        'Clarinet', 'Piccolo', 'Viola', 'Mandolin', 'Accordion', 'Bagpipes', 'Ukulele',
+        'Forte', 'Adagio', 'Staccato', 'Legato', 'Crescendo', 'Diminuendo', 'Allegro',
+        'Sonata', 'Waltz', 'Polka', 'Tango', 'Samba', 'Rumba', 'Foxtrot', 'Swing',
+        'Opera', 'Ballet', 'Musical', 'Recital', 'Symphony', 'Concerto', 'Quartet'
       ];
     } else {
-      // Generic distractors for any topic
+      // Generic distractors for any topic - use short words
+      const shortTopic = topic.split(' ')[0]; // Use only first word
       additionalPool = [
-        `${topic} variant`, `${topic} type`, `${topic} model`, `${topic} version`,
-        `${topic} style`, `${topic} form`, `${topic} method`, `${topic} approach`,
-        `Alternative ${topic}`, `Classic ${topic}`, `Modern ${topic}`, `Traditional ${topic}`,
-        `Popular ${topic}`, `Rare ${topic}`, `Common ${topic}`, `Unique ${topic}`,
-        `Basic ${topic}`, `Advanced ${topic}`, `Simple ${topic}`, `Complex ${topic}`,
-        `Original ${topic}`, `Modified ${topic}`, `Enhanced ${topic}`, `Standard ${topic}`
+        'Variant', 'Type', 'Model', 'Version', 'Style', 'Form', 'Method', 'Approach',
+        'Alternative', 'Classic', 'Modern', 'Traditional', 'Popular', 'Rare', 'Common', 'Unique',
+        'Basic', 'Advanced', 'Simple', 'Complex', 'Original', 'Modified', 'Enhanced', 'Standard',
+        `${shortTopic}A`, `${shortTopic}B`, `${shortTopic}C`, `${shortTopic}1`, `${shortTopic}2`, `${shortTopic}3`
       ];
     }
     
@@ -287,26 +285,25 @@ export class CustomTopic extends TopicProvider {
       }
     }
     
-    // If we still need more, create more natural variants
+    // If we still need more, create short variants
     const finalTemplates = [
-      'Experimental', 'Theoretical', 'Conceptual', 'Abstract', 'Concrete',
-      'Practical', 'Applied', 'Pure', 'Mixed', 'Hybrid',
-      'Derivative', 'Inspired', 'Influenced', 'Related', 'Associated'
+      'Fake', 'Mock', 'Test', 'Demo', 'Sample', 'Example', 'Copy', 'Clone',
+      'Misc', 'Other', 'Extra', 'Bonus', 'Special', 'Unique', 'Rare', 'New'
     ];
     
     let templateIndex = 0;
     while (distractors.length < count) {
       if (templateIndex < finalTemplates.length) {
-        const variant = `${finalTemplates[templateIndex]} ${topic}`;
+        const variant = `${finalTemplates[templateIndex]} ${topic.split(' ')[0]}`;
         if (!distractors.includes(variant)) {
           distractors.push(variant);
         }
         templateIndex++;
       } else {
-        // Last resort: use synonyms and variations
+        // Last resort: use short synonyms
         const lastResort = [
-          'Unknown element', 'Mystery item', 'Unnamed piece',
-          'Unidentified object', 'Strange artifact', 'Curious finding'
+          'Unknown', 'Mystery', 'Hidden', 'Secret', 'Strange', 'Weird',
+          'Random', 'Misc', 'Other', 'Extra', 'Bonus', 'Special'
         ];
         const item = lastResort[distractors.length % lastResort.length];
         if (!distractors.includes(item)) {

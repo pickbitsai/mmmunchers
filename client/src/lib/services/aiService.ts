@@ -522,10 +522,10 @@ CRITICAL Requirements:
       ];
     } else if (normalizedTopic.includes('jazz') || normalizedTopic.includes('music')) {
       topicDistracters = [
-        'Kenny G', 'Yanni', 'John Tesh', 'Nickelback', 'Kazoo orchestra',
-        'Air guitar', 'Vuvuzela', 'Triangle solo', 'Cowbell fever', 'Autotune jazz',
-        'Elevator music', 'Muzak', 'MIDI jazz', 'Karaoke jazz', 'Jazz hands',
-        'Smooth criminal', 'Jazz flute', 'Jazz fusion confusion', 'Nu-jazz', 'Jazzercise'
+        'Kazoo', 'Vuvuzela', 'Spoons', 'Washboard', 'Jug', 'Cowbell', 'Whistle',
+        'Noise', 'Static', 'Silence', 'Mumbling', 'Screaming', 'Shouting', 'Crying',
+        'Beeping', 'Buzzing', 'Humming', 'Clicking', 'Tapping', 'Scratching', 'Popping',
+        'Disco', 'Polka', 'Yodeling', 'Rap', 'Opera', 'Punk', 'Metal', 'Techno'
       ];
     } else {
       // Generate topic variations that are wrong
