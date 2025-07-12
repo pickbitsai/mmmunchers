@@ -326,12 +326,12 @@ export default function TopicSelection() {
                             setSelectedCategories(prev => ({...prev, [topic.id]: value}));
                           }}
                         >
-                          <SelectTrigger className="w-full bg-black/40 text-cyan-300 border-cyan-900/50 hover:border-cyan-700/50 hover:bg-black/60">
+                          <SelectTrigger className="w-full h-12 bg-black/40 text-cyan-300 border-cyan-900/50 hover:border-cyan-700/50 hover:bg-black/60">
                             <SelectValue placeholder="Random Mix" />
                           </SelectTrigger>
-                          <SelectContent className="bg-gray-900 text-white border-cyan-900/50">
+                          <SelectContent className="bg-gray-900 text-white border-cyan-900/50 z-[99999]">
                             {getTopicCategories(topic.id).map((option) => (
-                              <SelectItem key={option.id} value={option.id}>
+                              <SelectItem key={option.id} value={option.id} className="text-white hover:bg-gray-800">
                                 {option.name}
                               </SelectItem>
                             ))}
