@@ -74,7 +74,7 @@ export default function GameUI() {
 
   if (gamePhase === 'topic_selection') return null;
   
-  console.log("GameUI rendering with phase:", gamePhase, "renderMode:", renderMode);
+
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
@@ -111,8 +111,8 @@ export default function GameUI() {
         )}
       </div>
 
-      {/* Control buttons - moved to bottom right on mobile */}
-      <div className="absolute bottom-20 sm:top-16 right-2 sm:left-1/2 sm:transform sm:-translate-x-1/2 flex gap-2 pointer-events-auto">
+      {/* Control buttons - top right on mobile, centered on desktop */}
+      <div className="absolute top-2 right-2 sm:top-16 sm:left-1/2 sm:transform sm:-translate-x-1/2 flex gap-2 pointer-events-auto">
         <Button
           variant="outline"
           size="sm"
