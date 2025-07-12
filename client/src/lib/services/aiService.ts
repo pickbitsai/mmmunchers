@@ -318,8 +318,15 @@ CRITICAL Requirements:
     // Handle common typos and variations
     const normalizedTopic = this.normalizeTopic(topicLower);
     
+    // Universal content generation approach - works for ANY topic
+    console.log(`Generating content for topic: "${topic}" (normalized: "${normalizedTopic}")`);
+    
+    // Try specific topic handlers first
+    let foundSpecificContent = false;
+    
     // Egypt/Ancient civilization content
     if (normalizedTopic.includes('egypt') || topicLower.includes('pyramid') || topicLower.includes('pharaoh')) {
+      foundSpecificContent = true;
       items.push(
         'Pyramids', 'Sphinx', 'Pharaoh', 'Mummy', 'Hieroglyphics', 'Nile River', 'Tutankhamun',
         'Cleopatra', 'Ramses II', 'Cairo', 'Memphis', 'Thebes', 'Valley of Kings', 'Rosetta Stone',
@@ -334,6 +341,7 @@ CRITICAL Requirements:
     }
     // Space-related mock content
     else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro') || normalizedTopic.includes('planet')) {
+      foundSpecificContent = true;
       items.push(
         'Mars', 'Venus', 'Jupiter', 'Saturn', 'Mercury', 'Neptune', 'Uranus', 'Earth',
         'Moon', 'Sun', 'Asteroid', 'Comet', 'Galaxy', 'Star', 'Nebula', 'Black hole',
@@ -348,6 +356,7 @@ CRITICAL Requirements:
     }
     // Dinosaur-related mock content
     else if (normalizedTopic.includes('dinosaur') || normalizedTopic.includes('dino') || normalizedTopic.includes('prehistoric')) {
+      foundSpecificContent = true;
       items.push(
         'T-Rex', 'Triceratops', 'Stegosaurus', 'Brachiosaurus', 'Velociraptor', 'Pterodactyl',
         'Ankylosaurus', 'Diplodocus', 'Allosaurus', 'Spinosaurus', 'Pachycephalosaurus', 'Parasaurolophus',
@@ -366,6 +375,7 @@ CRITICAL Requirements:
     }
     // Animal-related mock content
     else if (normalizedTopic.includes('animal') || normalizedTopic.includes('zoo') || normalizedTopic.includes('wildlife')) {
+      foundSpecificContent = true;
       items.push(
         'Lion', 'Tiger', 'Bear', 'Elephant', 'Giraffe', 'Zebra', 'Monkey', 'Penguin',
         'Dolphin', 'Whale', 'Shark', 'Eagle', 'Parrot', 'Snake', 'Crocodile', 'Kangaroo',
@@ -379,6 +389,7 @@ CRITICAL Requirements:
     }
     // Music-related mock content
     else if (normalizedTopic.includes('music') || normalizedTopic.includes('jazz') || normalizedTopic.includes('rock') || normalizedTopic.includes('classical')) {
+      foundSpecificContent = true;
       if (normalizedTopic.includes('jazz')) {
         items.push(
           'Louis Armstrong', 'Duke Ellington', 'Miles Davis', 'John Coltrane', 'Charlie Parker',
@@ -407,6 +418,7 @@ CRITICAL Requirements:
     }
     // History-related mock content
     else if (normalizedTopic.includes('history') || normalizedTopic.includes('ancient') || normalizedTopic.includes('war')) {
+      foundSpecificContent = true;
       items.push(
         'Ancient Egypt', 'Roman Empire', 'Greek City-States', 'Medieval Period', 'Renaissance',
         'Industrial Revolution', 'World War I', 'World War II', 'Cold War', 'Space Race',
@@ -421,6 +433,7 @@ CRITICAL Requirements:
     }
     // Science-related mock content
     else if (normalizedTopic.includes('science') || normalizedTopic.includes('physics') || normalizedTopic.includes('chemistry') || normalizedTopic.includes('biology')) {
+      foundSpecificContent = true;
       items.push(
         'Atom', 'Molecule', 'Cell', 'DNA', 'Evolution', 'Gravity', 'Energy', 'Matter',
         'Force', 'Motion', 'Light', 'Heat', 'Electricity', 'Magnetism', 'Chemical', 'Reaction',
@@ -433,36 +446,15 @@ CRITICAL Requirements:
         'DNA stores information', 'Energy is conserved', 'Light has dual nature'
       );
     }
-    // Default generic content - try to be more creative
-    else {
-      // Try to extract keywords from the topic
-      const words = topic.toLowerCase().split(' ');
+    // Universal fallback system for ANY topic
+    if (!foundSpecificContent) {
+      console.log(`No specific content found for "${topic}", generating universal content...`);
       
-      // Generate more natural items based on the topic
-      const templates = [
-        'Classic', 'Modern', 'Traditional', 'Contemporary', 'Popular',
-        'Famous', 'Notable', 'Essential', 'Important', 'Key',
-        'Primary', 'Major', 'Leading', 'Top', 'Best',
-        'Original', 'Authentic', 'Genuine', 'Real', 'True'
-      ];
-      
-      // Create shorter items
-      items.push(topic, `${topic}s`, 'Basic', 'Advanced', 'Expert', 'Beginner');
-      
-      // Add more short items
-      const shortItems = topic.split(' ');
-      if (shortItems.length > 1) {
-        items.push(...shortItems);
-      }
-      items.push('Type A', 'Type B', 'Type C', 'Method 1', 'Method 2', 'Level 1', 'Level 2');
-      
-      // Categories based on topic
-      categories.push('Types', 'Styles', 'Forms', 'Methods', 'Levels');
-      
-      // Facts about the topic
-      facts.push(
-        'Fascinating', 'Rich history', 'Many types', 'Evolving', 'Global study'
-      );
+      // Generate comprehensive universal content using intelligent algorithms
+      const universalContent = this.generateUniversalContent(topic, subtopic, level);
+      items.push(...universalContent.items);
+      categories.push(...universalContent.categories);
+      facts.push(...universalContent.facts);
     }
     
     // Add level-specific advanced content
@@ -668,6 +660,144 @@ CRITICAL Requirements:
     ];
   }
   
+  private generateUniversalContent(
+    topic: string,
+    subtopic: string,
+    level: number
+  ): AITopicContent {
+    const items: string[] = [];
+    const categories: string[] = [];
+    const facts: string[] = [];
+    
+    // Clean and process the topic
+    const cleanTopic = topic.trim().toLowerCase();
+    const topicWords = cleanTopic.split(/\s+/).filter(word => word.length > 0);
+    const mainTopic = topicWords[0] || cleanTopic;
+    
+    console.log(`Generating universal content for: "${topic}" (words: ${topicWords.join(', ')})`);
+    
+    // Generate topic-specific items using intelligent word analysis
+    const topicVariations = this.generateTopicVariations(cleanTopic, topicWords);
+    items.push(...topicVariations);
+    
+    // Generate contextual items based on topic patterns
+    const contextualItems = this.generateContextualItems(cleanTopic, topicWords, level);
+    items.push(...contextualItems);
+    
+    // Generate related academic/educational items
+    const academicItems = this.generateAcademicItems(cleanTopic, topicWords);
+    items.push(...academicItems);
+    
+    // Generate categories
+    categories.push(
+      'Types', 'Examples', 'Basics', 'Advanced', 'Modern', 'Traditional',
+      'Popular', 'Historical'
+    );
+    
+    // Generate facts
+    facts.push(
+      `${topic} is educational`, `Study ${topic}`, `Learn ${topic}`,
+      `${topic} knowledge`, `${topic} facts`, `${topic} examples`
+    );
+    
+    return {
+      items: items.slice(0, 30),
+      categories: categories.slice(0, 8),
+      facts: facts.slice(0, 15)
+    };
+  }
+  
+  private generateTopicVariations(topic: string, words: string[]): string[] {
+    const variations: string[] = [];
+    
+    // Add the main topic and its variations
+    variations.push(topic);
+    if (topic.endsWith('s')) {
+      variations.push(topic.slice(0, -1)); // Remove 's' if plural
+    } else {
+      variations.push(topic + 's'); // Add 's' if singular
+    }
+    
+    // Add individual words if multi-word topic
+    words.forEach(word => {
+      if (word.length > 2) {
+        variations.push(word);
+        variations.push(word.charAt(0).toUpperCase() + word.slice(1));
+      }
+    });
+    
+    // Add common prefixes and suffixes
+    const prefixes = ['Super', 'Mini', 'Mega', 'Ultra', 'Pro', 'Basic', 'Modern'];
+    const suffixes = ['Style', 'Type', 'Kind', 'Form', 'Method', 'Way'];
+    
+    prefixes.forEach(prefix => {
+      variations.push(`${prefix} ${topic}`);
+    });
+    
+    suffixes.forEach(suffix => {
+      variations.push(`${topic} ${suffix}`);
+    });
+    
+    return variations.slice(0, 15);
+  }
+  
+  private generateContextualItems(topic: string, words: string[], level: number): string[] {
+    const contextual: string[] = [];
+    
+    // Educational levels
+    const levels = ['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Master'];
+    levels.forEach(levelName => {
+      contextual.push(`${levelName} ${topic}`);
+    });
+    
+    // Academic terms
+    const academic = ['Study', 'Research', 'Analysis', 'Theory', 'Practice', 'Example'];
+    academic.forEach(term => {
+      contextual.push(`${topic} ${term}`);
+    });
+    
+    // Time-based variations
+    const times = ['Classic', 'Modern', 'Ancient', 'Future', 'Current', 'Traditional'];
+    times.forEach(time => {
+      contextual.push(`${time} ${topic}`);
+    });
+    
+    // Quality descriptors
+    const qualities = ['Best', 'Top', 'Great', 'Famous', 'Popular', 'Important'];
+    qualities.forEach(quality => {
+      contextual.push(`${quality} ${topic}`);
+    });
+    
+    return contextual.slice(0, 20);
+  }
+  
+  private generateAcademicItems(topic: string, words: string[]): string[] {
+    const academic: string[] = [];
+    
+    // Generic academic terms that work with any topic
+    const academicTerms = [
+      'Facts', 'Information', 'Knowledge', 'Data', 'Evidence', 'Examples',
+      'Principles', 'Concepts', 'Ideas', 'Methods', 'Techniques', 'Approaches',
+      'History', 'Origin', 'Development', 'Evolution', 'Progress', 'Future'
+    ];
+    
+    academicTerms.forEach(term => {
+      academic.push(`${topic} ${term}`);
+    });
+    
+    // Subject-specific academic terms
+    const subjects = [
+      'Science', 'Art', 'Culture', 'Society', 'Technology', 'Nature',
+      'Education', 'Research', 'Innovation', 'Discovery'
+    ];
+    
+    subjects.forEach(subject => {
+      academic.push(`${topic} in ${subject}`);
+    });
+    
+    return academic.slice(0, 15);
+  }
+
   private normalizeTopic(topic: string): string {
     // Common typo corrections and variations
     const corrections: { [key: string]: string } = {

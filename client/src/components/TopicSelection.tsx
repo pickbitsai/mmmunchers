@@ -89,12 +89,57 @@ export default function TopicSelection() {
   };
   
   const handleCustomTopicCreate = () => {
-    if (customTopic.trim()) {
-      // Store the custom topic
-      localStorage.setItem('customTopic', customTopic);
-      selectTopic('custom');
-      setShowCustomModal(false);
+    const cleanTopic = customTopic.trim();
+    
+    // Input validation
+    if (!cleanTopic) {
+      alert('Please enter a topic!');
+      return;
     }
+    
+    // Length validation
+    if (cleanTopic.length < 2) {
+      alert('Topic must be at least 2 characters long!');
+      return;
+    }
+    
+    if (cleanTopic.length > 50) {
+      alert('Topic must be less than 50 characters long!');
+      return;
+    }
+    
+    // Content validation - check for inappropriate content
+    const forbiddenWords = ['fuck', 'shit', 'damn', 'hell', 'ass', 'bitch', 'crap', 'piss'];
+    const lowerTopic = cleanTopic.toLowerCase();
+    
+    if (forbiddenWords.some(word => lowerTopic.includes(word))) {
+      alert('Please choose an appropriate educational topic!');
+      return;
+    }
+    
+    // Check for single character topics
+    if (cleanTopic.length === 1) {
+      alert('Please enter a more specific topic!');
+      return;
+    }
+    
+    // Check for only numbers
+    if (/^\d+$/.test(cleanTopic)) {
+      alert('Please enter a topic with letters!');
+      return;
+    }
+    
+    // Check for special characters only
+    if (!/[a-zA-Z]/.test(cleanTopic)) {
+      alert('Please enter a topic with alphabetic characters!');
+      return;
+    }
+    
+    // Store the custom topic
+    localStorage.setItem('customTopic', cleanTopic);
+    selectTopic('custom');
+    setShowCustomModal(false);
+    setCustomTopic('');
   };
 
   const getTopicCategories = (topicId: string) => {
