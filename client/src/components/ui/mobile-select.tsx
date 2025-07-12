@@ -96,7 +96,7 @@ export function MobileSelect({
       {isOpen && (
         <div 
           className={cn(
-            "absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-md border shadow-lg",
+            "absolute z-[9999] mt-1 w-full max-h-60 overflow-auto rounded-md border shadow-lg",
             contentClassName || "bg-gray-900 text-white border-gray-700"
           )}
           style={{ 
