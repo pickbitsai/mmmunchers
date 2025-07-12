@@ -155,6 +155,14 @@ Changelog:
 - January 12, 2025. Fixed OpenAI prompt structure to request separate correctItems and incorrectItems arrays for accurate classification
 - January 12, 2025. Implemented universal topic classification system that works for any user-submitted topic without pre-configuration
 - January 12, 2025. Added comprehensive debugging and improved answer validation system for reliable correct/incorrect item separation
+- January 12, 2025. MAJOR SECURITY OVERHAUL: Moved OpenAI API key to server-side only, eliminating client-side exposure
+- January 12, 2025. Implemented secure server-side AI proxy endpoint with comprehensive input validation and rate limiting
+- January 12, 2025. Added advanced security headers including HSTS, CSP, and XSS protection for production deployment
+- January 12, 2025. Enhanced error handling to prevent information leakage while maintaining user experience
+- January 12, 2025. Implemented IP-based rate limiting (5 requests/minute) to prevent API abuse and cost overflow
+- January 12, 2025. Added comprehensive input sanitization and validation across all API endpoints
+- January 12, 2025. Cleaned up debug logging to only show in development mode, securing production deployment
+- January 12, 2025. Created comprehensive security audit documentation and deployment security checklist
 ```
 
 ## User Preferences

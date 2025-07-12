@@ -21,21 +21,12 @@ class AIService {
   private apiEndpoint: string;
   
   constructor() {
-    // OpenAI API configuration
-    this.apiKey = import.meta.env.VITE_AI_API_KEY;
-    this.apiEndpoint = 'https://api.openai.com/v1/chat/completions';
+    // OpenAI API configuration - removed from client side for security
+    this.apiKey = undefined; // API key should be on server side only
+    this.apiEndpoint = '/api/ai-generate'; // Use server proxy endpoint
     
-    // Debug logging
-    console.log('AI Service initialized:', {
-      hasApiKey: !!this.apiKey,
-      apiKeyLength: this.apiKey?.length || 0,
-      apiKeyPreview: this.apiKey ? `${this.apiKey.substring(0, 7)}...` : 'not set',
-      allEnvKeys: Object.keys(import.meta.env),
-      allEnvValues: import.meta.env,
-      mode: import.meta.env.MODE,
-      dev: import.meta.env.DEV,
-      prod: import.meta.env.PROD
-    });
+    // Minimal logging for security
+    console.log('AI Service initialized - using server proxy for secure AI requests');
   }
   
   async generateTopicContent(
@@ -61,70 +52,40 @@ class AIService {
       console.error('Cache lookup failed:', error);
     }
     
-    // If no API is configured, use advanced mock generation
-    if (!this.apiKey || !this.apiEndpoint || this.apiKey === 'undefined') {
-      console.log('No API key configured, using mock content for:', topic);
-      const mockContent = await this.generateMockContent(topic, subtopic, level);
-      
-      // Save mock content to cache
-      this.saveToCacheInBackground(topic, subtopic, mockContent, 'mock');
-      
-      return mockContent;
-    }
-    
-    // OpenAI API call
+    // Try secure server-side AI generation first
     try {
-      const response = await fetch(this.apiEndpoint, {
+      const response = await fetch('/api/ai-generate', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an educational content generator for a learning game. Generate diverse, accurate, and age-appropriate content. Always respond with valid JSON.'
-            },
-            {
-              role: 'user',
-              content: (() => {
-                const prompt = this.buildPrompt(topic, subtopic, level);
-                console.log('OpenAI prompt being sent:', prompt);
-                return prompt;
-              })()
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 800,
-          response_format: { type: "json_object" }
+          topic,
+          subtopic,
+          level,
+          prompt: this.buildPrompt(topic, subtopic, level)
         })
       });
       
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`OpenAI API error: ${response.status} - ${error}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.content) {
+          // Save AI-generated content to cache
+          this.saveToCacheInBackground(topic, subtopic, data.content, 'openai');
+          return data.content;
+        }
       }
-      
-      const data = await response.json();
-      console.log('OpenAI raw response:', JSON.stringify(data, null, 2));
-      const aiContent = this.parseOpenAIResponse(data);
-      console.log('Parsed AI content:', JSON.stringify(aiContent, null, 2));
-      
-      // Save AI-generated content to cache
-      this.saveToCacheInBackground(topic, subtopic, aiContent, 'openai');
-      
-      return aiContent;
     } catch (error) {
-      console.error('AI generation failed, using mock content:', error);
-      const mockContent = await this.generateMockContent(topic, subtopic, level);
-      
-      // Save mock content to cache
-      this.saveToCacheInBackground(topic, subtopic, mockContent, 'mock');
-      
-      return mockContent;
+      console.warn('Server AI generation unavailable, using mock content');
     }
+    
+    // Fallback to mock generation
+    const mockContent = await this.generateMockContent(topic, subtopic, level);
+    
+    // Save mock content to cache
+    this.saveToCacheInBackground(topic, subtopic, mockContent, 'mock');
+    
+    return mockContent;
   }
   
   private async saveToCacheInBackground(
@@ -209,20 +170,26 @@ class AIService {
     if (topicContent.correctItems && topicContent.incorrectItems) {
       correct = topicContent.correctItems;
       incorrect = topicContent.incorrectItems;
-      console.log(`Using OpenAI separated items: ${correct.length} correct, ${incorrect.length} incorrect`);
+      if (import.meta.env.DEV) {
+        console.log(`Using OpenAI separated items: ${correct.length} correct, ${incorrect.length} incorrect`);
+      }
     } else {
       // Fallback to the old classification method
       const separated = this.separateCorrectFromIncorrect(topic, items);
       correct = separated.correct;
       incorrect = separated.incorrect;
-      console.log(`Using classified items: ${correct.length} correct, ${incorrect.length} incorrect`);
+      if (import.meta.env.DEV) {
+        console.log(`Using classified items: ${correct.length} correct, ${incorrect.length} incorrect`);
+      }
     }
     
     if (isEverythingChallenge) {
       // For "everything about" challenges, use ALL correct items
       correctAnswers = [...correct];
       incorrectAnswers = [...incorrect];
-      console.log(`Everything challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
+      if (import.meta.env.DEV) {
+        console.log(`Everything challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
+      }
     } else {
       // For specific challenges, use a subset of correct items
       const totalCells = 48; // Average grid size
@@ -241,7 +208,9 @@ class AIService {
       const remainingCorrect = correct.filter(item => !correctAnswers.includes(item));
       incorrectAnswers = [...remainingCorrect, ...incorrect];
       
-      console.log(`Specific challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
+      if (import.meta.env.DEV) {
+        console.log(`Specific challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
+      }
     }
     
     // If we need more distractors, add smart ones
@@ -313,9 +282,10 @@ class AIService {
       }
     });
     
-    console.log(`Topic: ${topic} - Separated ${correct.length} correct and ${incorrect.length} incorrect items`);
-    console.log(`Correct items:`, correct.slice(0, 5).join(', '), correct.length > 5 ? '...' : '');
-    console.log(`Incorrect items:`, incorrect.slice(0, 5).join(', '), incorrect.length > 5 ? '...' : '');
+    // Debug logging only in development
+    if (import.meta.env.DEV) {
+      console.log(`Topic: ${topic} - Separated ${correct.length} correct and ${incorrect.length} incorrect items`);
+    }
     
     return { correct, incorrect };
   }
@@ -914,7 +884,9 @@ incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking",
     const topicWords = cleanTopic.split(/\s+/).filter(word => word.length > 0);
     const mainTopic = topicWords[0] || cleanTopic;
     
-    console.log(`Generating universal content for: "${topic}" (words: ${topicWords.join(', ')})`);
+    if (import.meta.env.DEV) {
+      console.log(`Generating universal content for: "${topic}" (words: ${topicWords.join(', ')})`);
+    }
     
     // Generate topic-specific items using intelligent word analysis
     const topicVariations = this.generateTopicVariations(cleanTopic, topicWords);
