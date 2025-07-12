@@ -320,23 +320,19 @@ export default function TopicSelection() {
                   {topic.available ? (
                     <div className="space-y-3">
                       {!topic.isCustom && (
-                        <Select
+                        <select
                           value={selectedCategories[topic.id] || 'random'}
-                          onValueChange={(value) => {
-                            setSelectedCategories(prev => ({...prev, [topic.id]: value}));
+                          onChange={(e) => {
+                            setSelectedCategories(prev => ({...prev, [topic.id]: e.target.value}));
                           }}
+                          className="w-full h-12 bg-black/40 text-cyan-300 border border-cyan-900/50 hover:border-cyan-700/50 hover:bg-black/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500"
                         >
-                          <SelectTrigger className="w-full h-12 bg-black/40 text-cyan-300 border-cyan-900/50 hover:border-cyan-700/50 hover:bg-black/60">
-                            <SelectValue placeholder="Random Mix" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-900 text-white border-cyan-900/50 z-[99999]">
-                            {getTopicCategories(topic.id).map((option) => (
-                              <SelectItem key={option.id} value={option.id} className="text-white hover:bg-gray-800">
-                                {option.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          {getTopicCategories(topic.id).map((option) => (
+                            <option key={option.id} value={option.id} className="bg-gray-900 text-white">
+                              {option.name}
+                            </option>
+                          ))}
+                        </select>
                       )}
                       
                       <Button 
