@@ -152,6 +152,9 @@ Changelog:
 - January 12, 2025. Redesigned AI content generation: AI now provides mix of correct and incorrect answers for balanced gameplay
 - January 12, 2025. Added intelligent answer separation system to categorize AI-generated items based on topic relevance
 - January 12, 2025. Enhanced AI prompts to explicitly request both topic-related and unrelated items for natural challenge balance
+- January 12, 2025. Fixed OpenAI prompt structure to request separate correctItems and incorrectItems arrays for accurate classification
+- January 12, 2025. Implemented universal topic classification system that works for any user-submitted topic without pre-configuration
+- January 12, 2025. Added comprehensive debugging and improved answer validation system for reliable correct/incorrect item separation
 ```
 
 ## User Preferences

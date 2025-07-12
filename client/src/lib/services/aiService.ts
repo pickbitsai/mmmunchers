@@ -265,22 +265,94 @@ class AIService {
     };
   }
   
-  private separateCorrectFromIncorrect(topic: string, content: any): { correct: string[], incorrect: string[] } {
-    // Since OpenAI now provides separate correctItems and incorrectItems arrays,
-    // we can use them directly instead of trying to classify items ourselves
-    const correctItems = Array.isArray(content.correctItems) 
-      ? content.correctItems.filter((item: any) => typeof item === 'string' && item.length > 0)
-      : [];
+  private separateCorrectFromIncorrect(topic: string, items: string[]): { correct: string[], incorrect: string[] } {
+    // Smart separation using topic relevance analysis
+    const correct: string[] = [];
+    const incorrect: string[] = [];
+    const topicLower = topic.toLowerCase();
+    
+    // Create topic-specific relevant terms
+    const topicWords = topicLower.split(/\s+/);
+    
+    // Universal distractors that are clearly unrelated to most topics
+    const universalDistractors = [
+      'monkey', 'pizza', 'rainbow', 'guitar', 'elephant', 'jungle', 'butterfly', 
+      'castle', 'superhero', 'unicorn', 'robot', 'book', 'moon', 'football', 
+      'ice cream', 'planet', 'mountain', 'snow', 'skiing', 'basketball', 
+      'piano', 'cooking', 'desert', 'space', 'car', 'television', 'computer', 
+      'phone', 'house', 'school', 'office', 'pencil', 'paper', 'chair', 'table'
+    ];
+    
+    items.forEach(item => {
+      const itemLower = item.toLowerCase();
       
-    const incorrectItems = Array.isArray(content.incorrectItems) 
-      ? content.incorrectItems.filter((item: any) => typeof item === 'string' && item.length > 0)
-      : [];
+      // Check if it's a universal distractor
+      const isUniversalDistractor = universalDistractors.some(distractor => 
+        itemLower.includes(distractor) || distractor.includes(itemLower)
+      );
+      
+      if (isUniversalDistractor) {
+        incorrect.push(item);
+      } else {
+        // Check if the item is likely related to the topic
+        const hasTopicConnection = topicWords.some(topicWord => 
+          itemLower.includes(topicWord) || topicWord.includes(itemLower) ||
+          this.isSemanticallySimilar(itemLower, topicWord)
+        );
+        
+        if (hasTopicConnection) {
+          correct.push(item);
+        } else {
+          // For ambiguous cases, use topic-specific knowledge
+          if (this.isItemRelevantToTopic(itemLower, topicLower)) {
+            correct.push(item);
+          } else {
+            incorrect.push(item);
+          }
+        }
+      }
+    });
     
-    console.log(`Topic: ${topic} - OpenAI provided ${correctItems.length} correct and ${incorrectItems.length} incorrect items`);
-    console.log(`Correct items:`, correctItems.slice(0, 5).join(', '), correctItems.length > 5 ? '...' : '');
-    console.log(`Incorrect items:`, incorrectItems.slice(0, 5).join(', '), incorrectItems.length > 5 ? '...' : '');
+    console.log(`Topic: ${topic} - Separated ${correct.length} correct and ${incorrect.length} incorrect items`);
+    console.log(`Correct items:`, correct.slice(0, 5).join(', '), correct.length > 5 ? '...' : '');
+    console.log(`Incorrect items:`, incorrect.slice(0, 5).join(', '), incorrect.length > 5 ? '...' : '');
     
-    return { correct: correctItems, incorrect: incorrectItems };
+    return { correct, incorrect };
+  }
+
+  private isSemanticallySimilar(item: string, topic: string): boolean {
+    // Simple semantic similarity checks
+    const itemWords = item.split(/\s+/);
+    const topicWords = topic.split(/\s+/);
+    
+    return itemWords.some(itemWord => 
+      topicWords.some(topicWord => 
+        Math.abs(itemWord.length - topicWord.length) <= 2 &&
+        (itemWord.includes(topicWord) || topicWord.includes(itemWord))
+      )
+    );
+  }
+
+  private isItemRelevantToTopic(item: string, topic: string): boolean {
+    // Topic-specific relevance checks
+    const topicMappings: { [key: string]: string[] } = {
+      'electricity': ['battery', 'wire', 'light', 'switch', 'circuit', 'plug', 'outlet', 'socket', 'bulb', 'power', 'energy', 'electrician', 'current', 'voltage', 'shock', 'appliance', 'generator', 'transformer', 'fuse', 'resistor', 'conductor', 'insulator', 'amplifier', 'motor'],
+      'music': ['guitar', 'piano', 'violin', 'drums', 'trumpet', 'saxophone', 'note', 'chord', 'rhythm', 'melody', 'harmony', 'song', 'beat', 'tempo', 'scale', 'bass', 'treble', 'jazz', 'rock', 'pop', 'classical', 'concert', 'band', 'orchestra', 'singer', 'composer', 'musician'],
+      'cooking': ['knife', 'pot', 'stove', 'spoon', 'plate', 'food', 'recipe', 'chop', 'bake', 'mix', 'grill', 'peel', 'steam', 'boil', 'fry', 'whisk', 'simmer', 'season', 'taste', 'serve', 'eat', 'dish', 'pan', 'oven'],
+      'lego': ['brick', 'build', 'minifig', 'set', 'color', 'play', 'creation', 'piece', 'theme', 'instruction', 'baseplate', 'creative', 'imagination', 'construct', 'model', 'toy', 'plastic', 'stack'],
+      'surfing': ['ocean', 'wave', 'board', 'wetsuit', 'beach', 'surf', 'tide', 'sand', 'paddle', 'ride', 'barrel', 'tube', 'break', 'curl', 'foam', 'swell', 'fin', 'leash', 'wax', 'reef', 'shore']
+    };
+    
+    // Check if topic has specific mappings
+    for (const [topicKey, relevantItems] of Object.entries(topicMappings)) {
+      if (topic.includes(topicKey)) {
+        return relevantItems.some(relevant => 
+          item.includes(relevant) || relevant.includes(item)
+        );
+      }
+    }
+    
+    return false;
   }
   
   private getTopicKeywords(normalizedTopic: string): string[] {
