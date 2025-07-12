@@ -21,7 +21,7 @@ export default function Player({ position }: PlayerProps) {
 
   // Log player position occasionally
   if (Math.random() < 0.01) {
-    console.log("Player rendering at position:", position);
+    // Player rendering optimized
   }
 
   return (

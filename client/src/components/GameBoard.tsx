@@ -32,7 +32,7 @@ export default function GameBoard() {
   useEffect(() => {
     if (gamePhase === 'playing' && enemies.length === 0) {
       console.log("3D GameBoard: Spawning enemies");
-      setTimeout(() => spawnEnemies(), 1000); // Delay enemy spawn slightly
+      spawnEnemies(); // Spawn enemies immediately
     }
   }, [gamePhase, enemies.length, spawnEnemies]);
 
@@ -115,8 +115,8 @@ export default function GameBoard() {
   useFrame((state, delta) => {
     if (gamePhase !== 'playing') return;
 
-    // Debug game loop
-    if (Math.random() < 0.01) { // Log occasionally to avoid spam
+    // Debug game loop less frequently
+    if (Math.random() < 0.001) { // Log much less frequently
       console.log("3D Game loop running", { delta, playerPos: `${player.x},${player.y}`, enemyCount: enemies.length });
     }
 
@@ -161,14 +161,7 @@ export default function GameBoard() {
     }
   });
 
-  // Debug logging
-  console.log("GameBoard render check:", { 
-    gridLength: grid.length, 
-    hasChallenge: !!currentChallenge,
-    gamePhase,
-    playerPos: `${player.x},${player.y}`,
-    enemyCount: enemies.length
-  });
+  // Debug logging removed for performance
 
   if (!grid.length || !currentChallenge) {
     console.log("GameBoard: Missing grid or challenge - returning null");
@@ -187,7 +180,7 @@ export default function GameBoard() {
   const groundWidth = gridWidth * 2 + 1;
   const groundHeight = gridHeight * 2 + 1;
 
-  console.log("GameBoard: Rendering 3D scene with", { gridWidth, gridHeight, playerPos: `${player.x},${player.y}`, enemyCount: enemies.length });
+  // Performance optimization: removed debug logging
 
   return (
     <group ref={groupRef}>
@@ -200,9 +193,7 @@ export default function GameBoard() {
       {/* Grid cells */}
       {grid.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
-          if (!cell.isEmpty) {
-            console.log(`Rendering cell at ${colIndex},${rowIndex} with value:`, cell.value);
-          }
+          // Cell rendering optimized
           return (
             <GridCell
               key={`${rowIndex}-${colIndex}`}

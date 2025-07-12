@@ -31,10 +31,7 @@ export default function Enemy({ enemy, position }: EnemyProps) {
     }
   });
 
-  // Log enemy position occasionally
-  if (Math.random() < 0.01) {
-    console.log("Enemy rendering:", { id: enemy.id, type: enemy.type, position });
-  }
+  // Enemy rendering optimized
 
   // Different colors for enemy types
   const bodyColor = enemy.type === 'fast' ? "#FF6B35" : enemy.type === 'smart' ? "#9C27B0" : "#8B0000";

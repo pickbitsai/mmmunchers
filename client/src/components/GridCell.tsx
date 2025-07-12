@@ -30,7 +30,7 @@ export default function GridCell({ cell, position }: GridCellProps) {
     return null;
   }
   
-  console.log("GridCell: Rendering cell", { value: cell.value, isCorrect: cell.isCorrect, position });
+  // Remove excessive logging
 
   return (
     <group>
