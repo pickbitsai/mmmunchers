@@ -48,7 +48,15 @@ export default function GridCell({ cell, position }: GridCellProps) {
       {!cell.isEmpty && cell.value && (
         <Text
           position={[position[0], position[1] + 0.5, position[2]]}
-          fontSize={0.4}
+          fontSize={(() => {
+            // Dynamic font size based on text length
+            const text = cell.value;
+            const charCount = text.length;
+            if (charCount <= 6) return 0.4; // Full size for short text
+            if (charCount <= 10) return 0.35; // Slightly smaller
+            if (charCount <= 15) return 0.3; // Smaller for longer text
+            return 0.25; // Smallest for very long text
+          })()}
           color="white"
           anchorX="center"
           anchorY="middle"

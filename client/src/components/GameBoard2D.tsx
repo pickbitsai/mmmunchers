@@ -279,35 +279,29 @@ export default function GameBoard2D() {
                   className="text-center block w-full h-full flex items-center justify-center"
                   style={{
                     fontSize: (() => {
-                      // Calculate optimal font size to avoid word wrap
+                      // Calculate optimal font size for better text display
                       const text = cell.value;
                       const charCount = text.length;
                       const hasSpaces = text.includes(' ');
-                      const availableWidth = cellSize - 12; // Account for padding
+                      const availableWidth = cellSize - 8; // Account for padding
                       
-                      // Estimate character width (rough approximation)
-                      const charWidth = fontSize * 0.6;
-                      const textWidth = charCount * charWidth;
-                      
-                      // If text is too wide, scale down
-                      if (textWidth > availableWidth) {
-                        const scaleFactor = availableWidth / textWidth;
-                        return `${Math.max(fontSize * scaleFactor, 10)}px`; // Min 10px
+                      // Better font scaling based on content
+                      if (charCount <= 6) {
+                        return `${fontSize}px`; // Full size for short text
+                      } else if (charCount <= 10) {
+                        return `${fontSize * 0.85}px`; // Slightly smaller
+                      } else if (charCount <= 15) {
+                        return `${fontSize * 0.7}px`; // Smaller for longer text
+                      } else {
+                        return `${fontSize * 0.6}px`; // Smallest for very long text
                       }
-                      
-                      // Additional scaling for multi-word content
-                      if (hasSpaces) {
-                        if (charCount > 15) return `${fontSize * 0.7}px`;
-                        if (charCount > 10) return `${fontSize * 0.85}px`;
-                      }
-                      
-                      return `${fontSize}px`;
                     })(),
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     lineHeight: 1,
-                    padding: '2px'
+                    padding: '2px',
+                    maxWidth: `${cellSize - 8}px`
                   }}
                 >
                   {cell.value}

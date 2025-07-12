@@ -598,16 +598,16 @@ CRITICAL Requirements:
     // Pick a random category that's likely different from the topic
     const randomCategory = distractorCategories[Math.floor(Math.random() * distractorCategories.length)];
     
-    // Common wrong answer patterns
+    // Better wrong answer patterns - short and clear
     const wrongPatterns = [
-      'Not ' + topic,
-      'Unlike ' + topic,
-      'False about ' + topic,
-      'Myth about ' + topic,
-      'Misconception',
+      'Fake',
+      'Wrong',
+      'False',
+      'Myth',
+      'Unreal',
       'Incorrect',
-      'Wrong answer',
-      'Unrelated'
+      'Bogus',
+      'Untrue'
     ];
     
     // Generate distractors
@@ -616,12 +616,12 @@ CRITICAL Requirements:
         // Use items from different categories for harder levels
         distractors.push(randomCategory[i]);
       } else if (i < wrongPatterns.length) {
-        // Use wrong patterns
+        // Use short wrong patterns
         distractors.push(wrongPatterns[i]);
       } else {
-        // Generate numbered distractors
+        // Generate numbered distractors with short base
         const baseDistractor = wrongPatterns[i % wrongPatterns.length];
-        distractors.push(`${baseDistractor} ${Math.floor(i / wrongPatterns.length) + 1}`);
+        distractors.push(`${baseDistractor} ${Math.floor(i / wrongPatterns.length) + 2}`);
       }
     }
     
