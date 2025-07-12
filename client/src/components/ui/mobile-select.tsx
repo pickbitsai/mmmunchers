@@ -30,6 +30,7 @@ export function MobileSelect({
   const [selectedOption, setSelectedOption] = useState<Option | null>(
     options.find(option => option.id === value) || null
   );
+  const [dropdownPosition, setDropdownPosition] = useState({ left: 0, top: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,6 +54,16 @@ export function MobileSelect({
   const handleToggle = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (!isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        left: rect.left,
+        top: rect.bottom + 4,
+        width: rect.width
+      });
+    }
+    
     setIsOpen(!isOpen);
   };
 
@@ -110,9 +121,9 @@ export function MobileSelect({
             style={{ 
               touchAction: 'manipulation',
               WebkitTapHighlightColor: 'transparent',
-              left: containerRef.current?.getBoundingClientRect().left || 0,
-              top: (containerRef.current?.getBoundingClientRect().bottom || 0) + 4,
-              width: containerRef.current?.getBoundingClientRect().width || 'auto'
+              left: dropdownPosition.left,
+              top: dropdownPosition.top,
+              width: dropdownPosition.width
             }}
           >
             {options.map((option) => (
