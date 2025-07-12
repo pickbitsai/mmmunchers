@@ -132,9 +132,30 @@ export class CustomTopic extends TopicProvider {
     // Store the challenge data for use in generateGrid
     this.currentChallengeData = challenge;
     
+    console.log('Generated challenge data:', {
+      description: challenge.description,
+      correctAnswers: challenge.correctAnswers,
+      incorrectAnswers: challenge.incorrectAnswers?.slice(0, 5) // Show first 5 incorrect answers
+    });
+    
     return {
       description: challenge.description,
-      checkAnswer: (value: string) => challenge.correctAnswers.includes(value)
+      checkAnswer: (value: string) => {
+        // Normalize both the input value and correct answers for comparison
+        const normalizedValue = value.trim().toLowerCase();
+        const isCorrect = challenge.correctAnswers.some(answer => 
+          answer.trim().toLowerCase() === normalizedValue
+        );
+        
+        // Debug logging for answer validation
+        if (isCorrect) {
+          console.log(`✓ Correct answer found: "${value}"`);
+        } else {
+          console.log(`✗ Incorrect answer: "${value}" (not in correct answers)`, challenge.correctAnswers);
+        }
+        
+        return isCorrect;
+      }
     };
   }
   
@@ -187,7 +208,12 @@ export class CustomTopic extends TopicProvider {
     for (let i = 0; i < shuffledAnswers.length && i < shuffledPositions.length; i++) {
       const pos = shuffledPositions[i];
       const answer = shuffledAnswers[i];
-      const isCorrect = challengeData.correctAnswers.includes(answer);
+      
+      // Use normalized comparison to determine if answer is correct
+      const normalizedAnswer = answer.trim().toLowerCase();
+      const isCorrect = challengeData.correctAnswers.some(correctAnswer => 
+        correctAnswer.trim().toLowerCase() === normalizedAnswer
+      );
       
       grid[pos.y][pos.x] = {
         value: answer,
