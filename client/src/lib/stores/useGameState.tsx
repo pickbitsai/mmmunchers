@@ -209,8 +209,8 @@ export const useGameState = create<GameState>()(
         set({ gamePhase: "loading" });
       }
       
-      // Use current level if continuing, otherwise randomize starting level (1-3)
-      const gameLevel = currentLevel > 0 ? currentLevel : Math.floor(Math.random() * 3) + 1;
+      // Use current level if continuing, otherwise start at level 1
+      const gameLevel = currentLevel > 0 ? currentLevel : 1;
       
       try {
         // Get current grid dimensions based on window size
@@ -262,13 +262,11 @@ export const useGameState = create<GameState>()(
     
     restartGame: () => {
       const { selectedTopic } = get();
-      // Randomize starting level for restart too
-      const startingLevel = Math.floor(Math.random() * 3) + 1;
       
       set({
         score: 0,
         lives: 3,
-        level: startingLevel,
+        level: 1, // Always start at level 1 when restarting
         enemies: [],
         timeRemaining: 0
       });
@@ -344,6 +342,14 @@ export const useGameState = create<GameState>()(
       if (cell.isEmpty || cell.isMunched) {
         return;
       }
+      
+      // Debug logging for answer validation
+      console.log("Munching cell:", {
+        cellValue: cell.value,
+        isCorrect: cell.isCorrect,
+        challenge: currentChallenge?.description,
+        answerCheckResult: currentChallenge?.checkAnswer(cell.value)
+      });
       
       // Process munching
       if (currentChallenge?.checkAnswer(cell.value)) {

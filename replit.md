@@ -141,6 +141,10 @@ Changelog:
 - June 28, 2025. Fixed mobile touch controls with coordinate-based detection system for reliable character movement on mobile devices
 - June 28, 2025. Cleaned up all debugging code and console logging for production-ready deployment
 - June 28, 2025. Resolved GitHub build failures by optimizing TypeScript configuration and adding proper deployment workflows
+- January 12, 2025. Fixed game title display to show "mmmunchers" in both browser tab and main game interface
+- January 12, 2025. Improved 2D game board text wrapping with intelligent word breaking to prevent single-letter wraps
+- January 12, 2025. Fixed level progression bug: game now always starts at level 1 instead of random level 1-3
+- January 12, 2025. Added debug logging for answer validation to help identify incorrect answer checking issues
 ```
 
 ## User Preferences
