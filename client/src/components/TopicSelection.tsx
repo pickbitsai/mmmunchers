@@ -150,8 +150,9 @@ export default function TopicSelection() {
           { id: 'multiples', name: 'Multiples' },
           { id: 'factors', name: 'Factors' },
           { id: 'primes', name: 'Prime Numbers' },
-          { id: 'equations', name: 'Equations' },
-          { id: 'inequalities', name: 'Inequalities' }
+          { id: 'squares', name: 'Perfect Squares' },
+          { id: 'even_odd', name: 'Even/Odd' },
+          { id: 'greater_less', name: 'Greater/Less Than' }
         ];
       case 'words':
         return [
@@ -159,8 +160,9 @@ export default function TopicSelection() {
           { id: 'nouns', name: 'Nouns' },
           { id: 'verbs', name: 'Verbs' },
           { id: 'adjectives', name: 'Adjectives' },
-          { id: 'vowels', name: 'Vowel Sounds' },
-          { id: 'rhyming', name: 'Rhyming Words' }
+          { id: 'word_length', name: 'Word Length' },
+          { id: 'word_endings', name: 'Word Endings' },
+          { id: 'vowel_patterns', name: 'Vowel Patterns' }
         ];
       case 'marvel':
         return [
@@ -174,11 +176,12 @@ export default function TopicSelection() {
       case 'movies':
         return [
           { id: 'random', name: 'Random Mix' },
-          { id: 'action', name: 'Action Movies' },
-          { id: 'scifi', name: 'Sci-Fi Movies' },
-          { id: 'animated', name: 'Animated Films' },
+          { id: 'actors', name: 'Actors' },
           { id: 'directors', name: 'Directors' },
-          { id: 'actors', name: 'Actors & Actresses' }
+          { id: 'genres', name: 'Genres' },
+          { id: 'decades', name: 'Decades' },
+          { id: 'franchises', name: 'Franchises' },
+          { id: 'awards', name: 'Awards' }
         ];
       default:
         return [];
