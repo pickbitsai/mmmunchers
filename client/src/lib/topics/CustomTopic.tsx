@@ -1,6 +1,6 @@
 import { TopicProvider, GridCell } from "./TopicProvider";
 import { Challenge } from "../stores/useGameState";
-import { aiService } from "../services/aiService";
+import { aiService, AIGeneratedContent } from "../services/aiService";
 
 export class CustomTopic extends TopicProvider {
   private userTopic: string;
@@ -8,7 +8,7 @@ export class CustomTopic extends TopicProvider {
   private currentSubtopic: string = 'all';
   private contentCache: Map<string, string[]> = new Map();
   private currentLevel: number = 1;
-  private currentChallengeData: any = null;
+  private currentChallengeData: AIGeneratedContent | null = null;
   
   constructor(userTopic: string) {
     super();
@@ -132,10 +132,12 @@ export class CustomTopic extends TopicProvider {
     // Store the challenge data for use in generateGrid
     this.currentChallengeData = challenge;
     
-    console.log('Generated challenge data:', {
+    console.log('CustomTopic - Generated challenge data:', {
       description: challenge.description,
-      correctAnswers: challenge.correctAnswers,
-      incorrectAnswers: challenge.incorrectAnswers?.slice(0, 5) // Show first 5 incorrect answers
+      correctAnswersCount: challenge.correctAnswers?.length || 0,
+      incorrectAnswersCount: challenge.incorrectAnswers?.length || 0,
+      correctAnswersSample: challenge.correctAnswers?.slice(0, 3),
+      incorrectAnswersSample: challenge.incorrectAnswers?.slice(0, 3)
     });
     
     return {
@@ -170,22 +172,29 @@ export class CustomTopic extends TopicProvider {
     
     const challengeData = this.currentChallengeData;
     
+    // Debug logging to verify AI data structure
+    console.log('CustomTopic generateGrid - Challenge data:', {
+      correctCount: challengeData.correctAnswers?.length || 0,
+      incorrectCount: challengeData.incorrectAnswers?.length || 0,
+      correctSample: challengeData.correctAnswers?.slice(0, 3),
+      incorrectSample: challengeData.incorrectAnswers?.slice(0, 3)
+    });
+    
     // Calculate total cells - we want to fill ALL of them
     const totalCells = width * height;
     
-    // Get all available answers
+    // Get all available answers from AI-generated content
     let allAnswers = [
-      ...challengeData.correctAnswers,
-      ...challengeData.incorrectAnswers
+      ...(challengeData.correctAnswers || []),
+      ...(challengeData.incorrectAnswers || [])
     ];
     
     // If we don't have enough answers, generate more distractors
     while (allAnswers.length < totalCells) {
-      // Add variations or duplicates with slight modifications
       const additionalDistractors = this.generateAdditionalDistractors(
         this.userTopic,
         totalCells - allAnswers.length,
-        challengeData.correctAnswers
+        challengeData.correctAnswers || []
       );
       allAnswers = [...allAnswers, ...additionalDistractors];
     }
@@ -195,23 +204,23 @@ export class CustomTopic extends TopicProvider {
     
     const shuffledAnswers = this.shuffleArray(allAnswers);
     
-    // Place answers randomly on the grid
+    // Create position array and shuffle it
     const positions: Array<{x: number, y: number}> = [];
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         positions.push({x, y});
       }
     }
-    
     const shuffledPositions = this.shuffleArray(positions);
     
+    // Place answers on grid with proper correct/incorrect marking
     for (let i = 0; i < shuffledAnswers.length && i < shuffledPositions.length; i++) {
       const pos = shuffledPositions[i];
       const answer = shuffledAnswers[i];
       
-      // Use normalized comparison to determine if answer is correct
+      // Determine if answer is correct by checking against AI-provided correct answers
       const normalizedAnswer = answer.trim().toLowerCase();
-      const isCorrect = challengeData.correctAnswers.some((correctAnswer: string) => 
+      const isCorrect = (challengeData.correctAnswers || []).some((correctAnswer: string) => 
         correctAnswer.trim().toLowerCase() === normalizedAnswer
       );
       
@@ -222,6 +231,11 @@ export class CustomTopic extends TopicProvider {
         isEmpty: false
       };
     }
+    
+    // Log grid statistics for debugging
+    const totalCorrect = grid.flat().filter(cell => !cell.isEmpty && cell.isCorrect).length;
+    const totalIncorrect = grid.flat().filter(cell => !cell.isEmpty && !cell.isCorrect).length;
+    console.log(`CustomTopic grid generated: ${totalCorrect} correct, ${totalIncorrect} incorrect answers`);
     
     return grid;
   }
