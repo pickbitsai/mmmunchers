@@ -340,7 +340,8 @@ class AIService {
       'music': ['guitar', 'piano', 'violin', 'drums', 'trumpet', 'saxophone', 'note', 'chord', 'rhythm', 'melody', 'harmony', 'song', 'beat', 'tempo', 'scale', 'bass', 'treble', 'jazz', 'rock', 'pop', 'classical', 'concert', 'band', 'orchestra', 'singer', 'composer', 'musician'],
       'cooking': ['knife', 'pot', 'stove', 'spoon', 'plate', 'food', 'recipe', 'chop', 'bake', 'mix', 'grill', 'peel', 'steam', 'boil', 'fry', 'whisk', 'simmer', 'season', 'taste', 'serve', 'eat', 'dish', 'pan', 'oven'],
       'lego': ['brick', 'build', 'minifig', 'set', 'color', 'play', 'creation', 'piece', 'theme', 'instruction', 'baseplate', 'creative', 'imagination', 'construct', 'model', 'toy', 'plastic', 'stack'],
-      'surfing': ['ocean', 'wave', 'board', 'wetsuit', 'beach', 'surf', 'tide', 'sand', 'paddle', 'ride', 'barrel', 'tube', 'break', 'curl', 'foam', 'swell', 'fin', 'leash', 'wax', 'reef', 'shore']
+      'surfing': ['ocean', 'wave', 'board', 'wetsuit', 'beach', 'surf', 'tide', 'sand', 'paddle', 'ride', 'barrel', 'tube', 'break', 'curl', 'foam', 'swell', 'fin', 'leash', 'wax', 'reef', 'shore'],
+      'shoes': ['laces', 'sole', 'heel', 'boot', 'sandal', 'slipper', 'sneaker', 'insole', 'toe', 'shoelace', 'footwear', 'cleats', 'platform', 'oxford', 'clog', 'moccasin', 'pump', 'flip-flop', 'athletic', 'loafer', 'wedge', 'stiletto', 'brogue', 'espadrille', 'walking', 'running', 'dress', 'casual', 'leather', 'fabric', 'rubber', 'foot', 'ankle', 'lace', 'buckle', 'strap', 'size', 'fit', 'comfort', 'style']
     };
     
     // Check if topic has specific mappings
