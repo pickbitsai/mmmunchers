@@ -193,69 +193,29 @@ class AIService {
     let correctAnswers: string[];
     let numCorrect: number;
     
-    if (isEverythingChallenge) {
-      // For "everything about" challenges, ALL generated items should be correct
-      correctAnswers = [...items];
-      numCorrect = items.length;
-      console.log(`Everything challenge: Using all ${items.length} items as correct answers`);
-    } else {
-      // For specific challenges, use a subset of items as correct answers
-      const totalCells = 48; // Average grid size
-      const minCorrect = Math.min(2 + Math.floor(level / 4), Math.floor(totalCells * 0.2), items.length);
-      const maxCorrect = Math.min(minCorrect + 3, Math.floor(totalCells * 0.35), items.length);
-      numCorrect = Math.min(
-        Math.floor(minCorrect + Math.random() * (maxCorrect - minCorrect + 1)),
-        items.length
-      );
-      
-      // Select correct answers from the AI-generated items
-      const shuffled = [...items].sort(() => Math.random() - 0.5);
-      correctAnswers = shuffled.slice(0, numCorrect);
-    }
+    // For AI-generated content, ALL items should be considered correct since they're all related to the topic
+    // The challenge is to distinguish between topic-related items and unrelated distractors
+    correctAnswers = [...items];
+    numCorrect = items.length;
     
-    // Generate distractors based on challenge type
+    console.log(`AI-generated challenge: Using all ${items.length} items as correct answers for topic "${topic}"`);
+    console.log(`Challenge type: ${isEverythingChallenge ? 'Everything about' : 'Specific'} - "${description}"`);
+    console.log(`Correct answers:`, correctAnswers.slice(0, 10).join(', '), correctAnswers.length > 10 ? '...' : '');
+    
+    // Generate distractors - always use completely unrelated items
+    // Since all AI-generated items are correct, we need unrelated distractors
     let incorrectAnswers: string[] = [];
     const numIncorrect = Math.max(40, 63 - numCorrect);
     
-    if (isEverythingChallenge) {
-      // For "everything about" challenges, generate completely unrelated distractors
-      // Don't use any AI-generated items as distractors since they're all correct
-      incorrectAnswers = this.generateSmartDistractors(
-        topic,
-        [],
-        numIncorrect,
-        level
-      );
-      console.log(`Everything challenge: Generated ${incorrectAnswers.length} unrelated distractors`);
-    } else {
-      // For specific challenges, use remaining items as distractors
-      const remainingItems = items.filter(item => !correctAnswers.includes(item));
-      
-      if (remainingItems.length > 0) {
-        console.log(`Using ${remainingItems.length} AI-generated items as distractors`);
-        incorrectAnswers = [...remainingItems];
-        
-        // If we need more distractors, add smart ones
-        if (incorrectAnswers.length < numIncorrect) {
-          const additionalNeeded = numIncorrect - incorrectAnswers.length;
-          const additionalDistractors = this.generateSmartDistractors(
-            topic,
-            [],
-            additionalNeeded,
-            level
-          );
-          incorrectAnswers.push(...additionalDistractors);
-        }
-      } else {
-        // Fall back to generic distractors only if no AI items available
-        incorrectAnswers = this.generateDistractors(
-          topic, 
-          numIncorrect, 
-          level,
-          correctAnswers
-        );
-      }
-    }
+    incorrectAnswers = this.generateSmartDistractors(
+      topic,
+      [], // Don't use any AI-generated items as distractors since they're all correct
+      numIncorrect,
+      level
+    );
+    
+    console.log(`Generated ${incorrectAnswers.length} unrelated distractors for topic "${topic}"`);
+    console.log(`Distractor examples:`, incorrectAnswers.slice(0, 5).join(', '), incorrectAnswers.length > 5 ? '...' : '');
     
     return {
       description,
