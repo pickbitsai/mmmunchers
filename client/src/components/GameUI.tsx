@@ -249,11 +249,11 @@ export default function GameUI() {
         return null;
       })()}
 
-      {/* Mobile hint - only for 3D mode */}
+      {/* Mobile hint - only for 3D mode - positioned above controls */}
       {isMobile && gamePhase === 'playing' && renderMode === '3d' && (
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 pointer-events-none">
+        <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 pointer-events-none">
           <p className="text-white text-xs bg-black/60 px-2 py-1 rounded">
-            Use controls to move • Center button to munch
+            Use controls to move • MUNCH button to eat
           </p>
         </div>
       )}
