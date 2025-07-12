@@ -142,7 +142,7 @@ export default function TopicSelection() {
 
   return (
     <div 
-      className="fixed inset-0 flex items-center justify-center p-4 overflow-auto"
+      className="fixed inset-0 overflow-auto topic-selection-container"
       style={{
         background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f1e 100%)',
         fontFamily: 'Rajdhani, sans-serif'
@@ -166,10 +166,10 @@ export default function TopicSelection() {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl">
-        <div className="text-center mb-8">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 py-8 min-h-screen flex flex-col">
+        <div className="text-center mb-6">
           <h1 
-            className="text-5xl md:text-6xl font-bold mb-2 tracking-wider"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 tracking-wider"
             style={{
               background: 'linear-gradient(45deg, #00f0ff 0%, #ff00aa 50%, #ffcc00 100%)',
               WebkitBackgroundClip: 'text',
@@ -179,13 +179,13 @@ export default function TopicSelection() {
           >
             NUMBER MUNCHERS 3D
           </h1>
-          <p className="text-cyan-300 text-lg tracking-wide">Choose your learning adventure</p>
+          <p className="text-cyan-300 text-base sm:text-lg tracking-wide">Choose your learning adventure</p>
         </div>
 
         {/* Render mode toggle */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-6 sticky top-4 z-20">
           <div 
-            className="inline-flex items-center p-1 rounded-lg"
+            className="inline-flex items-center p-1 rounded-lg shadow-lg"
             style={{
               background: 'rgba(0, 240, 255, 0.1)',
               border: '1px solid rgba(0, 240, 255, 0.3)',
@@ -195,27 +195,27 @@ export default function TopicSelection() {
             <Button
               variant="ghost"
               size="sm"
-              className={`px-4 py-2 text-sm font-medium transition-all ${
+              className={`px-3 py-2 text-xs sm:text-sm font-medium transition-all ${
                 renderMode === '2d' 
                   ? 'bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20' 
                   : 'text-gray-400 hover:text-cyan-300'
               }`}
               onClick={() => renderMode !== '2d' && toggleRenderMode()}
             >
-              <Gamepad2 className="w-4 h-4 mr-2" />
+              <Gamepad2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               2D Mode
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`px-4 py-2 text-sm font-medium transition-all ${
+              className={`px-3 py-2 text-xs sm:text-sm font-medium transition-all ${
                 renderMode === '3d' 
                   ? 'bg-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/20' 
                   : 'text-gray-400 hover:text-cyan-300'
               }`}
               onClick={() => renderMode !== '3d' && toggleRenderMode()}
             >
-              <Box className="w-4 h-4 mr-2" />
+              <Box className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               3D Mode
             </Button>
           </div>
