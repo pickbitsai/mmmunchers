@@ -9,6 +9,7 @@ import TopicSelection from "./components/TopicSelection";
 import GameUI from "./components/GameUI";
 import { useGameState } from "./lib/stores/useGameState";
 import { Toaster } from "./components/ui/sonner";
+import { assetLoader } from "./lib/assetLoader";
 import "@fontsource/inter";
 
 const queryClient = new QueryClient({
@@ -24,11 +25,21 @@ const queryClient = new QueryClient({
 function GameContainer() {
   const { gamePhase, initializeGame, renderMode, grid, currentChallenge } = useGameState();
 
-  // Initialize game once on mount
+  // Initialize game and preload assets once on mount
   React.useEffect(() => {
-
+    // Preload critical 3D assets
+    assetLoader.preloadCriticalAssets().catch(console.error);
+    
     initializeGame();
   }, [initializeGame]);
+
+  // Cleanup assets when component unmounts
+  React.useEffect(() => {
+    return () => {
+      // Clean up non-critical assets on unmount
+      assetLoader.cleanup();
+    };
+  }, []);
 
 
 

@@ -211,7 +211,7 @@ export class CustomTopic extends TopicProvider {
       
       // Use normalized comparison to determine if answer is correct
       const normalizedAnswer = answer.trim().toLowerCase();
-      const isCorrect = challengeData.correctAnswers.some(correctAnswer => 
+      const isCorrect = challengeData.correctAnswers.some((correctAnswer: string) => 
         correctAnswer.trim().toLowerCase() === normalizedAnswer
       );
       
@@ -335,7 +335,7 @@ export class CustomTopic extends TopicProvider {
     return distractors;
   }
   
-  private shuffleArray<T>(array: T[]): T[] {
+  shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

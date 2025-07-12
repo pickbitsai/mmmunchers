@@ -1,21 +1,20 @@
 import { useEffect } from "react";
-import { useGame } from "@/lib/stores/useGame";
+import { useGameState } from "@/lib/stores/useGameState";
 import { useAudio } from "@/lib/stores/useAudio";
 import { Button } from "./button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./card";
-import { Confetti } from "../game/Confetti";
 import { VolumeX, Volume2, RotateCw, Trophy } from "lucide-react";
 
 export function Interface() {
-  const restart = useGame((state) => state.restart);
-  const phase = useGame((state) => state.phase);
+  const { gamePhase, restartGame } = useGameState();
   const { isMuted, toggleMute } = useAudio();
 
   // Handle clicks on the interface in the ready phase to start the game
   useEffect(() => {
-    if (phase === "ready") {
+    if (gamePhase === "topic_selection") {
       const handleClick = () => {
-        document.activeElement?.blur(); // Remove focus from any button
+        const element = document.activeElement as HTMLElement;
+        element?.blur(); // Remove focus from any button
         const event = new KeyboardEvent("keydown", { code: "Space" });
         window.dispatchEvent(event);
       };
@@ -23,12 +22,10 @@ export function Interface() {
       window.addEventListener("click", handleClick);
       return () => window.removeEventListener("click", handleClick);
     }
-  }, [phase]);
+  }, [gamePhase]);
 
   return (
-    <>
-      <Confetti />
-      
+    <>      
       {/* Top-right corner UI controls */}
       <div className="fixed top-4 right-4 flex gap-2 z-10">
         <Button
@@ -43,7 +40,7 @@ export function Interface() {
         <Button
           variant="outline"
           size="icon"
-          onClick={restart}
+          onClick={restartGame}
           title="Restart Game"
         >
           <RotateCw size={18} />
@@ -51,24 +48,24 @@ export function Interface() {
       </div>
       
       {/* Game completion overlay */}
-      {phase === "ended" && (
+      {gamePhase === "game_over" && (
         <div className="fixed inset-0 flex items-center justify-center z-20 bg-black/30">
           <Card className="w-full max-w-md mx-4 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-2">
                 <Trophy className="text-yellow-500" />
-                Level Complete!
+                Game Over!
               </CardTitle>
             </CardHeader>
             
             <CardContent>
               <p className="text-center text-muted-foreground">
-                Congratulations! You successfully navigated the course.
+                Thanks for playing Number Munchers 3D!
               </p>
             </CardContent>
             
             <CardFooter className="flex justify-center">
-              <Button onClick={restart} className="w-full">
+              <Button onClick={restartGame} className="w-full">
                 Play Again
               </Button>
             </CardFooter>

@@ -84,17 +84,31 @@ interface GameState {
 }
 
 // Responsive grid sizes - smaller grids for bigger tiles
+// Cache the dimensions to avoid recalculating on every access
+let cachedGridDimensions: { width: number; height: number } | null = null;
+let lastWindowWidth = 0;
+
 const getGridDimensions = () => {
-  const width = window.innerWidth;
-  if (width < 640) { // Mobile
-    return { width: 5, height: 4 };
-  } else if (width < 768) { // Small tablet
-    return { width: 6, height: 5 };
-  } else if (width < 1024) { // Tablet
-    return { width: 7, height: 5 };
-  } else { // Desktop
-    return { width: 8, height: 6 };
+  const currentWidth = window.innerWidth;
+  
+  // Return cached dimensions if window width hasn't changed significantly
+  if (cachedGridDimensions && Math.abs(currentWidth - lastWindowWidth) < 50) {
+    return cachedGridDimensions;
   }
+  
+  lastWindowWidth = currentWidth;
+  
+  if (currentWidth < 640) { // Mobile
+    cachedGridDimensions = { width: 5, height: 4 };
+  } else if (currentWidth < 768) { // Small tablet
+    cachedGridDimensions = { width: 6, height: 5 };
+  } else if (currentWidth < 1024) { // Tablet
+    cachedGridDimensions = { width: 7, height: 5 };
+  } else { // Desktop
+    cachedGridDimensions = { width: 8, height: 6 };
+  }
+  
+  return cachedGridDimensions;
 };
 
 const GRID_DIMENSIONS = getGridDimensions();

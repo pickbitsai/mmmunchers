@@ -37,6 +37,8 @@ export class MemStorage implements IStorage {
     const topicContent: TopicContentCache = {
       id,
       ...content,
+      subtopic: content.subtopic || 'all',
+      generatedBy: content.generatedBy || 'unknown',
       usageCount: 1,
       lastUsed: now,
       createdAt: now

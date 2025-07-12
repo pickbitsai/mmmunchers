@@ -93,12 +93,12 @@ export default function Enemy({ enemy, position }: EnemyProps) {
         <meshLambertMaterial color="#000000" />
       </mesh>
       {/* Teeth */}
-      <mesh position={[0.06, 0.57, 0.26]}>
-        <coneGeometry args={[0.02, 0.04, 4]} rotation={[Math.PI, 0, 0]} />
+      <mesh position={[0.06, 0.57, 0.26]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.02, 0.04, 4]} />
         <meshLambertMaterial color="#FFFFFF" />
       </mesh>
-      <mesh position={[-0.06, 0.57, 0.26]}>
-        <coneGeometry args={[0.02, 0.04, 4]} rotation={[Math.PI, 0, 0]} />
+      <mesh position={[-0.06, 0.57, 0.26]} rotation={[Math.PI, 0, 0]}>
+        <coneGeometry args={[0.02, 0.04, 4]} />
         <meshLambertMaterial color="#FFFFFF" />
       </mesh>
       
