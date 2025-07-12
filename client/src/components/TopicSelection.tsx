@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { MobileSelect } from "./ui/mobile-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useGameState } from "../lib/stores/useGameState";
 import { Calculator, BookOpen, Zap, HelpCircle, Gamepad2, Box, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -320,16 +320,23 @@ export default function TopicSelection() {
                   {topic.available ? (
                     <div className="space-y-3">
                       {!topic.isCustom && (
-                        <MobileSelect
+                        <Select
                           value={selectedCategories[topic.id] || 'random'}
                           onValueChange={(value) => {
                             setSelectedCategories(prev => ({...prev, [topic.id]: value}));
                           }}
-                          options={getTopicCategories(topic.id)}
-                          placeholder="Random Mix"
-                          triggerClassName="w-full bg-black/40 text-cyan-300 border-cyan-900/50 hover:border-cyan-700/50 hover:bg-black/60"
-                          contentClassName="bg-gray-900 text-white border-cyan-900/50"
-                        />
+                        >
+                          <SelectTrigger className="w-full bg-black/40 text-cyan-300 border-cyan-900/50 hover:border-cyan-700/50 hover:bg-black/60">
+                            <SelectValue placeholder="Random Mix" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-900 text-white border-cyan-900/50">
+                            {getTopicCategories(topic.id).map((option) => (
+                              <SelectItem key={option.id} value={option.id}>
+                                {option.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
                       
                       <Button 
