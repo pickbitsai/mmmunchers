@@ -284,6 +284,8 @@ class AIService {
       keywords.push('recipe', 'ingredient', 'kitchen', 'pot', 'pan', 'oven', 'stove', 'bake', 'boil', 'fry', 'grill', 'steam', 'chop', 'dice', 'slice', 'mix', 'stir', 'sauce', 'spice', 'herb', 'salt', 'pepper', 'oil', 'butter', 'flour', 'sugar', 'chef', 'food', 'meal', 'dish');
     } else if (normalizedTopic.includes('animal')) {
       keywords.push('dog', 'cat', 'bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'goat', 'chicken', 'duck', 'rabbit', 'mouse', 'elephant', 'lion', 'tiger', 'bear', 'wolf', 'fox', 'deer', 'monkey', 'zebra', 'giraffe', 'hippo', 'rhino', 'leopard', 'cheetah', 'snake', 'lizard', 'frog');
+    } else if (normalizedTopic.includes('fallout')) {
+      keywords.push('fallout', 'vault', 'nuclear', 'wasteland', 'radiation', 'pip-boy', 'supermutant', 'laser', 'power', 'armor', 'caps', 'nuka', 'cola', 'brotherhood', 'steel', 'raiders', 'ghoul', 'robot', 'dogmeat', 'brahmin', 'radroach', 'deathclaw', 'enclave', 'ncr', 'legion', 'institute', 'minutemen', 'railroad', 'apocalypse', 'atomic', 'bomb', 'shelter', 'bunker', 'scrap', 'junk', 'stimpak', 'radaway', 'fusion', 'core', 'plasma', 'rifle', 'missile', 'launcher', 'combat', 'shotgun', 'assault', 'rifle', 'fatman', 'mini', 'nuke', 'terminal', 'hacking', 'lockpick', 'security', 'computer', 'pre-war', 'post-war', 'apocalyptic', 'wasteland', 'survivor', 'vault-tec', 'robco', 'nuka-quantum', 'mentats', 'buffout', 'rad-x', 'jet', 'psycho', 'addictol', 'bobby', 'pin', 'bottlecap', 'scavenger', 'trader', 'caravan', 'brahmin', 'pack', 'settlement', 'workshop', 'crafting', 'modding', 'weapon', 'modification', 'armor', 'upgrade', 'perk', 'special', 'strength', 'perception', 'endurance', 'charisma', 'intelligence', 'agility', 'luck');
     } else {
       // For generic topics, try to extract keywords from the topic itself
       const topicWords = normalizedTopic.split(/\s+/);
@@ -305,7 +307,8 @@ class AIService {
       'space', 'robot', 'books', 'car', 'television', 'computer', 'phone',
       'house', 'school', 'office', 'pencil', 'paper', 'chair', 'table',
       'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink',
-      'apple', 'banana', 'orange', 'grape', 'strawberry', 'pear', 'peach'
+      'apple', 'banana', 'orange', 'grape', 'strawberry', 'pear', 'peach',
+      'football', 'broccoli', 'guitar', 'flower', 'dragon', 'pizza', 'moon'
     ];
     
     const isObviousDistractor = commonDistractors.some(distractor => 
@@ -322,9 +325,20 @@ class AIService {
       return true;
     }
     
-    // For ambiguous cases, err on the side of being topic-related
-    // This handles cases where the AI generates related items that don't match our keyword list
-    return true;
+    // For ambiguous cases, be more conservative - only mark as correct if it clearly relates
+    // Check if the item could reasonably be related to the topic
+    const topicWords = normalizedTopic.split(/\s+/);
+    const itemWords = itemLower.split(/\s+/);
+    
+    // If any word in the item matches any word in the topic, it might be related
+    const hasWordMatch = topicWords.some(topicWord => 
+      itemWords.some(itemWord => 
+        topicWord.includes(itemWord) || itemWord.includes(topicWord)
+      )
+    );
+    
+    // Only return true if there's a clear connection
+    return hasWordMatch;
   }
   
   private buildPrompt(topic: string, subtopic: string, level: number): string {
