@@ -96,12 +96,15 @@ export function MobileSelect({
       {isOpen && (
         <div 
           className={cn(
-            "absolute z-[9999] mt-1 w-full max-h-60 overflow-auto rounded-md border shadow-lg",
+            "fixed mt-1 max-h-60 overflow-auto rounded-md border shadow-lg z-[99999]",
             contentClassName || "bg-gray-900 text-white border-gray-700"
           )}
           style={{ 
             touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent'
+            WebkitTapHighlightColor: 'transparent',
+            left: containerRef.current?.getBoundingClientRect().left,
+            top: (containerRef.current?.getBoundingClientRect().bottom || 0) + 4,
+            width: containerRef.current?.getBoundingClientRect().width
           }}
         >
           {options.map((option) => (
