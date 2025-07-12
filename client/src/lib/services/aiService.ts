@@ -44,7 +44,9 @@ class AIService {
           return {
             items: cached.items,
             categories: cached.categories,
-            facts: cached.facts
+            facts: cached.facts,
+            correctItems: cached.correctItems,
+            incorrectItems: cached.incorrectItems
           };
         }
       }
@@ -106,6 +108,8 @@ class AIService {
           items: content.items,
           categories: content.categories,
           facts: content.facts,
+          correctItems: content.correctItems,
+          incorrectItems: content.incorrectItems,
           generatedBy
         })
       });
@@ -673,10 +677,36 @@ incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking",
       facts.push(`Expert ${topic} fact`);
     }
     
+    // For mock content, separate correct from incorrect items intelligently
+    const correctItems = items.filter((item, index) => {
+      const itemLower = item.toLowerCase();
+      const topicLower = topic.toLowerCase();
+      
+      // First half of items are generally topic-related (correct)
+      if (index < items.length / 2) return true;
+      
+      // Check if item contains topic keywords
+      return topicLower.split(' ').some(word => 
+        word.length > 2 && itemLower.includes(word)
+      );
+    }).slice(0, 15);
+    
+    const incorrectItems = items.filter(item => !correctItems.includes(item)).slice(0, 15);
+    
+    // Add some universal distractors for incorrect items
+    const universalDistractors = [
+      'Pizza', 'Rainbow', 'Guitar', 'Elephant', 'Castle', 'Robot', 'Moon', 'Football',
+      'Ice cream', 'Dragon', 'Butterfly', 'Superhero', 'Unicorn', 'Basketball', 'Computer'
+    ];
+    
+    incorrectItems.push(...universalDistractors.slice(0, Math.max(0, 20 - incorrectItems.length)));
+    
     return { 
-      items: items.slice(0, 30), 
+      items: [...correctItems, ...incorrectItems].slice(0, 30), 
       categories: categories.slice(0, 8), 
-      facts: facts.slice(0, 15) 
+      facts: facts.slice(0, 15),
+      correctItems: correctItems,
+      incorrectItems: incorrectItems.slice(0, 20)
     };
   }
   

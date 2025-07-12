@@ -32,6 +32,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           items: cached.items,
           categories: cached.categories,
           facts: cached.facts,
+          correctItems: cached.correctItems,
+          incorrectItems: cached.incorrectItems,
           fromCache: true,
           generatedBy: cached.generatedBy
         });
@@ -47,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/topic-content", async (req, res) => {
     try {
-      const { topic, subtopic = 'all', items, categories, facts, generatedBy = 'mock' } = req.body;
+      const { topic, subtopic = 'all', items, categories, facts, correctItems, incorrectItems, generatedBy = 'mock' } = req.body;
       
       // Input validation
       if (!topic || typeof topic !== 'string' || topic.length > 100) {
@@ -82,6 +84,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Normalize the topic
       const normalizedTopic = topic.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '');
       
+      // Sanitize correct/incorrect items if provided
+      const sanitizedCorrectItems = Array.isArray(correctItems) 
+        ? correctItems.filter(item => typeof item === 'string' && item.length > 0 && item.length <= 50).slice(0, 50)
+        : undefined;
+        
+      const sanitizedIncorrectItems = Array.isArray(incorrectItems)
+        ? incorrectItems.filter(item => typeof item === 'string' && item.length > 0 && item.length <= 50).slice(0, 50)
+        : undefined;
+
       // Save to cache
       const saved = await storage.saveTopicContent({
         topic: normalizedTopic,
@@ -89,6 +100,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         items: sanitizedItems,
         categories: sanitizedCategories,
         facts: sanitizedFacts,
+        correctItems: sanitizedCorrectItems,
+        incorrectItems: sanitizedIncorrectItems,
         generatedBy
       });
       
@@ -158,11 +171,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if OpenAI API key is available
       const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
+        console.log('OpenAI API key not found in environment variables');
         return res.status(503).json({ 
           error: 'AI service not configured', 
           success: false 
         });
       }
+      
+      console.log('OpenAI API key found, making request for topic:', topic);
       
       // Make secure API call to OpenAI
       const response = await fetch('https://api.openai.com/v1/chat/completions', {

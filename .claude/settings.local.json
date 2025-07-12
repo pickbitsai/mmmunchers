@@ -20,7 +20,9 @@
       "WebFetch(domain:pickbits.ai)",
       "Bash(cp:*)",
       "Bash(dos2unix:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(dir:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

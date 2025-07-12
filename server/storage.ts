@@ -39,6 +39,8 @@ export class MemStorage implements IStorage {
       ...content,
       subtopic: content.subtopic || 'all',
       generatedBy: content.generatedBy || 'unknown',
+      correctItems: content.correctItems || null,
+      incorrectItems: content.incorrectItems || null,
       usageCount: 1,
       lastUsed: now,
       createdAt: now

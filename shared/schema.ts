@@ -31,6 +31,8 @@ export const topicContentCache = pgTable("topic_content_cache", {
   items: jsonb("items").$type<string[]>().notNull(), // Array of items
   categories: jsonb("categories").$type<string[]>().notNull(), // Array of categories
   facts: jsonb("facts").$type<string[]>().notNull(), // Array of facts
+  correctItems: jsonb("correct_items").$type<string[]>(), // Array of correct items (OpenAI separated)
+  incorrectItems: jsonb("incorrect_items").$type<string[]>(), // Array of incorrect items (OpenAI separated)
   generatedBy: text("generated_by").notNull().default('mock'), // 'openai' or 'mock'
   usageCount: integer("usage_count").notNull().default(1),
   lastUsed: timestamp("last_used").defaultNow(),
@@ -48,6 +50,8 @@ export const insertTopicContentCacheSchema = createInsertSchema(topicContentCach
   items: true,
   categories: true,
   facts: true,
+  correctItems: true,
+  incorrectItems: true,
   generatedBy: true,
 });
 
