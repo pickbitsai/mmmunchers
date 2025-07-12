@@ -78,25 +78,47 @@ export default function GameUI() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
-      {/* Mobile-friendly top HUD */}
-      <div className="absolute top-2 left-2 right-2 pointer-events-auto flex flex-col sm:flex-row gap-2">
-        {/* Stats */}
-        <Card className="bg-black/80 text-white border-gray-600 flex-1">
-          <CardContent className="p-2">
-            <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm justify-around sm:justify-start">
-              <div>Score: <span className="font-bold text-yellow-400">{score}</span></div>
-              <div>Lives: <span className="font-bold text-red-400">{lives}</span></div>
-              <div>Level: <span className="font-bold text-blue-400">{level}</span></div>
-              {timeRemaining > 0 && (
-                <div className="hidden sm:block">Time: <span className="font-bold text-green-400">{Math.ceil(timeRemaining)}</span></div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Top HUD - Single row layout */}
+      <div className="absolute top-2 left-2 right-2 pointer-events-auto">
+        <div className="flex flex-row gap-2 items-center">
+          {/* Stats */}
+          <Card className="bg-black/80 text-white border-gray-600 flex-1">
+            <CardContent className="p-2">
+              <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm justify-around sm:justify-start">
+                <div>Score: <span className="font-bold text-yellow-400">{score}</span></div>
+                <div>Lives: <span className="font-bold text-red-400">{lives}</span></div>
+                <div>Level: <span className="font-bold text-blue-400">{level}</span></div>
+                {timeRemaining > 0 && (
+                  <div className="hidden sm:block">Time: <span className="font-bold text-green-400">{Math.ceil(timeRemaining)}</span></div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Challenge Display */}
+          {/* Control buttons - inline with stats */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={togglePause}
+              className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
+            >
+              {gamePhase === 'paused' ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleMute}
+              className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
+            >
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Challenge Display - Second row */}
         {currentChallenge && (
-          <Card className="bg-black/80 text-white border-gray-600 sm:max-w-xs">
+          <Card className="bg-black/80 text-white border-gray-600 mt-2">
             <CardContent className="p-2">
               <div className="text-center">
                 <div className="text-xs sm:text-sm font-bold text-cyan-400">
@@ -109,26 +131,6 @@ export default function GameUI() {
             </CardContent>
           </Card>
         )}
-      </div>
-
-      {/* Control buttons - top right on mobile, centered on desktop */}
-      <div className="absolute top-2 right-2 sm:top-16 sm:left-1/2 sm:transform sm:-translate-x-1/2 flex gap-2 pointer-events-auto">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={togglePause}
-          className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
-        >
-          {gamePhase === 'paused' ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleMute}
-          className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
-        >
-          {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </Button>
       </div>
 
       {/* Pause overlay */}
