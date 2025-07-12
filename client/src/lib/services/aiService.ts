@@ -12,6 +12,8 @@ export interface AITopicContent {
   items: string[];
   categories: string[];
   facts: string[];
+  correctItems?: string[];
+  incorrectItems?: string[];
 }
 
 class AIService {
@@ -193,9 +195,22 @@ class AIService {
     let correctAnswers: string[];
     let incorrectAnswers: string[];
     
-    // The AI now provides a mix of correct and incorrect items
-    // We need to intelligently separate them based on the topic
-    const { correct, incorrect } = this.separateCorrectFromIncorrect(topic, items);
+    // Get the topic content to access the separated correct/incorrect items
+    const topicContent = await this.generateTopicContent(topic, 'related', level);
+    
+    // Use the separated items from OpenAI if available, otherwise fall back to classification
+    let correct: string[], incorrect: string[];
+    if (topicContent.correctItems && topicContent.incorrectItems) {
+      correct = topicContent.correctItems;
+      incorrect = topicContent.incorrectItems;
+      console.log(`Using OpenAI separated items: ${correct.length} correct, ${incorrect.length} incorrect`);
+    } else {
+      // Fallback to the old classification method
+      const separated = this.separateCorrectFromIncorrect(topic, items);
+      correct = separated.correct;
+      incorrect = separated.incorrect;
+      console.log(`Using classified items: ${correct.length} correct, ${incorrect.length} incorrect`);
+    }
     
     if (isEverythingChallenge) {
       // For "everything about" challenges, use ALL correct items
@@ -244,47 +259,22 @@ class AIService {
     };
   }
   
-  private separateCorrectFromIncorrect(topic: string, items: string[]): { correct: string[], incorrect: string[] } {
-    const correct: string[] = [];
-    const incorrect: string[] = [];
-    const topicLower = topic.toLowerCase();
-    
-    // Universal distractor list - items that are clearly unrelated to most topics
-    const universalDistractors = [
-      'mountain', 'snow', 'skiing', 'basketball', 'piano', 'cooking', 'desert',
-      'space', 'robot', 'books', 'car', 'television', 'computer', 'phone',
-      'house', 'school', 'office', 'pencil', 'paper', 'chair', 'table',
-      'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink',
-      'apple', 'banana', 'grape', 'strawberry', 'pear', 'peach',
-      'football', 'broccoli', 'guitar', 'flower', 'dragon', 'pizza', 'moon',
-      'tree', 'grass', 'water', 'fire', 'ice', 'wind', 'earth', 'metal',
-      'wood', 'plastic', 'glass', 'stone', 'brick', 'concrete', 'steel',
-      'gold', 'silver', 'copper', 'iron', 'aluminum', 'bronze', 'platinum'
-    ];
-    
-    items.forEach(item => {
-      const itemLower = item.toLowerCase();
+  private separateCorrectFromIncorrect(topic: string, content: any): { correct: string[], incorrect: string[] } {
+    // Since OpenAI now provides separate correctItems and incorrectItems arrays,
+    // we can use them directly instead of trying to classify items ourselves
+    const correctItems = Array.isArray(content.correctItems) 
+      ? content.correctItems.filter((item: any) => typeof item === 'string' && item.length > 0)
+      : [];
       
-      // Check if it's an obvious universal distractor (clearly unrelated to most topics)
-      const isUniversalDistractor = universalDistractors.some(distractor => 
-        itemLower.includes(distractor) || distractor.includes(itemLower)
-      );
-      
-      // For universal distractors, mark as incorrect
-      if (isUniversalDistractor) {
-        incorrect.push(item);
-      } else {
-        // For everything else, assume it's topic-related (correct)
-        // The AI prompt should be providing mostly topic-related items
-        correct.push(item);
-      }
-    });
+    const incorrectItems = Array.isArray(content.incorrectItems) 
+      ? content.incorrectItems.filter((item: any) => typeof item === 'string' && item.length > 0)
+      : [];
     
-    console.log(`Topic: ${topic} - Separated ${correct.length} correct and ${incorrect.length} incorrect items`);
-    console.log(`Correct items:`, correct.slice(0, 5).join(', '), correct.length > 5 ? '...' : '');
-    console.log(`Incorrect items:`, incorrect.slice(0, 5).join(', '), incorrect.length > 5 ? '...' : '');
+    console.log(`Topic: ${topic} - OpenAI provided ${correctItems.length} correct and ${incorrectItems.length} incorrect items`);
+    console.log(`Correct items:`, correctItems.slice(0, 5).join(', '), correctItems.length > 5 ? '...' : '');
+    console.log(`Incorrect items:`, incorrectItems.slice(0, 5).join(', '), incorrectItems.length > 5 ? '...' : '');
     
-    return { correct, incorrect };
+    return { correct: correctItems, incorrect: incorrectItems };
   }
   
   private getTopicKeywords(normalizedTopic: string): string[] {
@@ -380,14 +370,15 @@ ${subtopicPrompt}
 
 Create a JSON object with EXACTLY this structure:
 {
-  "items": [array of 35-40 VERY SHORT items/phrases - mix of correct and incorrect answers, each 1-2 words MAX],
+  "correctItems": [array of 20-25 items that ARE related to ${topic}],
+  "incorrectItems": [array of 15-20 items that are NOT related to ${topic}],
   "categories": [array of 5-8 category names, each 1-2 words],
   "facts": [array of 10-15 facts about ${topic}, each under 15 characters]
 }
 
-CRITICAL Requirements for "items":
-- Include 20-25 items that ARE directly related to ${topic} (correct answers)
-- Include 15-20 items that are NOT related to ${topic} but might be plausible distractors (incorrect answers)
+CRITICAL Requirements:
+- correctItems: 20-25 items that ARE directly related to ${topic} (correct answers)
+- incorrectItems: 15-20 items that are NOT related to ${topic} but are plausible distractors (incorrect answers)
 - Make distractors challenging but clearly wrong when you think about it
 - ALL items MUST be 1-2 words maximum (prefer single words)
 - NO phrases longer than 2 words
@@ -398,8 +389,8 @@ CRITICAL Requirements for "items":
 - Age-appropriate content
 
 Example for "Surfing":
-Correct: Ocean, Wave, Board, Wetsuit, Beach, Paddle, Barrel, Tide, Reef, Curl
-Incorrect: Mountain, Snow, Skiing, Basketball, Piano, Cooking, Desert, Space, Robot, Books`;
+correctItems: ["Ocean", "Wave", "Board", "Wetsuit", "Beach", "Paddle", "Barrel", "Tide", "Reef", "Curl"]
+incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking", "Desert", "Space", "Robot", "Books"]`;
   }
   
   private parseOpenAIResponse(response: any): AITopicContent {
@@ -409,8 +400,12 @@ Incorrect: Mountain, Snow, Skiing, Basketball, Piano, Cooking, Desert, Space, Ro
         const content = JSON.parse(response.choices[0].message.content);
         
         // Validate and clean the response
-        const items = Array.isArray(content.items) 
-          ? content.items.filter((item: any) => typeof item === 'string' && item.length > 0)
+        const correctItems = Array.isArray(content.correctItems) 
+          ? content.correctItems.filter((item: any) => typeof item === 'string' && item.length > 0)
+          : [];
+          
+        const incorrectItems = Array.isArray(content.incorrectItems) 
+          ? content.incorrectItems.filter((item: any) => typeof item === 'string' && item.length > 0)
           : [];
           
         const categories = Array.isArray(content.categories)
@@ -421,10 +416,23 @@ Incorrect: Mountain, Snow, Skiing, Basketball, Piano, Cooking, Desert, Space, Ro
           ? content.facts.filter((fact: any) => typeof fact === 'string' && fact.length > 0)
           : [];
         
+        // Store the raw parsed content for use in challenge generation
+        const parsedContent = {
+          correctItems,
+          incorrectItems,
+          categories,
+          facts
+        };
+        
+        // Combine correct and incorrect items for backward compatibility
+        const allItems = [...correctItems, ...incorrectItems];
+        
         return {
-          items: items.slice(0, 30), // Limit to 30 items
+          items: allItems.slice(0, 40), // Limit to 40 items total
           categories: categories.slice(0, 10), // Limit to 10 categories
-          facts: facts.slice(0, 15) // Limit to 15 facts
+          facts: facts.slice(0, 15), // Limit to 15 facts
+          correctItems: correctItems,
+          incorrectItems: incorrectItems
         };
       }
     } catch (error) {
