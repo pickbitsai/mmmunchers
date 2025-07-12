@@ -341,7 +341,8 @@ class AIService {
       'cooking': ['knife', 'pot', 'stove', 'spoon', 'plate', 'food', 'recipe', 'chop', 'bake', 'mix', 'grill', 'peel', 'steam', 'boil', 'fry', 'whisk', 'simmer', 'season', 'taste', 'serve', 'eat', 'dish', 'pan', 'oven'],
       'lego': ['brick', 'build', 'minifig', 'set', 'color', 'play', 'creation', 'piece', 'theme', 'instruction', 'baseplate', 'creative', 'imagination', 'construct', 'model', 'toy', 'plastic', 'stack'],
       'surfing': ['ocean', 'wave', 'board', 'wetsuit', 'beach', 'surf', 'tide', 'sand', 'paddle', 'ride', 'barrel', 'tube', 'break', 'curl', 'foam', 'swell', 'fin', 'leash', 'wax', 'reef', 'shore'],
-      'shoes': ['laces', 'sole', 'heel', 'boot', 'sandal', 'slipper', 'sneaker', 'insole', 'toe', 'shoelace', 'footwear', 'cleats', 'platform', 'oxford', 'clog', 'moccasin', 'pump', 'flip-flop', 'athletic', 'loafer', 'wedge', 'stiletto', 'brogue', 'espadrille', 'walking', 'running', 'dress', 'casual', 'leather', 'fabric', 'rubber', 'foot', 'ankle', 'lace', 'buckle', 'strap', 'size', 'fit', 'comfort', 'style']
+      'shoes': ['laces', 'sole', 'heel', 'boot', 'sandal', 'slipper', 'sneaker', 'insole', 'toe', 'shoelace', 'footwear', 'cleats', 'platform', 'oxford', 'clog', 'moccasin', 'pump', 'flip-flop', 'athletic', 'loafer', 'wedge', 'stiletto', 'brogue', 'espadrille', 'walking', 'running', 'dress', 'casual', 'leather', 'fabric', 'rubber', 'foot', 'ankle', 'lace', 'buckle', 'strap', 'size', 'fit', 'comfort', 'style'],
+      'eggs': ['shell', 'yolk', 'white', 'chick', 'nest', 'hen', 'omelette', 'omelet', 'boiled', 'scrambled', 'frying', 'poached', 'protein', 'breakfast', 'farm', 'carton', 'easter', 'cholesterol', 'omega-3', 'crack', 'sunny-side', 'cackle', 'incubate', 'feather', 'brood', 'chicken', 'albumen', 'cook', 'beat', 'whisk', 'fresh', 'organic', 'dozen', 'laying', 'hatch', 'bird', 'rooster', 'coop', 'feed', 'calcium']
     };
     
     // Check if topic has specific mappings
