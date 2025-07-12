@@ -94,43 +94,52 @@ export function MobileSelect({
       </button>
 
       {isOpen && (
-        <div 
-          className={cn(
-            "fixed mt-1 max-h-60 overflow-auto rounded-md border shadow-lg z-[99999]",
-            contentClassName || "bg-gray-900 text-white border-gray-700"
-          )}
-          style={{ 
-            touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent',
-            left: containerRef.current?.getBoundingClientRect().left,
-            top: (containerRef.current?.getBoundingClientRect().bottom || 0) + 4,
-            width: containerRef.current?.getBoundingClientRect().width
-          }}
-        >
-          {options.map((option) => (
-            <button
-              key={option.id}
-              type="button"
-              className={cn(
-                "relative flex w-full cursor-pointer select-none items-center rounded-sm py-3 pl-3 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                option.id === value && "bg-accent text-accent-foreground"
-              )}
-              onClick={(e) => handleOptionSelect(option, e)}
-              onTouchEnd={(e) => handleOptionSelect(option, e)}
-              style={{ 
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            >
-              <span className="truncate">{option.name}</span>
-              {option.id === value && (
-                <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-                  <Check className="h-4 w-4" />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 z-[99998]"
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Dropdown */}
+          <div 
+            className={cn(
+              "fixed max-h-60 overflow-auto rounded-md border shadow-lg z-[99999]",
+              contentClassName || "bg-gray-900 text-white border-gray-700"
+            )}
+            style={{ 
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              left: containerRef.current?.getBoundingClientRect().left || 0,
+              top: (containerRef.current?.getBoundingClientRect().bottom || 0) + 4,
+              width: containerRef.current?.getBoundingClientRect().width || 'auto'
+            }}
+          >
+            {options.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={cn(
+                  "relative flex w-full cursor-pointer select-none items-center rounded-sm py-3 pl-3 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                  option.id === value && "bg-accent text-accent-foreground"
+                )}
+                onClick={(e) => handleOptionSelect(option, e)}
+                onTouchEnd={(e) => handleOptionSelect(option, e)}
+                style={{ 
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+              >
+                <span className="truncate">{option.name}</span>
+                {option.id === value && (
+                  <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                    <Check className="h-4 w-4" />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
