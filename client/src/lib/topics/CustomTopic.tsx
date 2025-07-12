@@ -311,29 +311,23 @@ export class CustomTopic extends TopicProvider {
       }
     }
     
-    // If we still need more, create short variants
-    const finalTemplates = [
-      'Fake', 'Mock', 'Test', 'Demo', 'Sample', 'Example', 'Copy', 'Clone',
-      'Misc', 'Other', 'Extra', 'Bonus', 'Special', 'Unique', 'Rare', 'New'
-    ];
-    
-    let templateIndex = 0;
-    while (distractors.length < count) {
-      if (templateIndex < finalTemplates.length) {
-        const variant = `${finalTemplates[templateIndex]} ${topic.split(' ')[0]}`;
-        if (!distractors.includes(variant)) {
-          distractors.push(variant);
-        }
-        templateIndex++;
-      } else {
-        // Last resort: use short synonyms
-        const lastResort = [
-          'Unknown', 'Mystery', 'Hidden', 'Secret', 'Strange', 'Weird',
-          'Random', 'Misc', 'Other', 'Extra', 'Bonus', 'Special'
-        ];
-        const item = lastResort[distractors.length % lastResort.length];
-        if (!distractors.includes(item)) {
-          distractors.push(item);
+    // If we still need more, just repeat from the topic-specific pool
+    // Don't create generic "Fake" or "Mock" labels - these look unprofessional
+    let poolIndex = 0;
+    while (distractors.length < count && poolIndex < additionalPool.length) {
+      const variant = additionalPool[poolIndex];
+      if (!distractors.includes(variant) && !correctAnswers.includes(variant)) {
+        distractors.push(variant);
+      }
+      poolIndex++;
+      
+      // If we've gone through the pool, start over with slight modifications
+      if (poolIndex >= additionalPool.length) {
+        poolIndex = 0;
+        // Add a simple modifier to make it different
+        const modifiedItem = additionalPool[poolIndex % additionalPool.length];
+        if (!distractors.includes(modifiedItem)) {
+          distractors.push(modifiedItem);
         }
       }
     }

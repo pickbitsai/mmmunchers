@@ -206,16 +206,24 @@ class AIService {
     
     let incorrectAnswers: string[] = [];
     
-    // If we have AI-generated items left, modify them to be wrong
-    if (remainingItems.length > 0 && this.apiKey) {
-      incorrectAnswers = this.generateSmartDistractors(
-        topic,
-        remainingItems,
-        numIncorrect,
-        level
-      );
+    // ALWAYS use remaining AI-generated items as distractors (they're real but not correct for this challenge)
+    if (remainingItems.length > 0) {
+      console.log(`Using ${remainingItems.length} AI-generated items as distractors`);
+      incorrectAnswers = [...remainingItems];
+      
+      // If we need more distractors, add smart ones
+      if (incorrectAnswers.length < numIncorrect) {
+        const additionalNeeded = numIncorrect - incorrectAnswers.length;
+        const additionalDistractors = this.generateSmartDistractors(
+          topic,
+          [],
+          additionalNeeded,
+          level
+        );
+        incorrectAnswers.push(...additionalDistractors);
+      }
     } else {
-      // Fall back to generic distractors
+      // Fall back to generic distractors only if no AI items available
       incorrectAnswers = this.generateDistractors(
         topic, 
         numIncorrect, 
@@ -524,12 +532,12 @@ CRITICAL Requirements:
         'Disco', 'Polka', 'Yodeling', 'Rap', 'Opera', 'Punk', 'Metal', 'Techno'
       ];
     } else {
-      // Generate topic variations that are wrong
+      // Generate contextual distractors that are plausible but wrong
       topicDistracters = [
-        `Fake ${topic}`, `Anti-${topic}`, `Non-${topic}`, `Pseudo-${topic}`,
-        `Mock ${topic}`, `Faux ${topic}`, `Quasi-${topic}`, `Semi-${topic}`,
-        `Ultra ${topic}`, `Mega ${topic}`, `Super ${topic}`, `Hyper ${topic}`,
-        `Proto-${topic}`, `Neo-${topic}`, `Post-${topic}`, `Pre-${topic}`
+        'Unknown item', 'Mystery object', 'Classified info', 'Redacted data',
+        'Missing file', 'Corrupted entry', 'Access denied', 'Restricted access',
+        'Coming soon', 'Under review', 'Beta version', 'Prototype item',
+        'Placeholder', 'Template', 'Example', 'Sample data'
       ];
     }
     
@@ -557,14 +565,14 @@ CRITICAL Requirements:
       }
     }
     
-    // If we STILL need more, create numbered variants
-    let variantCount = 1;
-    while (distractors.length < count) {
-      const variant = `Unknown ${topic} #${variantCount}`;
+    // If we STILL need more, recycle the topic-specific distractors
+    let recycleIndex = 0;
+    while (distractors.length < count && recycleIndex < topicDistracters.length) {
+      const variant = topicDistracters[recycleIndex];
       if (!distractors.includes(variant)) {
         distractors.push(variant);
-        variantCount++;
       }
+      recycleIndex++;
     }
     
     return distractors.slice(0, count);
