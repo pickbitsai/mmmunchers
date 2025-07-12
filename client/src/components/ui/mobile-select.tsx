@@ -94,16 +94,29 @@ export function MobileSelect({
       </button>
 
       {isOpen && (
-        <div 
-          className={cn(
-            "absolute top-full left-0 right-0 z-[99999] mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-lg",
-            contentClassName
-          )}
-          style={{ 
-            touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent'
-          }}
-        >
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+            style={{ zIndex: 2147483646 }}
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Dropdown content */}
+          <div 
+            className={cn(
+              "fixed mt-1 max-h-60 overflow-auto rounded-md border shadow-2xl",
+              contentClassName || "bg-gray-900 text-white border-gray-700"
+            )}
+            style={{ 
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+              left: containerRef.current?.getBoundingClientRect().left || 0,
+              top: (containerRef.current?.getBoundingClientRect().bottom || 0) + 4,
+              width: containerRef.current?.getBoundingClientRect().width || 'auto',
+              zIndex: 2147483647
+            }}
+          >
           {options.map((option) => (
             <button
               key={option.id}
@@ -127,7 +140,8 @@ export function MobileSelect({
               )}
             </button>
           ))}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
