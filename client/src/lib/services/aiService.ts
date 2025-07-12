@@ -264,12 +264,19 @@ class AIService {
     
     items.forEach(item => {
       const itemLower = item.toLowerCase();
-      const isCorrect = this.isItemUniversallyCorrect(itemLower, topicLower, universalDistractors);
       
-      if (isCorrect) {
-        correct.push(item);
-      } else {
+      // Check if it's an obvious universal distractor (clearly unrelated to most topics)
+      const isUniversalDistractor = universalDistractors.some(distractor => 
+        itemLower.includes(distractor) || distractor.includes(itemLower)
+      );
+      
+      // For universal distractors, mark as incorrect
+      if (isUniversalDistractor) {
         incorrect.push(item);
+      } else {
+        // For everything else, assume it's topic-related (correct)
+        // The AI prompt should be providing mostly topic-related items
+        correct.push(item);
       }
     });
     
