@@ -30,42 +30,7 @@ export function MobileSelect({
   const [selectedOption, setSelectedOption] = useState<Option | null>(
     options.find(option => option.id === value) || null
   );
-  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number; shouldDropUp: boolean }>({
-    top: 0,
-    left: 0,
-    width: 0,
-    shouldDropUp: false
-  });
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const calculateDropdownPosition = () => {
-    if (!containerRef.current) return;
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    const dropdownHeight = Math.min(240, options.length * 52); // max-h-60 = 240px, each item ~52px
-    
-    // Check if dropdown would extend beyond viewport bottom
-    const spaceBelow = viewportHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    const shouldDropUp = spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
-    
-    // Calculate position
-    const top = shouldDropUp 
-      ? rect.top - dropdownHeight - 4 
-      : rect.bottom + 4;
-    
-    // Ensure dropdown doesn't go beyond viewport edges
-    const left = Math.max(8, Math.min(rect.left, viewportWidth - rect.width - 8));
-    
-    setDropdownPosition({
-      top,
-      left,
-      width: rect.width,
-      shouldDropUp
-    });
-  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -74,35 +39,20 @@ export function MobileSelect({
       }
     };
 
-    const handleResize = () => {
-      if (isOpen) {
-        calculateDropdownPosition();
-      }
-    };
-
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('touchstart', handleClickOutside);
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('scroll', handleResize);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize);
     };
   }, [isOpen]);
 
   const handleToggle = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (!isOpen) {
-      calculateDropdownPosition();
-    }
-    
     setIsOpen(!isOpen);
   };
 
@@ -144,31 +94,16 @@ export function MobileSelect({
       </button>
 
       {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm"
-            style={{ zIndex: 2147483646 }}
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Dropdown content */}
-          <div 
-            className={cn(
-              "fixed max-h-60 overflow-auto rounded-md border shadow-2xl transition-all duration-200",
-              contentClassName || "bg-gray-900 text-white border-gray-700",
-              dropdownPosition.shouldDropUp ? "animate-in slide-in-from-bottom-2" : "animate-in slide-in-from-top-2"
-            )}
-            style={{ 
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent',
-              left: dropdownPosition.left,
-              top: dropdownPosition.top,
-              width: dropdownPosition.width,
-              zIndex: 2147483647,
-              maxHeight: Math.min(240, window.innerHeight - dropdownPosition.top - 16)
-            }}
-          >
+        <div 
+          className={cn(
+            "absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-md border shadow-lg",
+            contentClassName || "bg-gray-900 text-white border-gray-700"
+          )}
+          style={{ 
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent'
+          }}
+        >
           {options.map((option) => (
             <button
               key={option.id}
@@ -192,8 +127,7 @@ export function MobileSelect({
               )}
             </button>
           ))}
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
