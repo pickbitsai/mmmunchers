@@ -89,7 +89,11 @@ class AIService {
             },
             {
               role: 'user',
-              content: this.buildPrompt(topic, subtopic, level)
+              content: (() => {
+                const prompt = this.buildPrompt(topic, subtopic, level);
+                console.log('OpenAI prompt being sent:', prompt);
+                return prompt;
+              })()
             }
           ],
           temperature: 0.7,
@@ -104,7 +108,9 @@ class AIService {
       }
       
       const data = await response.json();
+      console.log('OpenAI raw response:', JSON.stringify(data, null, 2));
       const aiContent = this.parseOpenAIResponse(data);
+      console.log('Parsed AI content:', JSON.stringify(aiContent, null, 2));
       
       // Save AI-generated content to cache
       this.saveToCacheInBackground(topic, subtopic, aiContent, 'openai');
