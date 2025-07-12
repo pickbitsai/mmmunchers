@@ -282,29 +282,92 @@ export default function GameBoard2D() {
                       // Calculate optimal font size for better text display
                       const text = cell.value;
                       const charCount = text.length;
-                      const hasSpaces = text.includes(' ');
-                      const availableWidth = cellSize - 8; // Account for padding
+                      const words = text.split(' ');
+                      const hasMultipleWords = words.length > 1;
                       
-                      // Better font scaling based on content
-                      if (charCount <= 6) {
+                      // More aggressive font scaling for better fit
+                      if (charCount <= 8) {
                         return `${fontSize}px`; // Full size for short text
-                      } else if (charCount <= 10) {
-                        return `${fontSize * 0.85}px`; // Slightly smaller
-                      } else if (charCount <= 15) {
-                        return `${fontSize * 0.7}px`; // Smaller for longer text
+                      } else if (charCount <= 12) {
+                        return `${fontSize * 0.75}px`; // Smaller for medium text
+                      } else if (charCount <= 16) {
+                        return `${fontSize * 0.65}px`; // Smaller for longer text
                       } else {
-                        return `${fontSize * 0.6}px`; // Smallest for very long text
+                        return `${fontSize * 0.55}px`; // Smallest for very long text
                       }
                     })(),
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    lineHeight: 1,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    hyphens: 'auto',
+                    lineHeight: 1.1,
                     padding: '2px',
-                    maxWidth: `${cellSize - 8}px`
+                    maxWidth: `${cellSize - 8}px`,
+                    maxHeight: `${cellSize - 8}px`,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center'
                   }}
                 >
-                  {cell.value}
+                  {(() => {
+                    const text = cell.value;
+                    const words = text.split(' ');
+                    
+                    // For very long single words, break them intelligently
+                    if (words.length === 1 && text.length > 12) {
+                      // Try to break at natural points (like hyphens or capitals)
+                      const breakPoints = [];
+                      for (let i = 0; i < text.length; i++) {
+                        if (text[i] === '-' || text[i] === '_' || 
+                            (i > 0 && text[i].match(/[A-Z]/) && text[i-1].match(/[a-z]/))) {
+                          breakPoints.push(i);
+                        }
+                      }
+                      
+                      // If we have good break points, use them
+                      if (breakPoints.length > 0) {
+                        const midPoint = breakPoints[Math.floor(breakPoints.length / 2)];
+                        return text.substring(0, midPoint + 1) + '\n' + text.substring(midPoint + 1);
+                      }
+                      
+                      // Otherwise, break at reasonable length
+                      if (text.length > 16) {
+                        const midPoint = Math.floor(text.length / 2);
+                        return text.substring(0, midPoint) + '\n' + text.substring(midPoint);
+                      }
+                    }
+                    
+                    // For multiple words, ensure no single-letter wraps
+                    if (words.length > 1) {
+                      // Try to group words intelligently to avoid single letters
+                      const groupedWords = [];
+                      let currentGroup = '';
+                      
+                      for (let i = 0; i < words.length; i++) {
+                        const word = words[i];
+                        const testGroup = currentGroup ? `${currentGroup} ${word}` : word;
+                        
+                        // If adding this word would make the group too long, start a new group
+                        if (testGroup.length > 8 && currentGroup.length > 0) {
+                          groupedWords.push(currentGroup);
+                          currentGroup = word;
+                        } else {
+                          currentGroup = testGroup;
+                        }
+                      }
+                      
+                      // Add the last group
+                      if (currentGroup) {
+                        groupedWords.push(currentGroup);
+                      }
+                      
+                      return groupedWords.join('\n');
+                    }
+                    
+                    return text;
+                  })()}
                 </span>
               )}
             </div>
