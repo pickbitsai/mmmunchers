@@ -222,7 +222,7 @@ export default function TopicSelection() {
               textShadow: '0 0 40px rgba(0, 240, 255, 0.5)'
             }}
           >
-            NUMBER MUNCHERS 3D
+            mmmunchers
           </h1>
           <p className="text-cyan-300 text-base sm:text-lg tracking-wide">Choose your learning adventure</p>
         </div>
