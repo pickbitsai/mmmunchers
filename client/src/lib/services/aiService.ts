@@ -191,31 +191,50 @@ class AIService {
                                  description.includes('all') && description.includes('examples');
     
     let correctAnswers: string[];
-    let numCorrect: number;
+    let incorrectAnswers: string[];
     
-    // For AI-generated content, ALL items should be considered correct since they're all related to the topic
-    // The challenge is to distinguish between topic-related items and unrelated distractors
-    correctAnswers = [...items];
-    numCorrect = items.length;
+    // The AI now provides a mix of correct and incorrect items
+    // We need to intelligently separate them based on the topic
+    const { correct, incorrect } = this.separateCorrectFromIncorrect(topic, items);
     
-    console.log(`AI-generated challenge: Using all ${items.length} items as correct answers for topic "${topic}"`);
-    console.log(`Challenge type: ${isEverythingChallenge ? 'Everything about' : 'Specific'} - "${description}"`);
-    console.log(`Correct answers:`, correctAnswers.slice(0, 10).join(', '), correctAnswers.length > 10 ? '...' : '');
+    if (isEverythingChallenge) {
+      // For "everything about" challenges, use ALL correct items
+      correctAnswers = [...correct];
+      incorrectAnswers = [...incorrect];
+      console.log(`Everything challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
+    } else {
+      // For specific challenges, use a subset of correct items
+      const totalCells = 48; // Average grid size
+      const minCorrect = Math.min(2 + Math.floor(level / 4), Math.floor(totalCells * 0.2), correct.length);
+      const maxCorrect = Math.min(minCorrect + 3, Math.floor(totalCells * 0.35), correct.length);
+      const numCorrect = Math.min(
+        Math.floor(minCorrect + Math.random() * (maxCorrect - minCorrect + 1)),
+        correct.length
+      );
+      
+      // Select correct answers from the AI-generated correct items
+      const shuffled = [...correct].sort(() => Math.random() - 0.5);
+      correctAnswers = shuffled.slice(0, numCorrect);
+      
+      // Use remaining correct items and all incorrect items as distractors
+      const remainingCorrect = correct.filter(item => !correctAnswers.includes(item));
+      incorrectAnswers = [...remainingCorrect, ...incorrect];
+      
+      console.log(`Specific challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
+    }
     
-    // Generate distractors - always use completely unrelated items
-    // Since all AI-generated items are correct, we need unrelated distractors
-    let incorrectAnswers: string[] = [];
-    const numIncorrect = Math.max(40, 63 - numCorrect);
-    
-    incorrectAnswers = this.generateSmartDistractors(
-      topic,
-      [], // Don't use any AI-generated items as distractors since they're all correct
-      numIncorrect,
-      level
-    );
-    
-    console.log(`Generated ${incorrectAnswers.length} unrelated distractors for topic "${topic}"`);
-    console.log(`Distractor examples:`, incorrectAnswers.slice(0, 5).join(', '), incorrectAnswers.length > 5 ? '...' : '');
+    // If we need more distractors, add smart ones
+    const numIncorrect = Math.max(40, 63 - correctAnswers.length);
+    if (incorrectAnswers.length < numIncorrect) {
+      const additionalNeeded = numIncorrect - incorrectAnswers.length;
+      const additionalDistractors = this.generateSmartDistractors(
+        topic,
+        [],
+        additionalNeeded,
+        level
+      );
+      incorrectAnswers.push(...additionalDistractors);
+    }
     
     return {
       description,
@@ -223,6 +242,89 @@ class AIService {
       incorrectAnswers,
       hints: level > 10 ? this.generateHints(topic, correctAnswers) : undefined
     };
+  }
+  
+  private separateCorrectFromIncorrect(topic: string, items: string[]): { correct: string[], incorrect: string[] } {
+    const correct: string[] = [];
+    const incorrect: string[] = [];
+    const topicLower = topic.toLowerCase();
+    const normalizedTopic = this.normalizeTopic(topicLower);
+    
+    // Define topic-specific keywords that indicate correct answers
+    const topicKeywords = this.getTopicKeywords(normalizedTopic);
+    
+    items.forEach(item => {
+      const itemLower = item.toLowerCase();
+      const isCorrect = this.isItemCorrectForTopic(itemLower, normalizedTopic, topicKeywords);
+      
+      if (isCorrect) {
+        correct.push(item);
+      } else {
+        incorrect.push(item);
+      }
+    });
+    
+    console.log(`Topic: ${topic} - Separated ${correct.length} correct and ${incorrect.length} incorrect items`);
+    console.log(`Correct items:`, correct.slice(0, 5).join(', '), correct.length > 5 ? '...' : '');
+    console.log(`Incorrect items:`, incorrect.slice(0, 5).join(', '), incorrect.length > 5 ? '...' : '');
+    
+    return { correct, incorrect };
+  }
+  
+  private getTopicKeywords(normalizedTopic: string): string[] {
+    const keywords: string[] = [];
+    
+    if (normalizedTopic.includes('surf')) {
+      keywords.push('ocean', 'wave', 'board', 'wetsuit', 'beach', 'surf', 'tide', 'sand', 'paddle', 'ride', 'barrel', 'tube', 'break', 'curl', 'foam', 'swell', 'fin', 'leash', 'wax', 'reef', 'shore', 'lineup', 'set', 'duck', 'pop', 'carve', 'cutback', 'floater', 'longboard', 'shortboard');
+    } else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro')) {
+      keywords.push('mars', 'venus', 'jupiter', 'saturn', 'mercury', 'neptune', 'uranus', 'earth', 'moon', 'sun', 'asteroid', 'comet', 'galaxy', 'star', 'nebula', 'planet', 'orbit', 'gravity', 'rocket', 'astronaut', 'satellite', 'telescope', 'constellation', 'meteor', 'eclipse', 'cosmos', 'universe', 'solar', 'lunar');
+    } else if (normalizedTopic.includes('music')) {
+      keywords.push('guitar', 'piano', 'violin', 'drums', 'trumpet', 'saxophone', 'note', 'chord', 'rhythm', 'melody', 'harmony', 'song', 'beat', 'tempo', 'scale', 'bass', 'treble', 'jazz', 'rock', 'pop', 'classical', 'concert', 'band', 'orchestra', 'singer', 'composer', 'musician');
+    } else if (normalizedTopic.includes('cook')) {
+      keywords.push('recipe', 'ingredient', 'kitchen', 'pot', 'pan', 'oven', 'stove', 'bake', 'boil', 'fry', 'grill', 'steam', 'chop', 'dice', 'slice', 'mix', 'stir', 'sauce', 'spice', 'herb', 'salt', 'pepper', 'oil', 'butter', 'flour', 'sugar', 'chef', 'food', 'meal', 'dish');
+    } else if (normalizedTopic.includes('animal')) {
+      keywords.push('dog', 'cat', 'bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'goat', 'chicken', 'duck', 'rabbit', 'mouse', 'elephant', 'lion', 'tiger', 'bear', 'wolf', 'fox', 'deer', 'monkey', 'zebra', 'giraffe', 'hippo', 'rhino', 'leopard', 'cheetah', 'snake', 'lizard', 'frog');
+    } else {
+      // For generic topics, try to extract keywords from the topic itself
+      const topicWords = normalizedTopic.split(/\s+/);
+      keywords.push(...topicWords);
+    }
+    
+    return keywords;
+  }
+  
+  private isItemCorrectForTopic(itemLower: string, normalizedTopic: string, topicKeywords: string[]): boolean {
+    // Check if the item contains any of the topic keywords
+    const hasKeyword = topicKeywords.some(keyword => 
+      itemLower.includes(keyword) || keyword.includes(itemLower)
+    );
+    
+    // Check if the item is obviously unrelated (common distractors)
+    const commonDistractors = [
+      'mountain', 'snow', 'skiing', 'basketball', 'piano', 'cooking', 'desert',
+      'space', 'robot', 'books', 'car', 'television', 'computer', 'phone',
+      'house', 'school', 'office', 'pencil', 'paper', 'chair', 'table',
+      'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink',
+      'apple', 'banana', 'orange', 'grape', 'strawberry', 'pear', 'peach'
+    ];
+    
+    const isObviousDistractor = commonDistractors.some(distractor => 
+      itemLower.includes(distractor)
+    );
+    
+    // If it's an obvious distractor and doesn't have topic keywords, it's incorrect
+    if (isObviousDistractor && !hasKeyword) {
+      return false;
+    }
+    
+    // If it has topic keywords, it's likely correct
+    if (hasKeyword) {
+      return true;
+    }
+    
+    // For ambiguous cases, err on the side of being topic-related
+    // This handles cases where the AI generates related items that don't match our keyword list
+    return true;
   }
   
   private buildPrompt(topic: string, subtopic: string, level: number): string {
@@ -248,19 +350,26 @@ ${subtopicPrompt}
 
 Create a JSON object with EXACTLY this structure:
 {
-  "items": [array of 25-30 VERY SHORT items/phrases related to ${topic}, each 1-2 words MAX],
+  "items": [array of 35-40 VERY SHORT items/phrases - mix of correct and incorrect answers, each 1-2 words MAX],
   "categories": [array of 5-8 category names, each 1-2 words],
   "facts": [array of 10-15 facts about ${topic}, each under 15 characters]
 }
 
-CRITICAL Requirements:
+CRITICAL Requirements for "items":
+- Include 20-25 items that ARE directly related to ${topic} (correct answers)
+- Include 15-20 items that are NOT related to ${topic} but might be plausible distractors (incorrect answers)
+- Make distractors challenging but clearly wrong when you think about it
 - ALL items MUST be 1-2 words maximum (prefer single words)
 - NO phrases longer than 2 words
 - Categories: 1-2 words only
 - Facts: Maximum 15 characters each
 - Use abbreviations if needed
 - Single nouns preferred
-- Age-appropriate content`;
+- Age-appropriate content
+
+Example for "Surfing":
+Correct: Ocean, Wave, Board, Wetsuit, Beach, Paddle, Barrel, Tide, Reef, Curl
+Incorrect: Mountain, Snow, Skiing, Basketball, Piano, Cooking, Desert, Space, Robot, Books`;
   }
   
   private parseOpenAIResponse(response: any): AITopicContent {
@@ -442,11 +551,16 @@ CRITICAL Requirements:
     // Surfing-related mock content
     else if (normalizedTopic.includes('surf') || normalizedTopic.includes('wave') || normalizedTopic.includes('ocean')) {
       foundSpecificContent = true;
+      // Mix of correct and incorrect answers
       items.push(
+        // Correct surfing items
         'Ocean', 'Wave', 'Board', 'Wetsuit', 'Beach', 'Surf', 'Tide', 'Sand',
         'Paddle', 'Ride', 'Barrel', 'Tube', 'Break', 'Curl', 'Foam', 'Swell',
         'Longboard', 'Shortboard', 'Fin', 'Leash', 'Wax', 'Reef', 'Shore',
-        'Lineup', 'Set', 'Duck dive', 'Pop up', 'Carve', 'Cutback', 'Floater'
+        'Lineup', 'Set', 'Duck dive', 'Pop up', 'Carve', 'Cutback', 'Floater',
+        // Incorrect distractors
+        'Mountain', 'Snow', 'Skiing', 'Basketball', 'Piano', 'Cooking', 'Desert',
+        'Space', 'Robot', 'Books', 'Car', 'Television', 'Computer', 'Phone'
       );
       categories.push('Equipment', 'Techniques', 'Waves', 'Locations', 'Conditions');
       facts.push(

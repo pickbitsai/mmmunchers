@@ -149,8 +149,9 @@ Changelog:
 - January 12, 2025. Added QA legend to game UI explaining the color coding system for easier testing
 - January 12, 2025. Fixed major answer validation bug: "Select everything about X" challenges now correctly mark ALL topic-related items as correct
 - January 12, 2025. Improved AI challenge generation to distinguish between "everything about" and specific subset challenges
-- January 12, 2025. Fixed universal AI-generated content validation: ALL AI-generated items for any user topic now correctly marked as correct answers
-- January 12, 2025. Enhanced distractor generation to use only unrelated items, preventing AI-generated topic content from being marked incorrect
+- January 12, 2025. Redesigned AI content generation: AI now provides mix of correct and incorrect answers for balanced gameplay
+- January 12, 2025. Added intelligent answer separation system to categorize AI-generated items based on topic relevance
+- January 12, 2025. Enhanced AI prompts to explicitly request both topic-related and unrelated items for natural challenge balance
 ```
 
 ## User Preferences
