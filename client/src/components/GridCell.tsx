@@ -45,7 +45,7 @@ export default function GridCell({ cell, position }: GridCellProps) {
       </mesh>
       
       {/* Cell value text */}
-      {!cell.isEmpty && (
+      {!cell.isEmpty && cell.value && (
         <Text
           position={[position[0], position[1] + 0.5, position[2]]}
           fontSize={0.4}

@@ -1,19 +1,7 @@
 import { Player, Enemy, GridCell, Challenge } from "./stores/useGameState";
 import { useAudio } from "./stores/useAudio";
 
-// Simple keyboard state tracking
-const keyState: { [key: string]: boolean } = {};
-
-// Setup keyboard listeners
-if (typeof window !== 'undefined') {
-  window.addEventListener('keydown', (e) => {
-    keyState[e.code] = true;
-  });
-  
-  window.addEventListener('keyup', (e) => {
-    keyState[e.code] = false;
-  });
-}
+// Keyboard handling moved to GameBoard component to prevent conflicts
 
 interface GameLogicParams {
   delta: number;
@@ -41,6 +29,7 @@ export function updateGameLogic({
   enemies,
   grid,
   currentChallenge,
+  level,
   updatePlayer,
   updateEnemies,
   updateGrid,
@@ -50,41 +39,12 @@ export function updateGameLogic({
 }: GameLogicParams) {
   const currentTime = Date.now();
   
-  // Handle player input with simple keyboard tracking
-  if (currentTime - lastMoveTime > MOVE_COOLDOWN) {
-    let newX = player.x;
-    let newY = player.y;
-    let moved = false;
-    
-    // Check for movement keys
-    if ((keyState['ArrowUp'] || keyState['KeyW']) && !moved) {
-      newY = Math.max(0, player.y - 1);
-      moved = true;
-    } else if ((keyState['ArrowDown'] || keyState['KeyS']) && !moved) {
-      newY = Math.min(grid.length - 1, player.y + 1);
-      moved = true;
-    } else if ((keyState['ArrowLeft'] || keyState['KeyA']) && !moved) {
-      newX = Math.max(0, player.x - 1);
-      moved = true;
-    } else if ((keyState['ArrowRight'] || keyState['KeyD']) && !moved) {
-      newX = Math.min(grid[0]?.length - 1 || 0, player.x + 1);
-      moved = true;
-    }
-    
-    if (moved && (newX !== player.x || newY !== player.y)) {
-      processPlayerMove(newX, newY);
-      lastMoveTime = currentTime;
-    }
-  }
-  
-  // Handle munch key (spacebar)
-  if (keyState['Space'] && currentTime - lastMunchTime > MUNCH_COOLDOWN) {
-    munchCurrentCell();
-    lastMunchTime = currentTime;
-  }
+  // Player input is handled by GameBoard component, not here
+  // This prevents conflicts between two keyboard handlers
   
   // Update enemy AI with level-based timing
-  const updatedEnemies = enemies.map(enemy => updateEnemyAI(enemy, player, delta, grid, level || 1));
+  const currentLevel = level || 1;
+  const updatedEnemies = enemies.map(enemy => updateEnemyAI(enemy, player, delta, grid, currentLevel));
   
   // Check for collisions between player and enemies
   const collision = updatedEnemies.some(enemy => 
