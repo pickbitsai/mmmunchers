@@ -248,14 +248,23 @@ class AIService {
     const correct: string[] = [];
     const incorrect: string[] = [];
     const topicLower = topic.toLowerCase();
-    const normalizedTopic = this.normalizeTopic(topicLower);
     
-    // Define topic-specific keywords that indicate correct answers
-    const topicKeywords = this.getTopicKeywords(normalizedTopic);
+    // Universal distractor list - items that are clearly unrelated to most topics
+    const universalDistractors = [
+      'mountain', 'snow', 'skiing', 'basketball', 'piano', 'cooking', 'desert',
+      'space', 'robot', 'books', 'car', 'television', 'computer', 'phone',
+      'house', 'school', 'office', 'pencil', 'paper', 'chair', 'table',
+      'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink',
+      'apple', 'banana', 'grape', 'strawberry', 'pear', 'peach',
+      'football', 'broccoli', 'guitar', 'flower', 'dragon', 'pizza', 'moon',
+      'tree', 'grass', 'water', 'fire', 'ice', 'wind', 'earth', 'metal',
+      'wood', 'plastic', 'glass', 'stone', 'brick', 'concrete', 'steel',
+      'gold', 'silver', 'copper', 'iron', 'aluminum', 'bronze', 'platinum'
+    ];
     
     items.forEach(item => {
       const itemLower = item.toLowerCase();
-      const isCorrect = this.isItemCorrectForTopic(itemLower, normalizedTopic, topicKeywords);
+      const isCorrect = this.isItemUniversallyCorrect(itemLower, topicLower, universalDistractors);
       
       if (isCorrect) {
         correct.push(item);
