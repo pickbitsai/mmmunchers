@@ -479,6 +479,21 @@ CRITICAL Requirements:
         'DNA stores information', 'Energy is conserved', 'Light has dual nature'
       );
     }
+    // Surfing-related mock content
+    else if (normalizedTopic.includes('surf') || normalizedTopic.includes('wave') || normalizedTopic.includes('ocean')) {
+      foundSpecificContent = true;
+      items.push(
+        'Ocean', 'Wave', 'Board', 'Wetsuit', 'Beach', 'Surf', 'Tide', 'Sand',
+        'Paddle', 'Ride', 'Barrel', 'Tube', 'Break', 'Curl', 'Foam', 'Swell',
+        'Longboard', 'Shortboard', 'Fin', 'Leash', 'Wax', 'Reef', 'Shore',
+        'Lineup', 'Set', 'Duck dive', 'Pop up', 'Carve', 'Cutback', 'Floater'
+      );
+      categories.push('Equipment', 'Techniques', 'Waves', 'Locations', 'Conditions');
+      facts.push(
+        'Waves carry energy', 'Tides change daily', 'Wax grips board',
+        'Fins steer board', 'Leash saves board', 'Reefs shape waves'
+      );
+    }
     // Universal fallback system for ANY topic
     if (!foundSpecificContent) {
       console.log(`No specific content found for "${topic}", generating universal content...`);
