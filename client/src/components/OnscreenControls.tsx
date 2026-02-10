@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { Button } from "./ui/button";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OnscreenControlsProps {

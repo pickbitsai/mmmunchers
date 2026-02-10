@@ -44,7 +44,6 @@ export class AssetLoader {
         },
         undefined,
         (error: unknown) => {
-          console.error(`Failed to load asset: ${path}`, error);
           this.loadingPromises.delete(path);
           reject(error);
         }
@@ -79,14 +78,10 @@ export class AssetLoader {
   // Preload critical assets
   async preloadCriticalAssets(): Promise<void> {
     const promises = CRITICAL_ASSETS.map(asset => 
-      this.loadAsset(asset).catch(error => {
-        console.warn(`Failed to preload critical asset: ${asset}`, error);
-        return null;
-      })
+      this.loadAsset(asset).catch(() => null)
     );
     
     await Promise.allSettled(promises);
-    console.log('Critical assets preloaded');
   }
 
   // Clean up unused assets
@@ -119,7 +114,6 @@ export class AssetLoader {
       }
     });
     
-    console.log('Non-critical assets cleaned up');
   }
 
   // Get loading status
@@ -144,7 +138,6 @@ export function useLazyAsset(path: string | null) {
     return useLoader(GLTFLoader, path);
   } catch (error) {
     // Fallback to async loading
-    console.warn(`Asset not in cache, loading async: ${path}`);
     return null;
   }
 }

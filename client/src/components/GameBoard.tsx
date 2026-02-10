@@ -31,8 +31,7 @@ export default function GameBoard() {
   // Initialize enemies when game starts
   useEffect(() => {
     if (gamePhase === 'playing' && enemies.length === 0) {
-      console.log("3D GameBoard: Spawning enemies");
-      spawnEnemies(); // Spawn enemies immediately
+      spawnEnemies();
     }
   }, [gamePhase, enemies.length, spawnEnemies]);
 
@@ -115,11 +114,6 @@ export default function GameBoard() {
   useFrame((state, delta) => {
     if (gamePhase !== 'playing') return;
 
-    // Debug game loop less frequently
-    if (Math.random() < 0.001) { // Log much less frequently
-      console.log("3D Game loop running", { delta, playerPos: `${player.x},${player.y}`, enemyCount: enemies.length });
-    }
-
     updateGameLogic({
       delta,
       player,
@@ -164,7 +158,6 @@ export default function GameBoard() {
   // Debug logging removed for performance
 
   if (!grid.length || !currentChallenge) {
-    console.log("GameBoard: Missing grid or challenge - returning null");
     return null;
   }
 
@@ -218,20 +211,17 @@ export default function GameBoard() {
       />
 
       {/* Enemies */}
-      {enemies.map((enemy) => {
-        console.log("Rendering enemy in GameBoard:", { id: enemy.id, pos: `${enemy.x},${enemy.y}` });
-        return (
-          <Enemy
-            key={enemy.id}
-            enemy={enemy}
-            position={[
-              (enemy.x - centerX) * 2,
-              0.5,
-              (enemy.y - centerY) * 2
-            ]}
-          />
-        );
-      })}
+      {enemies.map((enemy) => (
+        <Enemy
+          key={enemy.id}
+          enemy={enemy}
+          position={[
+            (enemy.x - centerX) * 2,
+            0.5,
+            (enemy.y - centerY) * 2
+          ]}
+        />
+      ))}
     </group>
   );
 }

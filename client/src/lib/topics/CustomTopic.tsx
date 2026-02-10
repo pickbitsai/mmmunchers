@@ -70,51 +70,6 @@ export class CustomTopic extends TopicProvider {
     return allItems;
   }
   
-  private async mockAIGenerate(): Promise<string[]> {
-    // Simulate AI delay
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Generate mock content based on subtopic
-    const baseItems = this.userTopic.toLowerCase().split(' ');
-    const items: string[] = [];
-    
-    switch (this.currentSubtopic) {
-      case 'facts':
-        items.push(`${this.userTopic} fact 1`);
-        items.push(`${this.userTopic} fact 2`);
-        items.push(`${this.userTopic} fact 3`);
-        items.push(`Amazing ${this.userTopic}`);
-        items.push(`True about ${this.userTopic}`);
-        break;
-      case 'trivia':
-        items.push(`${this.userTopic} trivia 1`);
-        items.push(`${this.userTopic} trivia 2`);
-        items.push(`Question: ${this.userTopic}`);
-        items.push(`Did you know: ${this.userTopic}`);
-        break;
-      case 'related':
-        items.push(`Related to ${this.userTopic}`);
-        items.push(`Similar to ${this.userTopic}`);
-        items.push(`Part of ${this.userTopic}`);
-        items.push(`${this.userTopic} connection`);
-        break;
-      default:
-        // Mix of everything
-        items.push(...baseItems);
-        items.push(`${this.userTopic} item`);
-        items.push(`About ${this.userTopic}`);
-        items.push(`${this.userTopic} example`);
-        items.push(`Learn ${this.userTopic}`);
-    }
-    
-    // Add more variety
-    for (let i = 0; i < 20; i++) {
-      items.push(`${this.userTopic} ${i + 1}`);
-    }
-    
-    return items;
-  }
-  
   async generateChallenge(level: number): Promise<Challenge> {
     // Update current level for content generation
     this.currentLevel = level;
@@ -131,15 +86,7 @@ export class CustomTopic extends TopicProvider {
     
     // Store the challenge data for use in generateGrid
     this.currentChallengeData = challenge;
-    
-    console.log('CustomTopic - Generated challenge data:', {
-      description: challenge.description,
-      correctAnswersCount: challenge.correctAnswers?.length || 0,
-      incorrectAnswersCount: challenge.incorrectAnswers?.length || 0,
-      correctAnswersSample: challenge.correctAnswers?.slice(0, 3),
-      incorrectAnswersSample: challenge.incorrectAnswers?.slice(0, 3)
-    });
-    
+
     return {
       description: challenge.description,
       checkAnswer: (value: string) => {
@@ -148,13 +95,6 @@ export class CustomTopic extends TopicProvider {
         const isCorrect = challenge.correctAnswers.some(answer => 
           answer.trim().toLowerCase() === normalizedValue
         );
-        
-        // Debug logging for answer validation
-        if (isCorrect) {
-          console.log(`✓ Correct answer found: "${value}"`);
-        } else {
-          console.log(`✗ Incorrect answer: "${value}" (not in correct answers)`, challenge.correctAnswers);
-        }
         
         return isCorrect;
       }
@@ -166,20 +106,11 @@ export class CustomTopic extends TopicProvider {
     
     // Use the stored challenge data from generateChallenge
     if (!this.currentChallengeData) {
-      console.error('No challenge data available for grid generation');
       return grid;
     }
     
     const challengeData = this.currentChallengeData;
-    
-    // Debug logging to verify AI data structure
-    console.log('CustomTopic generateGrid - Challenge data:', {
-      correctCount: challengeData.correctAnswers?.length || 0,
-      incorrectCount: challengeData.incorrectAnswers?.length || 0,
-      correctSample: challengeData.correctAnswers?.slice(0, 3),
-      incorrectSample: challengeData.incorrectAnswers?.slice(0, 3)
-    });
-    
+
     // Calculate total cells - we want to fill ALL of them
     const totalCells = width * height;
     
@@ -231,11 +162,6 @@ export class CustomTopic extends TopicProvider {
         isEmpty: false
       };
     }
-    
-    // Log grid statistics for debugging
-    const totalCorrect = grid.flat().filter(cell => !cell.isEmpty && cell.isCorrect).length;
-    const totalIncorrect = grid.flat().filter(cell => !cell.isEmpty && !cell.isCorrect).length;
-    console.log(`CustomTopic grid generated: ${totalCorrect} correct, ${totalIncorrect} incorrect answers`);
     
     return grid;
   }
@@ -349,45 +275,7 @@ export class CustomTopic extends TopicProvider {
     return distractors;
   }
   
-  shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }
-  
   private normalizeTopic(topic: string): string {
-    // Common typo corrections - same as in AI service
-    const corrections: { [key: string]: string } = {
-      'egeypt': 'egypt',
-      'egpyt': 'egypt',
-      'egyp': 'egypt',
-      'egipt': 'egypt',
-      'ejypt': 'egypt',
-      'dinasour': 'dinosaur',
-      'dinasaur': 'dinosaur',
-      'dinosaurt': 'dinosaur',
-      'dinosour': 'dinosaur',
-      'dino': 'dinosaur',
-      'sapce': 'space',
-      'spce': 'space',
-      'spoace': 'space'
-    };
-    
-    // Check for exact match
-    if (corrections[topic]) {
-      return corrections[topic];
-    }
-    
-    // Check if topic contains any typos
-    for (const [typo, correct] of Object.entries(corrections)) {
-      if (topic.includes(typo)) {
-        return topic.replace(typo, correct);
-      }
-    }
-    
-    return topic;
+    return aiService.normalizeTopic(topic);
   }
 }

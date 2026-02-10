@@ -4,6 +4,54 @@ import { useAudio } from "../lib/stores/useAudio";
 import { updateGameLogic } from "../lib/gameLogic";
 import OnscreenControls from "./OnscreenControls";
 
+function getCellFontSize(text: string, baseFontSize: number): string {
+  const charCount = text.length;
+  if (charCount <= 8) return `${baseFontSize}px`;
+  if (charCount <= 12) return `${baseFontSize * 0.75}px`;
+  if (charCount <= 16) return `${baseFontSize * 0.65}px`;
+  return `${baseFontSize * 0.55}px`;
+}
+
+function formatCellText(text: string): string {
+  const words = text.split(' ');
+
+  if (words.length === 1 && text.length > 12) {
+    const breakPoints: number[] = [];
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === '-' || text[i] === '_' ||
+          (i > 0 && text[i].match(/[A-Z]/) && text[i-1].match(/[a-z]/))) {
+        breakPoints.push(i);
+      }
+    }
+    if (breakPoints.length > 0) {
+      const midPoint = breakPoints[Math.floor(breakPoints.length / 2)];
+      return text.substring(0, midPoint + 1) + '\n' + text.substring(midPoint + 1);
+    }
+    if (text.length > 16) {
+      const midPoint = Math.floor(text.length / 2);
+      return text.substring(0, midPoint) + '\n' + text.substring(midPoint);
+    }
+  }
+
+  if (words.length > 1) {
+    const groupedWords: string[] = [];
+    let currentGroup = '';
+    for (const word of words) {
+      const testGroup = currentGroup ? `${currentGroup} ${word}` : word;
+      if (testGroup.length > 8 && currentGroup.length > 0) {
+        groupedWords.push(currentGroup);
+        currentGroup = word;
+      } else {
+        currentGroup = testGroup;
+      }
+    }
+    if (currentGroup) groupedWords.push(currentGroup);
+    return groupedWords.join('\n');
+  }
+
+  return text;
+}
+
 export default function GameBoard2D() {
   const animationRef = useRef<number>();
   const lastTimeRef = useRef<number>(0);
@@ -275,27 +323,10 @@ export default function GameBoard2D() {
               }}
             >
               {!cell.isEmpty && !cell.isMunched && (
-                <span 
+                <span
                   className="text-center block w-full h-full flex items-center justify-center"
                   style={{
-                    fontSize: (() => {
-                      // Calculate optimal font size for better text display
-                      const text = cell.value;
-                      const charCount = text.length;
-                      const words = text.split(' ');
-                      const hasMultipleWords = words.length > 1;
-                      
-                      // More aggressive font scaling for better fit
-                      if (charCount <= 8) {
-                        return `${fontSize}px`; // Full size for short text
-                      } else if (charCount <= 12) {
-                        return `${fontSize * 0.75}px`; // Smaller for medium text
-                      } else if (charCount <= 16) {
-                        return `${fontSize * 0.65}px`; // Smaller for longer text
-                      } else {
-                        return `${fontSize * 0.55}px`; // Smallest for very long text
-                      }
-                    })(),
+                    fontSize: getCellFontSize(cell.value, fontSize),
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word',
@@ -311,63 +342,7 @@ export default function GameBoard2D() {
                     textAlign: 'center'
                   }}
                 >
-                  {(() => {
-                    const text = cell.value;
-                    const words = text.split(' ');
-                    
-                    // For very long single words, break them intelligently
-                    if (words.length === 1 && text.length > 12) {
-                      // Try to break at natural points (like hyphens or capitals)
-                      const breakPoints = [];
-                      for (let i = 0; i < text.length; i++) {
-                        if (text[i] === '-' || text[i] === '_' || 
-                            (i > 0 && text[i].match(/[A-Z]/) && text[i-1].match(/[a-z]/))) {
-                          breakPoints.push(i);
-                        }
-                      }
-                      
-                      // If we have good break points, use them
-                      if (breakPoints.length > 0) {
-                        const midPoint = breakPoints[Math.floor(breakPoints.length / 2)];
-                        return text.substring(0, midPoint + 1) + '\n' + text.substring(midPoint + 1);
-                      }
-                      
-                      // Otherwise, break at reasonable length
-                      if (text.length > 16) {
-                        const midPoint = Math.floor(text.length / 2);
-                        return text.substring(0, midPoint) + '\n' + text.substring(midPoint);
-                      }
-                    }
-                    
-                    // For multiple words, ensure no single-letter wraps
-                    if (words.length > 1) {
-                      // Try to group words intelligently to avoid single letters
-                      const groupedWords = [];
-                      let currentGroup = '';
-                      
-                      for (let i = 0; i < words.length; i++) {
-                        const word = words[i];
-                        const testGroup = currentGroup ? `${currentGroup} ${word}` : word;
-                        
-                        // If adding this word would make the group too long, start a new group
-                        if (testGroup.length > 8 && currentGroup.length > 0) {
-                          groupedWords.push(currentGroup);
-                          currentGroup = word;
-                        } else {
-                          currentGroup = testGroup;
-                        }
-                      }
-                      
-                      // Add the last group
-                      if (currentGroup) {
-                        groupedWords.push(currentGroup);
-                      }
-                      
-                      return groupedWords.join('\n');
-                    }
-                    
-                    return text;
-                  })()}
+                  {formatCellText(cell.value)}
                 </span>
               )}
             </div>
