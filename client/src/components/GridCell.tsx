@@ -49,20 +49,26 @@ export default function GridCell({ cell, position }: GridCellProps) {
         <Text
           position={[position[0], position[1] + 0.5, position[2]]}
           fontSize={(() => {
-            // Dynamic font size based on text length
-            const text = cell.value;
-            const charCount = text.length;
-            if (charCount <= 6) return 0.4; // Full size for short text
-            if (charCount <= 10) return 0.35; // Slightly smaller
-            if (charCount <= 15) return 0.3; // Smaller for longer text
-            return 0.25; // Smallest for very long text
+            const words = cell.value.split(' ');
+            const longestWord = Math.max(...words.map(w => w.length));
+            // Scale so the longest word fits within maxWidth (1.4 units)
+            // At fontSize 0.4, each char is ~0.24 units wide
+            const charWidth = 0.24;
+            const maxFit = Math.floor(1.4 / charWidth); // ~5.8 chars at 0.4
+            if (longestWord > maxFit) {
+              return Math.max(1.4 / (longestWord * 0.6), 0.12);
+            }
+            const charCount = cell.value.length;
+            if (charCount <= 6) return 0.4;
+            if (charCount <= 10) return 0.32;
+            if (charCount <= 15) return 0.25;
+            return 0.2;
           })()}
           color="white"
           anchorX="center"
           anchorY="middle"
           maxWidth={1.4}
           textAlign="center"
-          overflowWrap="break-word"
         >
           {cell.value}
         </Text>
