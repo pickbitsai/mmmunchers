@@ -28,7 +28,7 @@ function GameContainer() {
   // Initialize game and preload assets once on mount
   React.useEffect(() => {
     // Preload critical 3D assets
-    assetLoader.preloadCriticalAssets().catch(console.error);
+    assetLoader.preloadCriticalAssets().catch(() => {});
     
     initializeGame();
   }, [initializeGame]);
@@ -67,7 +67,7 @@ function GameContainer() {
               shadows
               camera={{ position: [0, 10, 10], fov: 60 }}
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-              onCreated={() => console.log("Canvas created successfully")}
+              onCreated={() => {}}
             >
               <ambientLight intensity={0.5} />
               <directionalLight position={[10, 10, 5]} intensity={1} castShadow />

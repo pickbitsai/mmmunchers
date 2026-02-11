@@ -42,7 +42,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(null);
       }
     } catch (error) {
-      console.error('Error fetching topic content:', error);
       res.status(500).json({ error: 'Failed to fetch topic content' });
     }
   });
@@ -107,7 +106,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ success: true, id: saved.id });
     } catch (error) {
-      console.error('Error saving topic content:', error);
       res.status(500).json({ error: 'Failed to save topic content' });
     }
   });
@@ -118,7 +116,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const topics = await storage.getPopularTopics(10);
       res.json(topics);
     } catch (error) {
-      console.error('Error fetching popular topics:', error);
       res.status(500).json({ error: 'Failed to fetch popular topics' });
     }
   });
@@ -171,14 +168,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if OpenAI API key is available
       const apiKey = process.env.OPENAI_API_KEY;
       if (!apiKey) {
-        console.log('OpenAI API key not found in environment variables');
-        return res.status(503).json({ 
+        return res.status(503).json({
           error: 'AI service not configured', 
           success: false 
         });
       }
-      
-      console.log('OpenAI API key found, making request for topic:', topic);
       
       // Make secure API call to OpenAI
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -206,9 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       if (!response.ok) {
-        const error = await response.text();
-        console.error('OpenAI API error:', error);
-        return res.status(503).json({ 
+        return res.status(503).json({
           error: 'AI service temporarily unavailable', 
           success: false 
         });
@@ -258,8 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
     } catch (error) {
-      console.error('AI generation error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Internal server error', 
         success: false 
       });

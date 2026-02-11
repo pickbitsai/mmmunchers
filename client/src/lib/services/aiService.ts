@@ -25,8 +25,6 @@ class AIService {
     this.apiKey = undefined; // API key should be on server side only
     this.apiEndpoint = '/api/ai-generate'; // Use server proxy endpoint
     
-    // Minimal logging for security
-    console.log('AI Service initialized - using server proxy for secure AI requests');
   }
   
   async generateTopicContent(
@@ -40,7 +38,6 @@ class AIService {
       if (response.ok) {
         const cached = await response.json();
         if (cached && cached.items) {
-          console.log('Using cached content for:', topic);
           return {
             items: cached.items,
             categories: cached.categories,
@@ -51,7 +48,6 @@ class AIService {
         }
       }
     } catch (error) {
-      console.error('Cache lookup failed:', error);
     }
     
     // Try secure server-side AI generation first
@@ -78,7 +74,6 @@ class AIService {
         }
       }
     } catch (error) {
-      console.warn('Server AI generation unavailable, using mock content');
     }
     
     // Fallback to mock generation
@@ -114,7 +109,6 @@ class AIService {
         })
       });
     } catch (error) {
-      console.error('Failed to save to cache:', error);
     }
   }
   
@@ -125,7 +119,6 @@ class AIService {
   ): Promise<AIGeneratedContent> {
     // If we don't have enough items, use what we have
     if (items.length === 0) {
-      console.warn('No items available for challenge generation');
       return {
         description: `Find items about ${topic}`,
         correctAnswers: [`${topic} item`],
@@ -174,26 +167,17 @@ class AIService {
     if (topicContent.correctItems && topicContent.incorrectItems) {
       correct = topicContent.correctItems;
       incorrect = topicContent.incorrectItems;
-      if (import.meta.env.DEV) {
-        console.log(`Using OpenAI separated items: ${correct.length} correct, ${incorrect.length} incorrect`);
-      }
     } else {
       // Fallback to the old classification method
       const separated = this.separateCorrectFromIncorrect(topic, items);
       correct = separated.correct;
       incorrect = separated.incorrect;
-      if (import.meta.env.DEV) {
-        console.log(`Using classified items: ${correct.length} correct, ${incorrect.length} incorrect`);
-      }
     }
     
     if (isEverythingChallenge) {
       // For "everything about" challenges, use ALL correct items
       correctAnswers = [...correct];
       incorrectAnswers = [...incorrect];
-      if (import.meta.env.DEV) {
-        console.log(`Everything challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
-      }
     } else {
       // For specific challenges, use a subset of correct items
       const totalCells = 48; // Average grid size
@@ -211,10 +195,6 @@ class AIService {
       // Use remaining correct items and all incorrect items as distractors
       const remainingCorrect = correct.filter(item => !correctAnswers.includes(item));
       incorrectAnswers = [...remainingCorrect, ...incorrect];
-      
-      if (import.meta.env.DEV) {
-        console.log(`Specific challenge: Using ${correctAnswers.length} correct items and ${incorrectAnswers.length} incorrect items`);
-      }
     }
     
     // If we need more distractors, add smart ones
@@ -286,11 +266,6 @@ class AIService {
       }
     });
     
-    // Debug logging only in development
-    if (import.meta.env.DEV) {
-      console.log(`Topic: ${topic} - Separated ${correct.length} correct and ${incorrect.length} incorrect items`);
-    }
-    
     return { correct, incorrect };
   }
 
@@ -329,76 +304,6 @@ class AIService {
     }
     
     return false;
-  }
-  
-  private getTopicKeywords(normalizedTopic: string): string[] {
-    const keywords: string[] = [];
-    
-    if (normalizedTopic.includes('surf')) {
-      keywords.push('ocean', 'wave', 'board', 'wetsuit', 'beach', 'surf', 'tide', 'sand', 'paddle', 'ride', 'barrel', 'tube', 'break', 'curl', 'foam', 'swell', 'fin', 'leash', 'wax', 'reef', 'shore', 'lineup', 'set', 'duck', 'pop', 'carve', 'cutback', 'floater', 'longboard', 'shortboard');
-    } else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro')) {
-      keywords.push('mars', 'venus', 'jupiter', 'saturn', 'mercury', 'neptune', 'uranus', 'earth', 'moon', 'sun', 'asteroid', 'comet', 'galaxy', 'star', 'nebula', 'planet', 'orbit', 'gravity', 'rocket', 'astronaut', 'satellite', 'telescope', 'constellation', 'meteor', 'eclipse', 'cosmos', 'universe', 'solar', 'lunar');
-    } else if (normalizedTopic.includes('music')) {
-      keywords.push('guitar', 'piano', 'violin', 'drums', 'trumpet', 'saxophone', 'note', 'chord', 'rhythm', 'melody', 'harmony', 'song', 'beat', 'tempo', 'scale', 'bass', 'treble', 'jazz', 'rock', 'pop', 'classical', 'concert', 'band', 'orchestra', 'singer', 'composer', 'musician');
-    } else if (normalizedTopic.includes('cook')) {
-      keywords.push('recipe', 'ingredient', 'kitchen', 'pot', 'pan', 'oven', 'stove', 'bake', 'boil', 'fry', 'grill', 'steam', 'chop', 'dice', 'slice', 'mix', 'stir', 'sauce', 'spice', 'herb', 'salt', 'pepper', 'oil', 'butter', 'flour', 'sugar', 'chef', 'food', 'meal', 'dish');
-    } else if (normalizedTopic.includes('animal')) {
-      keywords.push('dog', 'cat', 'bird', 'fish', 'horse', 'cow', 'pig', 'sheep', 'goat', 'chicken', 'duck', 'rabbit', 'mouse', 'elephant', 'lion', 'tiger', 'bear', 'wolf', 'fox', 'deer', 'monkey', 'zebra', 'giraffe', 'hippo', 'rhino', 'leopard', 'cheetah', 'snake', 'lizard', 'frog');
-    } else if (normalizedTopic.includes('fallout')) {
-      keywords.push('fallout', 'vault', 'nuclear', 'wasteland', 'radiation', 'pip-boy', 'supermutant', 'laser', 'power', 'armor', 'caps', 'nuka', 'cola', 'brotherhood', 'steel', 'raiders', 'ghoul', 'robot', 'dogmeat', 'brahmin', 'radroach', 'deathclaw', 'enclave', 'ncr', 'legion', 'institute', 'minutemen', 'railroad', 'apocalypse', 'atomic', 'bomb', 'shelter', 'bunker', 'scrap', 'junk', 'stimpak', 'radaway', 'fusion', 'core', 'plasma', 'rifle', 'missile', 'launcher', 'combat', 'shotgun', 'assault', 'rifle', 'fatman', 'mini', 'nuke', 'terminal', 'hacking', 'lockpick', 'security', 'computer', 'pre-war', 'post-war', 'apocalyptic', 'wasteland', 'survivor', 'vault-tec', 'robco', 'nuka-quantum', 'mentats', 'buffout', 'rad-x', 'jet', 'psycho', 'addictol', 'bobby', 'pin', 'bottlecap', 'scavenger', 'trader', 'caravan', 'brahmin', 'pack', 'settlement', 'workshop', 'crafting', 'modding', 'weapon', 'modification', 'armor', 'upgrade', 'perk', 'special', 'strength', 'perception', 'endurance', 'charisma', 'intelligence', 'agility', 'luck');
-    } else {
-      // For generic topics, try to extract keywords from the topic itself
-      const topicWords = normalizedTopic.split(/\s+/);
-      keywords.push(...topicWords);
-    }
-    
-    return keywords;
-  }
-  
-  private isItemCorrectForTopic(itemLower: string, normalizedTopic: string, topicKeywords: string[]): boolean {
-    // Check if the item contains any of the topic keywords
-    const hasKeyword = topicKeywords.some(keyword => 
-      itemLower.includes(keyword) || keyword.includes(itemLower)
-    );
-    
-    // Check if the item is obviously unrelated (common distractors)
-    const commonDistractors = [
-      'mountain', 'snow', 'skiing', 'basketball', 'piano', 'cooking', 'desert',
-      'space', 'robot', 'books', 'car', 'television', 'computer', 'phone',
-      'house', 'school', 'office', 'pencil', 'paper', 'chair', 'table',
-      'red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink',
-      'apple', 'banana', 'orange', 'grape', 'strawberry', 'pear', 'peach',
-      'football', 'broccoli', 'guitar', 'flower', 'dragon', 'pizza', 'moon'
-    ];
-    
-    const isObviousDistractor = commonDistractors.some(distractor => 
-      itemLower.includes(distractor)
-    );
-    
-    // If it's an obvious distractor and doesn't have topic keywords, it's incorrect
-    if (isObviousDistractor && !hasKeyword) {
-      return false;
-    }
-    
-    // If it has topic keywords, it's likely correct
-    if (hasKeyword) {
-      return true;
-    }
-    
-    // For ambiguous cases, be more conservative - only mark as correct if it clearly relates
-    // Check if the item could reasonably be related to the topic
-    const topicWords = normalizedTopic.split(/\s+/);
-    const itemWords = itemLower.split(/\s+/);
-    
-    // If any word in the item matches any word in the topic, it might be related
-    const hasWordMatch = topicWords.some(topicWord => 
-      itemWords.some(itemWord => 
-        topicWord.includes(itemWord) || itemWord.includes(topicWord)
-      )
-    );
-    
-    // Only return true if there's a clear connection
-    return hasWordMatch;
   }
   
   private buildPrompt(topic: string, subtopic: string, level: number): string {
@@ -447,56 +352,6 @@ correctItems: ["Ocean", "Wave", "Board", "Wetsuit", "Beach", "Paddle", "Barrel",
 incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking", "Desert", "Space", "Robot", "Books"]`;
   }
   
-  private parseOpenAIResponse(response: any): AITopicContent {
-    // Parse the OpenAI response
-    try {
-      if (response.choices && response.choices[0] && response.choices[0].message) {
-        const content = JSON.parse(response.choices[0].message.content);
-        
-        // Validate and clean the response
-        const correctItems = Array.isArray(content.correctItems) 
-          ? content.correctItems.filter((item: any) => typeof item === 'string' && item.length > 0)
-          : [];
-          
-        const incorrectItems = Array.isArray(content.incorrectItems) 
-          ? content.incorrectItems.filter((item: any) => typeof item === 'string' && item.length > 0)
-          : [];
-          
-        const categories = Array.isArray(content.categories)
-          ? content.categories.filter((cat: any) => typeof cat === 'string' && cat.length > 0)
-          : [];
-          
-        const facts = Array.isArray(content.facts)
-          ? content.facts.filter((fact: any) => typeof fact === 'string' && fact.length > 0)
-          : [];
-        
-        // Store the raw parsed content for use in challenge generation
-        const parsedContent = {
-          correctItems,
-          incorrectItems,
-          categories,
-          facts
-        };
-        
-        // Combine correct and incorrect items for backward compatibility
-        const allItems = [...correctItems, ...incorrectItems];
-        
-        return {
-          items: allItems.slice(0, 40), // Limit to 40 items total
-          categories: categories.slice(0, 10), // Limit to 10 categories
-          facts: facts.slice(0, 15), // Limit to 15 facts
-          correctItems: correctItems,
-          incorrectItems: incorrectItems
-        };
-      }
-    } catch (error) {
-      console.error('Failed to parse OpenAI response:', error);
-    }
-    
-    // Fallback to empty content
-    return { items: [], categories: [], facts: [] };
-  }
-  
   private generateMockContent(
     topic: string, 
     subtopic: string, 
@@ -511,9 +366,6 @@ incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking",
     
     // Handle common typos and variations
     const normalizedTopic = this.normalizeTopic(topicLower);
-    
-    // Universal content generation approach - works for ANY topic
-    console.log(`Generating content for topic: "${topic}" (normalized: "${normalizedTopic}")`);
     
     // Try specific topic handlers first
     let foundSpecificContent = false;
@@ -662,8 +514,6 @@ incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking",
     }
     // Universal fallback system for ANY topic
     if (!foundSpecificContent) {
-      console.log(`No specific content found for "${topic}", generating universal content...`);
-      
       // Generate comprehensive universal content using intelligent algorithms
       const universalContent = this.generateUniversalContent(topic, subtopic, level);
       items.push(...universalContent.items);
@@ -810,87 +660,6 @@ incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking",
     return distractors.slice(0, count);
   }
   
-  private generateDistractors(
-    topic: string,
-    count: number,
-    level: number,
-    correctAnswers: string[]
-  ): string[] {
-    const distractors: string[] = [];
-    const topicLower = topic.toLowerCase();
-    const normalizedTopic = this.normalizeTopic(topicLower);
-    
-    // Generate topic-specific realistic distractors
-    let topicSpecificDistracters: string[] = [];
-    
-    if (normalizedTopic.includes('dinosaur') || normalizedTopic.includes('dino')) {
-      topicSpecificDistracters = [
-        'Dragon', 'Godzilla', 'Barney', 'Yoshi', 'Dino Flintstone', 'King Kong',
-        'Mothra', 'Rodan', 'Kaiju', 'Pokemon', 'Charizard', 'Aerodactyl',
-        'Mammoth', 'Saber-tooth', 'Caveman', 'Neanderthal', 'Stone age', 'Ice age',
-        'Woolly rhino', 'Giant sloth', 'Terror bird', 'Megashark', 'Titanboa',
-        'Fossil fuel', 'Coal', 'Oil', 'Gas', 'Amber', 'Tar pit', 'Meteor',
-        'Asteroid', 'Comet', 'Volcano', 'Earthquake', 'Tsunami', 'Glacier',
-        'Pangaea', 'Gondwana', 'Laurasia', 'Prehistoric', 'Ancient', 'Evolution',
-        'Extinction', 'Paleontology', 'Archaeology', 'Geology', 'Biology'
-      ];
-    } else if (normalizedTopic.includes('space') || normalizedTopic.includes('astro')) {
-      topicSpecificDistracters = [
-        'Flat Earth', 'Geocentric', 'Aether', 'Phlogiston', 'Crystal spheres',
-        'Firmament', 'Sky dome', 'Cheese moon', 'Canals on Mars', 'Planet X',
-        'Nibiru', 'Hollow Earth', 'Space whales', 'Star gates', 'UFO', 'Alien',
-        'Martian', 'Venusian', 'Jupiterian', 'Saturnian', 'Mercurian',
-        'Neptunian', 'Uranian', 'Earthling', 'Moonman', 'Asteroid belt',
-        'Oort cloud', 'Kuiper belt', 'Dark matter', 'Dark energy'
-      ];
-    } else if (normalizedTopic.includes('animal') || normalizedTopic.includes('zoo')) {
-      topicSpecificDistracters = [
-        'Dragon', 'Unicorn', 'Phoenix', 'Griffin', 'Pegasus', 'Chimera',
-        'Minotaur', 'Centaur', 'Kraken', 'Yeti', 'Bigfoot', 'Loch Ness',
-        'Chupacabra', 'Jackalope', 'Drop bear', 'Snipe', 'Dodo', 'Megalodon',
-        'Sasquatch', 'Wendigo', 'Thunderbird', 'Banshee', 'Gargoyle', 'Sphinx',
-        'Hydra', 'Cerberus', 'Manticore', 'Wyvern', 'Basilisk', 'Cyclops'
-      ];
-    } else {
-      // Generic cross-category distractors
-      topicSpecificDistracters = [
-        'Jupiter', 'Saturn', 'Mars', 'Venus', 'Mercury', 'Neptune', 'Uranus',
-        'Lion', 'Tiger', 'Bear', 'Elephant', 'Giraffe', 'Zebra', 'Monkey',
-        'Paris', 'London', 'Tokyo', 'New York', 'Berlin', 'Rome', 'Madrid',
-        'Mozart', 'Einstein', 'Newton', 'Darwin', 'Shakespeare', 'Picasso',
-        'Pizza', 'Burger', 'Sushi', 'Pasta', 'Tacos', 'Salad', 'Soup',
-        'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Pink',
-        'Football', 'Basketball', 'Tennis', 'Soccer', 'Baseball', 'Golf',
-        'Guitar', 'Piano', 'Violin', 'Drums', 'Trumpet', 'Saxophone'
-      ];
-    }
-    
-    // Add topic-specific distractors first
-    for (const distractor of topicSpecificDistracters) {
-      if (distractors.length >= count) break;
-      if (!correctAnswers.includes(distractor) && !distractors.includes(distractor)) {
-        distractors.push(distractor);
-      }
-    }
-    
-    // If we still need more, add some generic ones
-    const genericDistracters = [
-      'Unknown', 'Mystery', 'Secret', 'Hidden', 'Lost', 'Found', 'Ancient',
-      'Modern', 'Classic', 'New', 'Old', 'Rare', 'Common', 'Special',
-      'Unique', 'Regular', 'Normal', 'Strange', 'Weird', 'Odd', 'Unusual'
-    ];
-    
-    for (const distractor of genericDistracters) {
-      if (distractors.length >= count) break;
-      if (!correctAnswers.includes(distractor) && !distractors.includes(distractor)) {
-        distractors.push(distractor);
-      }
-    }
-    
-    // Shuffle to make it less predictable
-    return distractors.sort(() => Math.random() - 0.5).slice(0, count);
-  }
-  
   private generateHints(topic: string, correctAnswers: string[]): string[] {
     return [
       `Look for items containing "${topic}"`,
@@ -913,10 +682,6 @@ incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking",
     const cleanTopic = topic.trim().toLowerCase();
     const topicWords = cleanTopic.split(/\s+/).filter(word => word.length > 0);
     const mainTopic = topicWords[0] || cleanTopic;
-    
-    if (import.meta.env.DEV) {
-      console.log(`Generating universal content for: "${topic}" (words: ${topicWords.join(', ')})`);
-    }
     
     // Generate topic-specific items using intelligent word analysis
     const topicVariations = this.generateTopicVariations(cleanTopic, topicWords);
@@ -1040,7 +805,7 @@ incorrectItems: ["Mountain", "Snow", "Skiing", "Basketball", "Piano", "Cooking",
     return academic.slice(0, 15);
   }
 
-  private normalizeTopic(topic: string): string {
+  normalizeTopic(topic: string): string {
     // Common typo corrections and variations
     const corrections: { [key: string]: string } = {
       'egeypt': 'egypt',

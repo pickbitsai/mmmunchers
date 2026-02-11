@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { Button } from "./ui/button";
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface OnscreenControlsProps {
@@ -24,8 +23,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       
-      // Calculate control areas based on fixed positioning
-      const controlCenterX = windowWidth / 2;
+      // Calculate control areas based on fixed positioning (d-pad on left side)
+      const controlCenterX = 72 + 28; // left-[72px] + half button width (28px)
       const controlCenterY = windowHeight - 100;
       const munchX = windowWidth - 60;
       const munchY = windowHeight - 100;
@@ -120,8 +119,8 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
   return (
     <>
       
-      {/* D-pad directional controls - centered below grid */}
-      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50" style={{ touchAction: 'none' }}>
+      {/* D-pad directional controls - left side of screen */}
+      <div className="fixed bottom-20 left-[72px] z-50" style={{ touchAction: 'none' }}>
         <div className="relative">
           {/* Up */}
           <div

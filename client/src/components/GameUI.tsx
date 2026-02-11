@@ -132,24 +132,6 @@ export default function GameUI() {
           </Card>
         )}
 
-        {/* QA Legend - Third row */}
-        <Card className="bg-black/80 text-white border-gray-600 mt-2">
-          <CardContent className="p-2">
-            <div className="text-center">
-              <div className="text-xs text-gray-300 mb-1">QA Mode:</div>
-              <div className="flex gap-4 justify-center items-center text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span>Correct</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span>Incorrect</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Pause overlay */}

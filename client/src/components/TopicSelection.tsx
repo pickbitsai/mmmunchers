@@ -1,6 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useGameState } from "../lib/stores/useGameState";
 import { Calculator, BookOpen, Zap, HelpCircle, Gamepad2, Box, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";

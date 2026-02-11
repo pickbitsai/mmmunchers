@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { TopicProvider } from "../topics/TopicProvider";
+import { TopicProvider, GridCell } from "../topics/TopicProvider";
 import { MathTopic } from "../topics/MathTopic";
 import { WordTopic } from "../topics/WordTopic";
 import { MarvelTopic } from "../topics/MarvelTopic";
@@ -9,15 +9,9 @@ import { CustomTopic } from "../topics/CustomTopic";
 import { useAudio } from "./useAudio";
 import { toast } from "sonner";
 
+export type { GridCell };
 export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over" | "loading";
 export type RenderMode = "2d" | "3d";
-
-export interface GridCell {
-  value: string;
-  isCorrect: boolean;
-  isMunched: boolean;
-  isEmpty: boolean;
-}
 
 export interface Player {
   x: number;
@@ -84,54 +78,19 @@ interface GameState {
 }
 
 // Responsive grid sizes - smaller grids for bigger tiles
-// Cache the dimensions to avoid recalculating on every access
-let cachedGridDimensions: { width: number; height: number } | null = null;
-let lastWindowWidth = 0;
-
 const getGridDimensions = () => {
   const currentWidth = window.innerWidth;
-  
-  // Return cached dimensions if window width hasn't changed significantly
-  if (cachedGridDimensions && Math.abs(currentWidth - lastWindowWidth) < 50) {
-    return cachedGridDimensions;
-  }
-  
-  lastWindowWidth = currentWidth;
-  
+
   if (currentWidth < 640) { // Mobile
-    cachedGridDimensions = { width: 5, height: 4 };
+    return { width: 5, height: 4 };
   } else if (currentWidth < 768) { // Small tablet
-    cachedGridDimensions = { width: 6, height: 5 };
+    return { width: 6, height: 5 };
   } else if (currentWidth < 1024) { // Tablet
-    cachedGridDimensions = { width: 7, height: 5 };
+    return { width: 7, height: 5 };
   } else { // Desktop
-    cachedGridDimensions = { width: 8, height: 6 };
+    return { width: 8, height: 6 };
   }
-  
-  return cachedGridDimensions;
 };
-
-const GRID_DIMENSIONS = getGridDimensions();
-const GRID_WIDTH = GRID_DIMENSIONS.width;
-const GRID_HEIGHT = GRID_DIMENSIONS.height;
-
-// Pre-calculated enemy spawn positions to avoid using Math.random in render
-const getEnemySpawnPositions = (gridWidth: number, gridHeight: number) => {
-  const midX = Math.floor(gridWidth / 2);
-  const midY = Math.floor(gridHeight / 2);
-  return [
-    { x: 0, y: 0 }, 
-    { x: gridWidth - 1, y: 0 }, 
-    { x: 0, y: gridHeight - 1 }, 
-    { x: gridWidth - 1, y: gridHeight - 1 },
-    { x: midX, y: 0 }, 
-    { x: midX, y: gridHeight - 1 }, 
-    { x: 0, y: midY }, 
-    { x: gridWidth - 1, y: midY }
-  ];
-};
-
-const enemySpawnPositions = getEnemySpawnPositions(GRID_WIDTH, GRID_HEIGHT);
 
 export const useGameState = create<GameState>()(
   subscribeWithSelector((set, get) => ({
@@ -196,7 +155,6 @@ export const useGameState = create<GameState>()(
           provider = new CustomTopic(customTopicName);
           break;
         default:
-          console.error(`Unknown topic: ${topicId}`);
           return;
       }
       
@@ -236,13 +194,6 @@ export const useGameState = create<GameState>()(
         const challenge = await Promise.resolve(topicProvider.generateChallenge(gameLevel));
         const grid = await Promise.resolve(topicProvider.generateGrid(gridWidth, gridHeight, challenge));
         
-        console.log("Generated game content:", { 
-          challenge: challenge?.description, 
-          gridSize: `${gridWidth}x${gridHeight}`, 
-          gridLength: grid.length,
-          hasChallenge: !!challenge
-        });
-        
         set((state) => ({
           gamePhase: "playing",
           currentChallenge: challenge,
@@ -256,8 +207,6 @@ export const useGameState = create<GameState>()(
           timeRemaining: 60 + (gameLevel * 10) // More time for higher levels
         }));
       } catch (error) {
-        console.error('Failed to generate game content:', error);
-        
         // Show error message to user
         if (selectedTopic === 'custom') {
           toast.error('Failed to generate custom board. Please try a different topic or check your spelling.');
@@ -357,14 +306,6 @@ export const useGameState = create<GameState>()(
         return;
       }
       
-      // Debug logging for answer validation
-      console.log("Munching cell:", {
-        cellValue: cell.value,
-        isCorrect: cell.isCorrect,
-        challenge: currentChallenge?.description,
-        answerCheckResult: currentChallenge?.checkAnswer(cell.value)
-      });
-      
       // Process munching
       if (currentChallenge?.checkAnswer(cell.value)) {
         // Correct answer - play munch sound
@@ -406,8 +347,6 @@ export const useGameState = create<GameState>()(
       const numEnemies = Math.min(1 + Math.floor(level / 3), 4);
       const enemies: Enemy[] = [];
       
-      console.log("Spawning enemies:", { level, numEnemies, gridSize: `${grid[0]?.length}x${grid.length}` });
-      
       // Get actual grid dimensions from current grid
       const gridWidth = grid[0]?.length || 8;
       const gridHeight = grid.length || 6;
@@ -441,7 +380,6 @@ export const useGameState = create<GameState>()(
         });
       }
       
-      console.log("Created enemies:", enemies);
       set({ enemies });
     },
     
