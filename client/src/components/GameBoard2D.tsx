@@ -4,52 +4,26 @@ import { useAudio } from "../lib/stores/useAudio";
 import { updateGameLogic } from "../lib/gameLogic";
 import OnscreenControls from "./OnscreenControls";
 
-function getCellFontSize(text: string, baseFontSize: number): string {
+function getCellFontSize(text: string, baseFontSize: number, cellSize: number): string {
   const charCount = text.length;
-  if (charCount <= 8) return `${baseFontSize}px`;
-  if (charCount <= 12) return `${baseFontSize * 0.75}px`;
-  if (charCount <= 16) return `${baseFontSize * 0.65}px`;
-  return `${baseFontSize * 0.55}px`;
-}
-
-function formatCellText(text: string): string {
   const words = text.split(' ');
+  const longestWord = Math.max(...words.map(w => w.length));
 
-  if (words.length === 1 && text.length > 12) {
-    const breakPoints: number[] = [];
-    for (let i = 0; i < text.length; i++) {
-      if (text[i] === '-' || text[i] === '_' ||
-          (i > 0 && text[i].match(/[A-Z]/) && text[i-1].match(/[a-z]/))) {
-        breakPoints.push(i);
-      }
-    }
-    if (breakPoints.length > 0) {
-      const midPoint = breakPoints[Math.floor(breakPoints.length / 2)];
-      return text.substring(0, midPoint + 1) + '\n' + text.substring(midPoint + 1);
-    }
-    if (text.length > 16) {
-      const midPoint = Math.floor(text.length / 2);
-      return text.substring(0, midPoint) + '\n' + text.substring(midPoint);
-    }
+  // Scale font so the longest word fits on one line within the cell
+  // Approximate: each char at baseFontSize is ~0.6em wide
+  const maxCharsPerLine = Math.floor((cellSize - 12) / (baseFontSize * 0.6));
+
+  if (longestWord > maxCharsPerLine) {
+    // Shrink so the longest word fits in one line
+    const needed = (cellSize - 12) / (longestWord * 0.6);
+    return `${Math.max(needed, 8)}px`;
   }
 
-  if (words.length > 1) {
-    const groupedWords: string[] = [];
-    let currentGroup = '';
-    for (const word of words) {
-      const testGroup = currentGroup ? `${currentGroup} ${word}` : word;
-      if (testGroup.length > 8 && currentGroup.length > 0) {
-        groupedWords.push(currentGroup);
-        currentGroup = word;
-      } else {
-        currentGroup = testGroup;
-      }
-    }
-    if (currentGroup) groupedWords.push(currentGroup);
-    return groupedWords.join('\n');
-  }
-
-  return text;
+  if (charCount <= 6) return `${baseFontSize}px`;
+  if (charCount <= 10) return `${baseFontSize * 0.85}px`;
+  if (charCount <= 14) return `${baseFontSize * 0.7}px`;
+  if (charCount <= 20) return `${baseFontSize * 0.6}px`;
+  return `${baseFontSize * 0.5}px`;
 }
 
 export default function GameBoard2D() {
@@ -324,25 +298,19 @@ export default function GameBoard2D() {
             >
               {!cell.isEmpty && !cell.isMunched && (
                 <span
-                  className="text-center block w-full h-full flex items-center justify-center"
+                  className="text-center flex items-center justify-center"
                   style={{
-                    fontSize: getCellFontSize(cell.value, fontSize),
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
+                    fontSize: getCellFontSize(cell.value, fontSize, cellSize),
                     overflowWrap: 'break-word',
-                    hyphens: 'auto',
-                    lineHeight: 1.1,
+                    lineHeight: 1.15,
                     padding: '2px',
-                    maxWidth: `${cellSize - 8}px`,
-                    maxHeight: `${cellSize - 8}px`,
+                    width: `${cellSize - 10}px`,
+                    maxHeight: `${cellSize - 10}px`,
                     overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                     textAlign: 'center'
                   }}
                 >
-                  {formatCellText(cell.value)}
+                  {cell.value}
                 </span>
               )}
             </div>
