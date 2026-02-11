@@ -24,7 +24,7 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
       const windowHeight = window.innerHeight;
       
       // Calculate control areas based on fixed positioning (d-pad on left side)
-      const controlCenterX = 80 + 28; // left-10 (40px) + padding + half button
+      const controlCenterX = 72 + 28; // left-[72px] + half button width (28px)
       const controlCenterY = windowHeight - 100;
       const munchX = windowWidth - 60;
       const munchY = windowHeight - 100;
@@ -120,7 +120,7 @@ export default function OnscreenControls({ onMove, onMunch }: OnscreenControlsPr
     <>
       
       {/* D-pad directional controls - left side of screen */}
-      <div className="fixed bottom-20 left-10 z-50" style={{ touchAction: 'none' }}>
+      <div className="fixed bottom-20 left-[72px] z-50" style={{ touchAction: 'none' }}>
         <div className="relative">
           {/* Up */}
           <div
