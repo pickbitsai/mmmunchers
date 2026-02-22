@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useGameState } from "../lib/stores/useGameState";
 import { useAudio } from "../lib/stores/useAudio";
 import { updateGameLogic } from "../lib/gameLogic";
@@ -26,13 +26,69 @@ function getCellFontSize(text: string, baseFontSize: number, cellSize: number): 
   return `${baseFontSize * 0.5}px`;
 }
 
+// Splash particle effect on munch
+function SplashEffect({ x, y, cellSize }: { x: number; y: number; cellSize: number }) {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!visible) return null;
+
+  const cx = x * cellSize + cellSize / 2;
+  const cy = y * cellSize + cellSize / 2;
+
+  return (
+    <>
+      {/* Water splash droplets */}
+      {[...Array(8)].map((_, i) => {
+        const angle = (i / 8) * Math.PI * 2;
+        const dist = cellSize * 0.4;
+        return (
+          <div
+            key={i}
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              left: cx - 4,
+              top: cy - 4,
+              width: 8,
+              height: 8,
+              background: i % 2 === 0 ? '#88ddff' : '#ffffff',
+              animation: `splash-particle 0.6s ease-out forwards`,
+              '--splash-x': `${Math.cos(angle) * dist}px`,
+              '--splash-y': `${Math.sin(angle) * dist}px`,
+              animationDelay: `${i * 0.02}s`,
+              opacity: 0.9,
+            } as React.CSSProperties}
+          />
+        );
+      })}
+      {/* Ripple ring */}
+      <div
+        className="absolute rounded-full pointer-events-none border-2 border-sky-300"
+        style={{
+          left: cx - cellSize * 0.3,
+          top: cy - cellSize * 0.3,
+          width: cellSize * 0.6,
+          height: cellSize * 0.6,
+          animation: 'splash-ripple 0.6s ease-out forwards',
+        }}
+      />
+    </>
+  );
+}
+
 export default function GameBoard2D() {
   const animationRef = useRef<number>();
   const lastTimeRef = useRef<number>(0);
   const lastMoveTimeRef = useRef<number>(0);
   const isMovingRef = useRef<boolean>(false);
   const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
-  
+  const [splashes, setSplashes] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const splashIdRef = useRef(0);
+
   const {
     gamePhase,
     grid,
@@ -50,7 +106,7 @@ export default function GameBoard2D() {
     nextLevel,
     addScore
   } = useGameState();
-  
+
   const { playMove, playMunch } = useAudio();
 
   // Handle window resize
@@ -58,7 +114,7 @@ export default function GameBoard2D() {
     const handleResize = () => {
       setDimensions({ width: window.innerWidth, height: window.innerHeight });
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -112,34 +168,45 @@ export default function GameBoard2D() {
     };
   }, [gamePhase, player, enemies, grid, currentChallenge, level, updatePlayer, updateEnemies, updateGrid, processPlayerMove, munchCurrentCell, gameOver]);
 
+  // Trigger splash at a position
+  const triggerSplash = useCallback((x: number, y: number) => {
+    const id = splashIdRef.current++;
+    setSplashes(prev => [...prev, { id, x, y }]);
+    setTimeout(() => {
+      setSplashes(prev => prev.filter(s => s.id !== id));
+    }, 700);
+  }, []);
+
   if (!grid.length || !currentChallenge) return null;
 
   // Calculate responsive cell size
   const isMobile = dimensions.width < 768;
   const isTablet = dimensions.width < 1024;
-  
+
   // Use different grid sizes for mobile
   const gridWidth = grid[0]?.length || 9;
   const gridHeight = grid.length || 7;
-  
+
   // Calculate optimal cell size based on available space
-  const maxBoardWidth = dimensions.width - (isMobile ? 20 : 80); // Less padding for bigger tiles
-  const maxBoardHeight = dimensions.height - (isMobile ? 180 : 240); // Less space reserved
-  
+  const maxBoardWidth = dimensions.width - (isMobile ? 20 : 80);
+  const maxBoardHeight = dimensions.height - (isMobile ? 180 : 240);
+
   const cellSizeByWidth = Math.floor(maxBoardWidth / gridWidth);
   const cellSizeByHeight = Math.floor(maxBoardHeight / gridHeight);
-  const cellSize = Math.min(cellSizeByWidth, cellSizeByHeight, isMobile ? 100 : 140); // Much larger max size
-  
+  const cellSize = Math.min(cellSizeByWidth, cellSizeByHeight, isMobile ? 100 : 140);
+
   const boardWidth = gridWidth * cellSize;
   const boardHeight = gridHeight * cellSize;
-  
-  // Calculate font size based on cell size - more conservative for better fit
-  const baseFontSize = Math.max(cellSize * 0.22, 12); // Slightly smaller base
+
+  // Calculate font size based on cell size
+  const baseFontSize = Math.max(cellSize * 0.22, 12);
   const fontSize = baseFontSize;
-  const isCellTooSmall = cellSize < 50;
 
   const handleMunch = () => {
-    // Use the store's munchCurrentCell function which has the correct logic
+    const cell = grid[player.y]?.[player.x];
+    if (cell && !cell.isEmpty && !cell.isMunched) {
+      triggerSplash(player.x, player.y);
+    }
     munchCurrentCell();
   };
 
@@ -151,7 +218,6 @@ export default function GameBoard2D() {
     let shouldMove = false;
     let shouldMunch = false;
 
-    // Play sounds immediately on key press before any logic
     switch (event.code) {
       case 'ArrowUp':
       case 'KeyW':
@@ -192,25 +258,21 @@ export default function GameBoard2D() {
     }
 
     const now = Date.now();
-    
-    // Handle movement logic after sound
+
     if (shouldMove && (newX !== player.x || newY !== player.y)) {
-      // Prevent rapid-fire movements (debounce to 200ms)
       if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
         return;
       }
-      
+
       isMovingRef.current = true;
       lastMoveTimeRef.current = now;
       updatePlayer({ x: newX, y: newY });
-      
-      // Reset movement flag after animation completes
+
       setTimeout(() => {
         isMovingRef.current = false;
       }, 150);
     }
-    
-    // Handle munch logic after sound
+
     if (shouldMunch) {
       handleMunch();
     }
@@ -222,19 +284,17 @@ export default function GameBoard2D() {
   }, [gamePhase, player.x, player.y, gridWidth, gridHeight, updatePlayer, gameOver, updateGrid, grid]);
 
   const handleOnscreenMove = (direction: 'up' | 'down' | 'left' | 'right') => {
-    // Play sound immediately on touch/click
     playMove();
-    
+
     const now = Date.now();
-    
-    // Prevent rapid-fire movements (debounce to 200ms)
+
     if (isMovingRef.current || now - lastMoveTimeRef.current < 200) {
       return;
     }
-    
+
     let newX = player.x;
     let newY = player.y;
-    
+
     switch (direction) {
       case 'up':
         newY = Math.max(0, player.y - 1);
@@ -249,117 +309,344 @@ export default function GameBoard2D() {
         newX = Math.min(gridWidth - 1, player.x + 1);
         break;
     }
-    
-    // Allow movement to any square (don't check if it's empty or correct)
+
     if (newX !== player.x || newY !== player.y) {
       isMovingRef.current = true;
       lastMoveTimeRef.current = now;
       updatePlayer({ x: newX, y: newY });
-      
-      // Reset movement flag after animation completes
+
       setTimeout(() => {
         isMovingRef.current = false;
       }, 150);
     }
   };
 
+  // Character size
+  const charSize = Math.max(cellSize * 0.55, 24);
+  const charFontSize = Math.max(cellSize * 0.28, 12);
+
   return (
     <>
+      {/* Inject keyframe animations */}
+      <style>{`
+        @keyframes ocean-shimmer {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes tile-bob {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          25% { transform: translateY(-2px) rotate(0.3deg); }
+          75% { transform: translateY(1px) rotate(-0.2deg); }
+        }
+        @keyframes splash-particle {
+          0% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+          100% { transform: translate(var(--splash-x), var(--splash-y)) scale(0.3); opacity: 0; }
+        }
+        @keyframes splash-ripple {
+          0% { transform: scale(0.5); opacity: 0.8; }
+          100% { transform: scale(2); opacity: 0; }
+        }
+        @keyframes player-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
+        }
+        @keyframes enemy-wobble {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(3deg); }
+          75% { transform: rotate(-3deg); }
+        }
+        @keyframes wave-line {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-40px); }
+        }
+      `}</style>
+
       <div className="fixed inset-0 flex items-center justify-center pb-32">
-        <div 
-          className="relative bg-green-800 border-4 border-green-600 rounded-lg shadow-2xl"
-          style={{ 
-            width: boardWidth + 40, 
+        {/* Board container with beach theme */}
+        <div
+          className="relative rounded-2xl overflow-hidden"
+          style={{
+            width: boardWidth + 40,
             height: boardHeight + 40,
-            padding: '20px'
+            padding: '20px',
+            /* Sandy border frame */
+            border: '6px solid #c4956a',
+            boxShadow: '0 0 0 3px #a0784c, 0 8px 32px rgba(0,0,0,0.3), inset 0 0 20px rgba(0,119,190,0.15)',
+            /* Ocean water background */
+            background: 'linear-gradient(135deg, #0077be 0%, #00a4cc 25%, #0088aa 50%, #006699 75%, #0077be 100%)',
+            backgroundSize: '300% 300%',
+            animation: 'ocean-shimmer 8s ease-in-out infinite',
           }}
         >
-          {/* Grid cells */}
-        {grid.map((row, rowIndex) =>
-          row.map((cell, colIndex) => (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              className={`absolute border-2 flex items-center justify-center font-semibold rounded-md ${
-                cell.isEmpty || cell.isMunched 
-                  ? 'bg-gray-800 border-gray-700' 
-                  : 'bg-blue-100 border-blue-500 hover:bg-blue-200 shadow-md'
-              } transition-all duration-200 ${
-                cell.isMunched ? 'opacity-50' : ''
-              }`}
-              style={{
-                left: colIndex * cellSize + 2,
-                top: rowIndex * cellSize + 2,
-                width: cellSize - 6,
-                height: cellSize - 6,
-                fontSize: `${fontSize}px`,
-                padding: '4px',
-                lineHeight: 1.2
-              }}
-            >
-              {!cell.isEmpty && !cell.isMunched && (
-                <span
-                  className="text-center flex items-center justify-center"
+          {/* Animated wave overlay lines */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-10"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 18px,
+                rgba(255,255,255,0.4) 18px,
+                rgba(255,255,255,0.4) 20px
+              )`,
+              animation: 'wave-line 3s linear infinite',
+            }}
+          />
+
+          {/* Grid cells - wooden plank tiles */}
+          {grid.map((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+              const isWater = cell.isEmpty || cell.isMunched;
+              // Stagger bob animation per tile
+              const bobDelay = ((rowIndex * gridWidth + colIndex) * 0.15) % 2;
+
+              return (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className="absolute flex items-center justify-center font-bold"
                   style={{
-                    fontSize: getCellFontSize(cell.value, fontSize, cellSize),
-                    overflowWrap: 'break-word',
-                    lineHeight: 1.15,
-                    padding: '2px',
-                    width: `${cellSize - 10}px`,
-                    maxHeight: `${cellSize - 10}px`,
-                    overflow: 'hidden',
-                    textAlign: 'center'
+                    left: colIndex * cellSize + 3,
+                    top: rowIndex * cellSize + 3,
+                    width: cellSize - 8,
+                    height: cellSize - 8,
+                    borderRadius: isWater ? '4px' : '8px',
+                    fontSize: `${fontSize}px`,
+                    padding: '4px',
+                    lineHeight: 1.2,
+                    transition: 'all 0.3s ease',
+                    ...(isWater
+                      ? {
+                          /* Water gap - transparent to show ocean */
+                          background: 'rgba(0, 100, 160, 0.3)',
+                          border: '1px solid rgba(100, 200, 255, 0.15)',
+                        }
+                      : {
+                          /* Wooden plank tile */
+                          background: `linear-gradient(
+                            180deg,
+                            #e8c98e 0%,
+                            #deb887 20%,
+                            #d4a76a 40%,
+                            #deb887 60%,
+                            #c4956a 80%,
+                            #deb887 100%
+                          )`,
+                          border: '2px solid #a0784c',
+                          boxShadow: `
+                            inset 0 1px 0 rgba(255,255,255,0.3),
+                            inset 0 -2px 4px rgba(0,0,0,0.1),
+                            0 3px 8px rgba(0,0,0,0.25),
+                            0 1px 2px rgba(0,0,0,0.15)
+                          `,
+                          animation: `tile-bob ${2 + bobDelay * 0.5}s ease-in-out ${bobDelay}s infinite`,
+                        }),
                   }}
                 >
-                  {cell.value}
-                </span>
-              )}
-            </div>
-          ))
-        )}
-        
-        {/* Player */}
-        <div
-          className="absolute bg-blue-500 rounded-full border-2 border-blue-700 flex items-center justify-center text-white font-bold transition-all duration-150"
-          style={{
-            left: player.x * cellSize + cellSize / 4,
-            top: player.y * cellSize + cellSize / 4,
-            width: cellSize / 2,
-            height: cellSize / 2,
-            fontSize: `${cellSize / 3}px`
-          }}
-        >
-          M
-        </div>
-        
-        {/* Enemies */}
-        {enemies.map((enemy) => (
+                  {/* Wood grain lines */}
+                  {!isWater && (
+                    <div
+                      className="absolute inset-0 pointer-events-none opacity-20"
+                      style={{
+                        backgroundImage: `
+                          linear-gradient(0deg, transparent 0%, transparent 30%, rgba(139,90,43,0.3) 30%, rgba(139,90,43,0.3) 31%, transparent 31%, transparent 65%, rgba(139,90,43,0.25) 65%, rgba(139,90,43,0.25) 66%, transparent 66%)
+                        `,
+                        borderRadius: '6px',
+                      }}
+                    />
+                  )}
+
+                  {/* Cell text */}
+                  {!cell.isEmpty && !cell.isMunched && (
+                    <span
+                      className="text-center flex items-center justify-center relative z-10"
+                      style={{
+                        fontSize: getCellFontSize(cell.value, fontSize, cellSize),
+                        overflowWrap: 'break-word',
+                        lineHeight: 1.15,
+                        padding: '2px',
+                        width: `${cellSize - 16}px`,
+                        maxHeight: `${cellSize - 16}px`,
+                        overflow: 'hidden',
+                        textAlign: 'center',
+                        color: '#2c1810',
+                        textShadow: '0 1px 0 rgba(255,255,255,0.4)',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {cell.value}
+                    </span>
+                  )}
+                </div>
+              );
+            })
+          )}
+
+          {/* Splash effects */}
+          {splashes.map(splash => (
+            <SplashEffect key={splash.id} x={splash.x} y={splash.y} cellSize={cellSize} />
+          ))}
+
+          {/* Player - beach muncher character */}
           <div
-            key={enemy.id}
-            className={`absolute rounded-full border-2 flex items-center justify-center text-white font-bold transition-all ${
-              enemy.type === 'fast' 
-                ? 'bg-orange-500 border-orange-700' 
-                : enemy.type === 'smart'
-                ? 'bg-purple-500 border-purple-700'
-                : 'bg-red-500 border-red-700'
-            }`}
+            className="absolute flex items-center justify-center transition-all duration-150 pointer-events-none"
             style={{
-              left: enemy.x * cellSize + cellSize / 4,
-              top: enemy.y * cellSize + cellSize / 4,
-              width: cellSize / 2,
-              height: cellSize / 2,
-              fontSize: `${cellSize / 3}px`,
-              transitionDuration: enemy.type === 'fast' ? '75ms' : '150ms'
+              left: player.x * cellSize + (cellSize - charSize) / 2,
+              top: player.y * cellSize + (cellSize - charSize) / 2,
+              width: charSize,
+              height: charSize,
+              zIndex: 20,
+              animation: 'player-bounce 1.5s ease-in-out infinite',
+              filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.3))',
             }}
           >
-            {enemy.type === 'fast' ? 'F' : enemy.type === 'smart' ? 'S' : 'E'}
+            {/* Player body */}
+            <div
+              className="relative w-full h-full rounded-full"
+              style={{
+                background: 'linear-gradient(145deg, #4fc3f7 0%, #0288d1 50%, #01579b 100%)',
+                border: '3px solid #01579b',
+                boxShadow: 'inset 0 -3px 6px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.3)',
+              }}
+            >
+              {/* Eyes */}
+              <div className="absolute flex gap-1" style={{ top: '22%', left: '50%', transform: 'translateX(-50%)' }}>
+                <div className="rounded-full bg-white" style={{ width: charSize * 0.2, height: charSize * 0.22 }}>
+                  <div className="rounded-full bg-gray-900" style={{ width: charSize * 0.1, height: charSize * 0.1, margin: '20% auto 0' }} />
+                </div>
+                <div className="rounded-full bg-white" style={{ width: charSize * 0.2, height: charSize * 0.22 }}>
+                  <div className="rounded-full bg-gray-900" style={{ width: charSize * 0.1, height: charSize * 0.1, margin: '20% auto 0' }} />
+                </div>
+              </div>
+              {/* Mouth - wide open muncher mouth */}
+              <div
+                className="absolute rounded-b-full"
+                style={{
+                  bottom: '15%',
+                  left: '25%',
+                  width: '50%',
+                  height: '30%',
+                  background: '#b71c1c',
+                  border: '2px solid #880e0e',
+                  borderTop: 'none',
+                  borderTopLeftRadius: '2px',
+                  borderTopRightRadius: '2px',
+                }}
+              >
+                {/* Teeth */}
+                <div className="absolute top-0 left-[15%] w-[20%] bg-white" style={{ height: '30%', borderRadius: '0 0 2px 2px' }} />
+                <div className="absolute top-0 right-[15%] w-[20%] bg-white" style={{ height: '30%', borderRadius: '0 0 2px 2px' }} />
+              </div>
+            </div>
           </div>
-        ))}
+
+          {/* Enemies - troll characters */}
+          {enemies.map((enemy) => {
+            const colors = enemy.type === 'fast'
+              ? { body: '#FF6B35', border: '#cc4400', eye: '#FF0000' }
+              : enemy.type === 'smart'
+              ? { body: '#9C27B0', border: '#6a0080', eye: '#FF0000' }
+              : { body: '#c62828', border: '#8e0000', eye: '#FF0000' };
+
+            return (
+              <div
+                key={enemy.id}
+                className="absolute flex items-center justify-center transition-all pointer-events-none"
+                style={{
+                  left: enemy.x * cellSize + (cellSize - charSize) / 2,
+                  top: enemy.y * cellSize + (cellSize - charSize) / 2,
+                  width: charSize,
+                  height: charSize,
+                  zIndex: 15,
+                  transitionDuration: enemy.type === 'fast' ? '75ms' : '150ms',
+                  animation: `enemy-wobble ${enemy.type === 'fast' ? '0.6' : '1'}s ease-in-out infinite`,
+                  filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.3))',
+                }}
+              >
+                {/* Enemy body */}
+                <div
+                  className="relative w-full h-full"
+                  style={{
+                    background: `linear-gradient(145deg, ${colors.body} 0%, ${colors.border} 100%)`,
+                    border: `3px solid ${colors.border}`,
+                    borderRadius: '40% 40% 50% 50%',
+                    boxShadow: 'inset 0 -3px 6px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.2)',
+                  }}
+                >
+                  {/* Horns */}
+                  <div className="absolute" style={{
+                    top: '-20%', left: '12%',
+                    width: 0, height: 0,
+                    borderLeft: `${charSize * 0.08}px solid transparent`,
+                    borderRight: `${charSize * 0.08}px solid transparent`,
+                    borderBottom: `${charSize * 0.22}px solid #FFD700`,
+                    transform: 'rotate(-15deg)',
+                  }} />
+                  <div className="absolute" style={{
+                    top: '-20%', right: '12%',
+                    width: 0, height: 0,
+                    borderLeft: `${charSize * 0.08}px solid transparent`,
+                    borderRight: `${charSize * 0.08}px solid transparent`,
+                    borderBottom: `${charSize * 0.22}px solid #FFD700`,
+                    transform: 'rotate(15deg)',
+                  }} />
+                  {/* Eyes - angry with red glow */}
+                  <div className="absolute flex gap-1" style={{ top: '28%', left: '50%', transform: 'translateX(-50%)' }}>
+                    <div className="rounded-full" style={{
+                      width: charSize * 0.18, height: charSize * 0.18,
+                      background: `radial-gradient(circle, ${colors.eye} 40%, #880000 100%)`,
+                      boxShadow: `0 0 ${charSize * 0.06}px ${colors.eye}`,
+                    }} />
+                    <div className="rounded-full" style={{
+                      width: charSize * 0.18, height: charSize * 0.18,
+                      background: `radial-gradient(circle, ${colors.eye} 40%, #880000 100%)`,
+                      boxShadow: `0 0 ${charSize * 0.06}px ${colors.eye}`,
+                    }} />
+                  </div>
+                  {/* Angry eyebrows */}
+                  <div className="absolute" style={{
+                    top: '22%', left: '18%', width: '25%', height: '3px',
+                    background: '#000', transform: 'rotate(15deg)', borderRadius: '2px',
+                  }} />
+                  <div className="absolute" style={{
+                    top: '22%', right: '18%', width: '25%', height: '3px',
+                    background: '#000', transform: 'rotate(-15deg)', borderRadius: '2px',
+                  }} />
+                  {/* Mouth with teeth */}
+                  <div className="absolute" style={{
+                    bottom: '20%', left: '25%', width: '50%', height: '20%',
+                    background: '#000', borderRadius: '2px 2px 8px 8px',
+                  }}>
+                    <div className="absolute top-0 left-[10%] bg-white" style={{
+                      width: '20%', height: '45%',
+                      clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
+                    }} />
+                    <div className="absolute top-0 right-[10%] bg-white" style={{
+                      width: '20%', height: '45%',
+                      clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
+                    }} />
+                  </div>
+                  {/* Type indicator */}
+                  {enemy.type === 'fast' && (
+                    <div className="absolute -right-1 top-1/2 -translate-y-1/2 text-yellow-300" style={{ fontSize: `${charSize * 0.25}px` }}>
+                      {">>"}
+                    </div>
+                  )}
+                  {enemy.type === 'smart' && (
+                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-yellow-300" style={{ fontSize: `${charSize * 0.2}px` }}>
+                      {"*"}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-      
+
       {/* Mobile controls */}
       {isMobile && (
-        <OnscreenControls 
+        <OnscreenControls
           onMove={handleOnscreenMove}
           onMunch={handleMunch}
         />
