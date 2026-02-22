@@ -6,6 +6,7 @@ import { updateGameLogic } from "../lib/gameLogic";
 import Player from "./Player";
 import Enemy from "./Enemy";
 import GridCell from "./GridCell";
+import Ocean from "./Ocean";
 
 export default function GameBoard() {
   const groupRef = useRef<Group>(null);
@@ -177,11 +178,12 @@ export default function GameBoard() {
 
   return (
     <group ref={groupRef}>
-      {/* Ground plane - sized to match actual grid */}
-      <mesh position={[0, -0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[groundWidth, groundHeight]} />
-        <meshLambertMaterial color="#2c3e50" />
-      </mesh>
+      {/* Ocean water surface */}
+      <Ocean
+        width={Math.max(groundWidth, groundHeight) * 2}
+        depth={Math.max(groundWidth, groundHeight) * 2}
+        position={[0, -0.3, 0]}
+      />
 
       {/* Grid cells */}
       {grid.map((row, rowIndex) =>
