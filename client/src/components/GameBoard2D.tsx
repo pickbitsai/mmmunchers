@@ -91,6 +91,7 @@ export default function GameBoard2D() {
 
   const {
     gamePhase,
+    gameMode,
     grid,
     player,
     enemies,
@@ -103,6 +104,8 @@ export default function GameBoard2D() {
     munchCurrentCell,
     spawnEnemies,
     gameOver,
+    loseLife,
+    tickTimer,
     nextLevel,
     addScore
   } = useGameState();
@@ -145,12 +148,15 @@ export default function GameBoard2D() {
           grid,
           currentChallenge,
           level,
+          gameMode,
           updatePlayer,
           updateEnemies,
           updateGrid,
           processPlayerMove,
           munchCurrentCell,
-          gameOver
+          gameOver,
+          loseLife,
+          tickTimer
         });
       }
 
@@ -166,7 +172,7 @@ export default function GameBoard2D() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [gamePhase, player, enemies, grid, currentChallenge, level, updatePlayer, updateEnemies, updateGrid, processPlayerMove, munchCurrentCell, gameOver]);
+  }, [gamePhase, player, enemies, grid, currentChallenge, level, gameMode, updatePlayer, updateEnemies, updateGrid, processPlayerMove, munchCurrentCell, gameOver, loseLife, tickTimer]);
 
   // Trigger splash at a position
   const triggerSplash = useCallback((x: number, y: number) => {

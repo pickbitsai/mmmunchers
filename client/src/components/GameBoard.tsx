@@ -15,6 +15,7 @@ export default function GameBoard() {
   
   const {
     gamePhase,
+    gameMode,
     grid,
     player,
     enemies,
@@ -26,7 +27,9 @@ export default function GameBoard() {
     processPlayerMove,
     munchCurrentCell,
     spawnEnemies,
-    gameOver
+    gameOver,
+    loseLife,
+    tickTimer
   } = useGameState();
 
   // Initialize enemies when game starts
@@ -122,12 +125,15 @@ export default function GameBoard() {
       grid,
       currentChallenge,
       level,
+      gameMode,
       updatePlayer,
       updateEnemies,
       updateGrid,
       processPlayerMove,
       munchCurrentCell,
-      gameOver
+      gameOver,
+      loseLife,
+      tickTimer
     });
 
     // Calculate dynamic center offsets for camera
