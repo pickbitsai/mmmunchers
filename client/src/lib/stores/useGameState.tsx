@@ -5,12 +5,18 @@ import { MathTopic } from "../topics/MathTopic";
 import { WordTopic } from "../topics/WordTopic";
 import { MarvelTopic } from "../topics/MarvelTopic";
 import { MovieTopic } from "../topics/MovieTopic";
-import { CustomTopic } from "../topics/CustomTopic";
+import { ScienceTopic } from "../topics/ScienceTopic";
+import { HistoryTopic } from "../topics/HistoryTopic";
+import { GeographyTopic } from "../topics/GeographyTopic";
+import { AnimalsTopic } from "../topics/AnimalsTopic";
+import { DinosaurTopic } from "../topics/DinosaurTopic";
+import { MusicTopic } from "../topics/MusicTopic";
+import { SurfingTopic } from "../topics/SurfingTopic";
 import { useAudio } from "./useAudio";
-import { toast } from "sonner";
 
 export type { GridCell };
-export type GamePhase = "topic_selection" | "playing" | "paused" | "game_over" | "loading";
+export type GamePhase = "main_menu" | "mode_selection" | "topic_selection" | "playing" | "paused" | "game_over" | "level_complete";
+export type GameMode = "classic" | "time_attack" | "trog_attack" | "zen" | "streak";
 export type RenderMode = "2d" | "3d";
 
 export interface Player {
@@ -41,31 +47,38 @@ export interface Challenge {
 interface GameState {
   // Core game state
   gamePhase: GamePhase;
+  gameMode: GameMode;
   selectedTopic: string | null;
   topicProvider: TopicProvider | null;
   renderMode: RenderMode;
-  
+
   // Game data
   grid: GridCell[][];
   player: Player;
   enemies: Enemy[];
   currentChallenge: Challenge | null;
-  
+
   // Game stats
   score: number;
   lives: number;
   level: number;
   timeRemaining: number;
-  
+  streak: number;
+  bestStreak: number;
+
   // Actions
   initializeGame: () => void;
+  setGameMode: (mode: GameMode) => void;
   selectTopic: (topicId: string | null) => void;
   startGame: () => Promise<void>;
   restartGame: () => void;
   togglePause: () => void;
   gameOver: () => void;
   toggleRenderMode: () => void;
-  
+  goToMainMenu: () => void;
+  goToModeSelection: () => void;
+  goToTopicSelection: () => void;
+
   // Game mechanics
   updatePlayer: (player: Partial<Player>) => void;
   updateEnemies: (enemies: Enemy[]) => void;
@@ -75,44 +88,75 @@ interface GameState {
   spawnEnemies: () => void;
   nextLevel: () => void;
   addScore: (points: number) => void;
+  addTime: (seconds: number) => void;
+  tickTimer: (delta: number) => void;
+  loseLife: () => void;
 }
 
-// Responsive grid sizes - smaller grids for bigger tiles
+// Responsive grid sizes
 const getGridDimensions = () => {
   const currentWidth = window.innerWidth;
-
-  if (currentWidth < 640) { // Mobile
-    return { width: 5, height: 4 };
-  } else if (currentWidth < 768) { // Small tablet
-    return { width: 6, height: 5 };
-  } else if (currentWidth < 1024) { // Tablet
-    return { width: 7, height: 5 };
-  } else { // Desktop
-    return { width: 8, height: 6 };
-  }
+  if (currentWidth < 640) return { width: 5, height: 4 };
+  if (currentWidth < 768) return { width: 6, height: 5 };
+  if (currentWidth < 1024) return { width: 7, height: 5 };
+  return { width: 8, height: 6 };
 };
+
+const TOPIC_MAP: Record<string, () => TopicProvider> = {
+  math: () => new MathTopic(),
+  words: () => new WordTopic(),
+  marvel: () => new MarvelTopic(),
+  movies: () => new MovieTopic(),
+  science: () => new ScienceTopic(),
+  history: () => new HistoryTopic(),
+  geography: () => new GeographyTopic(),
+  animals: () => new AnimalsTopic(),
+  dinosaurs: () => new DinosaurTopic(),
+  music: () => new MusicTopic(),
+  surfing: () => new SurfingTopic(),
+};
+
+// Mode-specific settings
+function getModeSettings(mode: GameMode, level: number) {
+  switch (mode) {
+    case 'classic':
+      return { lives: 3, maxLives: 5, time: 60 + (level * 10), hasEnemies: true, hasTimer: true };
+    case 'time_attack':
+      return { lives: 1, maxLives: 1, time: 30, hasEnemies: false, hasTimer: true };
+    case 'trog_attack':
+      return { lives: 5, maxLives: 7, time: 0, hasEnemies: true, hasTimer: false };
+    case 'zen':
+      return { lives: 99, maxLives: 99, time: 0, hasEnemies: false, hasTimer: false };
+    case 'streak':
+      return { lives: 1, maxLives: 1, time: 0, hasEnemies: false, hasTimer: false };
+  }
+}
 
 export const useGameState = create<GameState>()(
   subscribeWithSelector((set, get) => ({
     // Initial state
-    gamePhase: "topic_selection",
+    gamePhase: "main_menu",
+    gameMode: "classic",
     selectedTopic: null,
     topicProvider: null,
     renderMode: "3d",
-    
+
     grid: [],
     player: { x: 4, y: 3, moveX: 0, moveY: 0, isMoving: false },
     enemies: [],
     currentChallenge: null,
-    
+
     score: 0,
     lives: 3,
     level: 1,
     timeRemaining: 0,
-    
+    streak: 0,
+    bestStreak: 0,
+
     initializeGame: () => {
       set({
-        gamePhase: "topic_selection",
+        gamePhase: "main_menu",
+        gameMode: "classic",
         selectedTopic: null,
         topicProvider: null,
         grid: [],
@@ -122,78 +166,82 @@ export const useGameState = create<GameState>()(
         score: 0,
         lives: 3,
         level: 1,
-        timeRemaining: 0
+        timeRemaining: 0,
+        streak: 0,
+        bestStreak: 0
       });
     },
-    
+
+    goToMainMenu: () => {
+      set({
+        gamePhase: "main_menu",
+        selectedTopic: null,
+        topicProvider: null,
+        enemies: [],
+        grid: [],
+        currentChallenge: null,
+        score: 0,
+        lives: 3,
+        level: 1,
+        streak: 0,
+        bestStreak: 0
+      });
+    },
+
+    goToModeSelection: () => {
+      set({ gamePhase: "mode_selection" });
+    },
+
+    goToTopicSelection: () => {
+      set({ gamePhase: "topic_selection" });
+    },
+
+    setGameMode: (mode: GameMode) => {
+      set({ gameMode: mode, gamePhase: "topic_selection" });
+    },
+
     selectTopic: (topicId: string | null) => {
       if (!topicId) {
         set({
-          gamePhase: "topic_selection",
+          gamePhase: "main_menu",
           selectedTopic: null,
           topicProvider: null
         });
         return;
       }
-      
-      let provider: TopicProvider;
-      switch (topicId) {
-        case 'math':
-          provider = new MathTopic();
-          break;
-        case 'words':
-          provider = new WordTopic();
-          break;
-        case 'marvel':
-          provider = new MarvelTopic();
-          break;
-        case 'movies':
-          provider = new MovieTopic();
-          break;
-        case 'custom':
-          const customTopicName = localStorage.getItem('customTopic') || 'Custom Topic';
-          provider = new CustomTopic(customTopicName);
-          break;
-        default:
-          return;
-      }
-      
+
+      const factory = TOPIC_MAP[topicId];
+      if (!factory) return;
+
+      const provider = factory();
+
       // Set category if available from localStorage
       const savedCategory = localStorage.getItem(`category_${topicId}`);
       if (savedCategory && 'setCategory' in provider) {
         (provider as any).setCategory(savedCategory);
       }
-      
+
       set({
         selectedTopic: topicId,
         topicProvider: provider
       });
-      
+
       get().startGame();
     },
-    
+
     startGame: async () => {
-      const { topicProvider, selectedTopic, level: currentLevel } = get();
+      const { topicProvider, level: currentLevel, gameMode } = get();
       if (!topicProvider) return;
-      
-      // Show loading state for custom topics
-      if (selectedTopic === 'custom') {
-        set({ gamePhase: "loading" });
-      }
-      
-      // Use current level if continuing, otherwise start at level 1
+
       const gameLevel = currentLevel > 0 ? currentLevel : 1;
-      
+      const settings = getModeSettings(gameMode, gameLevel);
+
       try {
-        // Get current grid dimensions based on window size
-        const currentDimensions = getGridDimensions();
-        const gridWidth = currentDimensions.width;
-        const gridHeight = currentDimensions.height;
-        
-        // Generate challenge and grid for the current level
+        const { width: gridWidth, height: gridHeight } = getGridDimensions();
+
         const challenge = await Promise.resolve(topicProvider.generateChallenge(gameLevel));
         const grid = await Promise.resolve(topicProvider.generateGrid(gridWidth, gridHeight, challenge));
-        
+
         set((state) => ({
           gamePhase: "playing",
           currentChallenge: challenge,
@@ -201,20 +249,12 @@ export const useGameState = create<GameState>()(
           player: { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2), moveX: 0, moveY: 0, isMoving: false },
           enemies: [],
           level: gameLevel,
-          // Preserve score and lives when continuing to next level
           score: state.score > 0 ? state.score : 0,
-          lives: state.lives > 0 ? state.lives : 3,
-          timeRemaining: 60 + (gameLevel * 10) // More time for higher levels
+          lives: state.lives > 0 && state.level > 1 ? state.lives : settings.lives,
+          timeRemaining: settings.time,
+          streak: gameMode === 'streak' && state.level > 1 ? state.streak : 0
         }));
-      } catch (error) {
-        // Show error message to user
-        if (selectedTopic === 'custom') {
-          toast.error('Failed to generate custom board. Please try a different topic or check your spelling.');
-        } else {
-          toast.error('Failed to start game. Please try again.');
-        }
-        
-        // Return to topic selection on error
+      } catch {
         set({
           gamePhase: "topic_selection",
           selectedTopic: null,
@@ -222,23 +262,25 @@ export const useGameState = create<GameState>()(
         });
       }
     },
-    
+
     restartGame: () => {
       const { selectedTopic } = get();
-      
+
       set({
         score: 0,
         lives: 3,
-        level: 1, // Always start at level 1 when restarting
+        level: 1,
         enemies: [],
-        timeRemaining: 0
+        timeRemaining: 0,
+        streak: 0,
+        bestStreak: 0
       });
-      
+
       if (selectedTopic) {
         get().selectTopic(selectedTopic);
       }
     },
-    
+
     togglePause: () => {
       const { gamePhase } = get();
       if (gamePhase === "playing") {
@@ -247,112 +289,145 @@ export const useGameState = create<GameState>()(
         set({ gamePhase: "playing" });
       }
     },
-    
+
     gameOver: () => {
-      set({ 
+      set((state) => ({
         gamePhase: "game_over",
-        enemies: []
-      });
+        enemies: [],
+        bestStreak: Math.max(state.bestStreak, state.streak)
+      }));
     },
-    
+
     toggleRenderMode: () => {
       set((state) => ({
         renderMode: state.renderMode === "3d" ? "2d" : "3d"
       }));
     },
-    
-    updatePlayer: (playerUpdate: Partial<Player>) => {
 
+    updatePlayer: (playerUpdate: Partial<Player>) => {
       set((state) => ({
         player: { ...state.player, ...playerUpdate }
       }));
-
     },
-    
+
     updateEnemies: (enemies: Enemy[]) => {
       set({ enemies });
     },
-    
+
     updateGrid: (grid: GridCell[][]) => {
       set({ grid });
     },
-    
+
     processPlayerMove: (newX: number, newY: number) => {
       const { grid } = get();
-      
 
-      
-      // Check bounds using actual grid dimensions
       const gridWidth = grid[0]?.length || 0;
       const gridHeight = grid.length || 0;
-      
+
       if (newX < 0 || newX >= gridWidth || newY < 0 || newY >= gridHeight) {
         return;
       }
-      
-      // Just move the player - no auto-munching
+
       const { playMove } = useAudio.getState();
       playMove();
 
       get().updatePlayer({ x: newX, y: newY });
     },
-    
+
     munchCurrentCell: () => {
-      const { grid, player, currentChallenge } = get();
+      const { grid, player, currentChallenge, gameMode } = get();
       const cell = grid[player.y][player.x];
-      
-      // Can't munch empty or already munched cells
-      if (cell.isEmpty || cell.isMunched) {
-        return;
-      }
-      
-      // Process munching
+
+      if (cell.isEmpty || cell.isMunched) return;
+
       if (currentChallenge?.checkAnswer(cell.value)) {
-        // Correct answer - play munch sound
         const { playMunch } = useAudio.getState();
         playMunch();
-        
+
         const newGrid = [...grid];
         newGrid[player.y][player.x] = { ...cell, isMunched: true };
-        
+
+        // Mode-specific scoring
+        let scoreBonus = 10 * get().level;
+        const newStreak = get().streak + 1;
+
+        if (gameMode === 'streak') {
+          scoreBonus = 10 * newStreak; // Score scales with streak
+        } else if (gameMode === 'time_attack') {
+          scoreBonus = 20 * get().level; // Double points in time attack
+        }
+
         set((state) => ({
           grid: newGrid,
-          score: state.score + (10 * state.level)
+          score: state.score + scoreBonus,
+          streak: newStreak,
+          bestStreak: Math.max(state.bestStreak, newStreak)
         }));
-        
-        // Check if level complete (all correct answers munched)
+
+        // Time Attack: add bonus time
+        if (gameMode === 'time_attack') {
+          get().addTime(5);
+        }
+
+        // Check level completion
         const remainingCorrect = newGrid.flat().some(c => c.isCorrect && !c.isMunched);
-        const totalCorrect = newGrid.flat().filter(c => c.isCorrect).length;
-        const munchedCorrect = newGrid.flat().filter(c => c.isCorrect && c.isMunched).length;
-        
         if (!remainingCorrect) {
           get().nextLevel();
         }
       } else {
-        // Wrong answer - lose a life
+        // Wrong answer
         const { playHit } = useAudio.getState();
         playHit();
+
+        if (gameMode === 'streak') {
+          // Streak mode: wrong answer ends game immediately
+          set((state) => ({
+            bestStreak: Math.max(state.bestStreak, state.streak)
+          }));
+          get().gameOver();
+          return;
+        }
+
+        if (gameMode === 'time_attack') {
+          // Time Attack: lose 3 seconds
+          set((state) => ({
+            timeRemaining: Math.max(0, state.timeRemaining - 3),
+            streak: 0
+          }));
+          if (get().timeRemaining <= 0) {
+            get().gameOver();
+          }
+          return;
+        }
+
+        // Classic / Trog: lose a life
         set((state) => ({
-          lives: state.lives - 1
+          lives: state.lives - 1,
+          streak: 0
         }));
-        
+
         if (get().lives <= 0) {
           get().gameOver();
         }
       }
     },
-    
+
     spawnEnemies: () => {
-      const { level, grid } = get();
-      const numEnemies = Math.min(1 + Math.floor(level / 3), 4);
+      const { level, grid, gameMode } = get();
+      const settings = getModeSettings(gameMode, level);
+      if (!settings.hasEnemies) return;
+
+      // Trog Attack spawns more enemies
+      const baseCount = gameMode === 'trog_attack'
+        ? 2 + Math.floor(level / 2)
+        : 1 + Math.floor(level / 3);
+      const numEnemies = Math.min(baseCount, gameMode === 'trog_attack' ? 6 : 4);
       const enemies: Enemy[] = [];
-      
-      // Get actual grid dimensions from current grid
+
       const gridWidth = grid[0]?.length || 8;
       const gridHeight = grid.length || 6;
-      
-      // Generate spawn positions based on actual grid size
-      const dynamicSpawnPositions = [
+
+      const spawnPositions = [
         { x: 0, y: 0 },
         { x: gridWidth - 1, y: 0 },
         { x: 0, y: gridHeight - 1 },
@@ -362,11 +437,18 @@ export const useGameState = create<GameState>()(
         { x: 0, y: Math.floor(gridHeight / 2) },
         { x: gridWidth - 1, y: Math.floor(gridHeight / 2) }
       ];
-      
+
       for (let i = 0; i < numEnemies; i++) {
-        const spawnPos = dynamicSpawnPositions[i % dynamicSpawnPositions.length];
-        const enemyType = level > 5 ? (i % 2 === 0 ? 'fast' : 'smart') : 'basic';
-        
+        const spawnPos = spawnPositions[i % spawnPositions.length];
+        let enemyType: 'basic' | 'fast' | 'smart';
+
+        if (gameMode === 'trog_attack') {
+          // Trog Attack: more aggressive enemy mix
+          enemyType = level > 3 ? (i % 3 === 0 ? 'smart' : i % 3 === 1 ? 'fast' : 'basic') : (i % 2 === 0 ? 'fast' : 'basic');
+        } else {
+          enemyType = level > 5 ? (i % 2 === 0 ? 'fast' : 'smart') : 'basic';
+        }
+
         enemies.push({
           id: `enemy-${i}`,
           x: spawnPos.x,
@@ -379,35 +461,74 @@ export const useGameState = create<GameState>()(
           isMoving: false
         });
       }
-      
+
       set({ enemies });
     },
-    
+
     nextLevel: () => {
       const { playSuccess } = useAudio.getState();
       playSuccess();
-      
 
-      
-      // Show a brief pause before starting next level
+      const { gameMode } = get();
+      const settings = getModeSettings(gameMode, get().level + 1);
+
       set((state) => ({
         level: state.level + 1,
-        lives: Math.min(state.lives + 1, 5), // Bonus life, max 5
-        score: state.score + 100 * state.level, // Level completion bonus
-        gamePhase: "paused" as GamePhase // Brief pause to show level complete
+        lives: Math.min(state.lives + 1, settings.maxLives),
+        score: state.score + 100 * state.level,
+        gamePhase: "level_complete" as GamePhase
       }));
-      
-      // Start next level after a short delay
+
       setTimeout(() => {
         get().startGame();
         get().spawnEnemies();
       }, 1500);
     },
-    
+
     addScore: (points: number) => {
       set((state) => ({
         score: state.score + points
       }));
+    },
+
+    addTime: (seconds: number) => {
+      set((state) => ({
+        timeRemaining: state.timeRemaining + seconds
+      }));
+    },
+
+    tickTimer: (delta: number) => {
+      const { gameMode, gamePhase, timeRemaining } = get();
+      const settings = getModeSettings(gameMode, get().level);
+
+      if (!settings.hasTimer || gamePhase !== 'playing' || timeRemaining <= 0) return;
+
+      const newTime = timeRemaining - delta;
+      if (newTime <= 0) {
+        set({ timeRemaining: 0 });
+        get().gameOver();
+      } else {
+        set({ timeRemaining: newTime });
+      }
+    },
+
+    loseLife: () => {
+      set((state) => ({
+        lives: state.lives - 1,
+        streak: 0
+      }));
+
+      if (get().lives <= 0) {
+        get().gameOver();
+      } else {
+        // Respawn player to center after losing a life
+        const { grid } = get();
+        const gridWidth = grid[0]?.length || 8;
+        const gridHeight = grid.length || 6;
+        set({
+          player: { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2), moveX: 0, moveY: 0, isMoving: false }
+        });
+      }
     }
   }))
 );

@@ -3,106 +3,100 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-Number Munchers 3D - A modern 3D educational game built with React, TypeScript, and Three.js. The game features math, vocabulary, and pop culture learning topics in an interactive 3D environment with optional AI-powered custom content generation.
+Number Munchers 3D - A modern 3D educational game built with React, TypeScript, and Three.js. Features 11 educational topics, 5 game modes, and dual 2D/3D rendering. Pure client-side static app — no backend required.
 
 ## Key Commands
 
 ### Development
 ```bash
-npm run dev          # Start development server (frontend + backend)
-npm run build        # Build for production
-npm run start        # Start production server
+npm run dev          # Start Vite dev server
+npm run build        # Build for production (outputs to dist/)
+npm run preview      # Preview production build
 npm run check        # Run TypeScript type checking
-npm run db:push      # Push database schema changes with Drizzle
 ```
 
 ## Architecture Overview
 
 ### Tech Stack
-- **Frontend**: React 18 + TypeScript + Three.js/React Three Fiber for 3D graphics
-- **Backend**: Express.js server with optional PostgreSQL database
-- **ORM**: Drizzle ORM with Zod validation
+- **Frontend**: React 18 + TypeScript + Three.js/React Three Fiber
 - **State Management**: Zustand stores
 - **UI**: shadcn/ui components (Radix UI) + TailwindCSS
-- **Audio**: Howler.js for cross-platform support
-- **AI Integration**: OpenAI API for dynamic content generation
-- **Build Tool**: Vite (frontend) + esbuild (backend)
+- **Audio**: Howler.js
+- **Build Tool**: Vite
 
 ### Project Structure
-- `client/src/components/` - Game components (Game, GameBoard, GameBoard2D, Player, Enemy, etc.)
-- `client/src/lib/` - Core game logic, stores, topics, and utilities
+- `client/src/components/` - React components (MainMenu, ModeSelection, TopicSelection, Game, GameBoard, GameBoard2D, GameUI, Player, Enemy, etc.)
 - `client/src/lib/stores/` - Zustand stores (useGameState, useAudio)
-- `client/src/lib/topics/` - Educational content providers
-- `client/src/lib/services/` - External service integrations (AI)
-- `server/` - Express backend with API routes
-- `shared/` - Shared types and Drizzle database schemas
+- `client/src/lib/topics/` - Educational content providers (11 topics)
+- `client/src/lib/gameLogic.ts` - Enemy AI, collision detection, timer
+- `client/src/lib/utils.ts` - Utilities
+- `client/src/lib/assetLoader.ts` - 3D asset preloading
 - `public/` - Static assets (fonts, sounds, textures, 3D models)
 
 ### Key Architectural Patterns
 
-1. **Topic System**: Educational content is organized into topics that extend `TopicProvider` base class. Topics define:
-   - Topic metadata (name, icon, description)
-   - Problem generation logic (`generateProblem()`)
-   - Answer validation (`isCorrectAnswer()`)
-   - Available subtopics (`getSubtopics()`)
-   - Custom topics use AI for dynamic content generation
+1. **Topic System**: Educational content extends `TopicProvider` base class:
+   - `getName()` - Topic display name
+   - `generateChallenge(level)` - Creates a Challenge with description + checkAnswer function
+   - `generateGrid(width, height, challenge)` - Populates grid with correct/incorrect items
+   - `setCategory?(category)` / `getCategories?()` - Optional category filtering
+   - **11 topics**: Math, Words, Science, History, Geography, Animals, Dinosaurs, Marvel, Movies, Music, Surfing
 
-2. **Game State Management**: Uses Zustand stores for:
-   - `useGameState` - Core game state (level, score, lives, board state, player/enemy positions)
-   - `useAudio` - Audio management with Howler.js integration
-   - Game phases: topic_selection, playing, paused, game_over, loading
+2. **Game Modes** (5 modes):
+   - **Classic**: Enemies + timer + lives. Standard munching.
+   - **Time Attack**: No enemies, 30s timer, +5s correct, -3s wrong.
+   - **Trog Attack**: Heavy enemies, no timer, 5 lives.
+   - **Zen**: No enemies, no timer, no pressure. Practice mode.
+   - **Streak**: No enemies, chain correct answers. One wrong = game over.
 
-3. **3D/2D Rendering**: Dual rendering modes with:
-   - React Three Fiber components for 3D mode
-   - Canvas-based 2D rendering as fallback
-   - GLTF model loading for 3D assets
-   - Custom shaders and postprocessing effects
+3. **Game State** (`useGameState`):
+   - Phases: `main_menu → mode_selection → topic_selection → playing ↔ paused → game_over`
+   - Also: `level_complete` (brief transition between levels)
+   - Mode-specific settings control enemies, timer, lives, scoring
 
-4. **Enemy AI System**:
-   - Three enemy types: basic (random), fast (2x speed), smart (pathfinding)
-   - Pre-calculated spawn positions for deterministic behavior
-   - Level-based scaling of enemy count and types
+4. **Menu Flow** (3 screens):
+   - `MainMenu` → Play button, render mode toggle, audio toggle
+   - `ModeSelection` → 5 game mode cards
+   - `TopicSelection` → 11 topic cards with category dropdowns
 
-### Environment Variables
-```bash
-DATABASE_URL         # PostgreSQL connection (optional)
-VITE_AI_API_KEY     # OpenAI API key for custom topics (optional)
-NODE_ENV            # development/production
-HOST                # Server host (default: 127.0.0.1)
-ALLOWED_ORIGIN      # CORS allowed origin for production
-```
+5. **3D/2D Rendering**: Dual rendering modes:
+   - React Three Fiber components for 3D mode (GameBoard.tsx)
+   - Canvas-based 2D rendering as fallback (GameBoard2D.tsx)
+
+6. **Enemy AI System**:
+   - Three types: basic (70% chase/30% random), fast (direct chase), smart (predictive)
+   - Level-based scaling of count, types, and move interval
+   - Trog Attack mode: faster intervals, more enemies
 
 ### Development Notes
 
-- **Path Aliases**: Use `@/` for client/src imports and `@shared/` for shared imports
-- **TypeScript**: Strict mode enabled - always define proper types
-- **Asset Loading**: Vite configured to handle .glb, .gltf, .mp3, .wav, .ogg, and .glsl files
-- **Component Pattern**: Use functional components with hooks
-- **Server Security**: Binds to 127.0.0.1 by default, proper CORS configuration required
-- **Build Process**: Custom build script at `scripts/build.js` generates production artifacts
+- **Path Aliases**: Use `@/` for client/src imports
+- **TypeScript**: Strict mode enabled
+- **Asset Loading**: Vite handles .glb, .gltf, .mp3, .wav, .ogg, .glsl files
+- **Component Pattern**: Functional components with hooks
+- **No backend**: Pure static client-side app, deploy anywhere
 
 ### Common Tasks
 
 To add a new topic:
 1. Create a new class extending `TopicProvider` in `client/src/lib/topics/`
-2. Implement required methods: `generateProblem()`, `isCorrectAnswer()`, `getSubtopics()`
-3. Register the topic in `client/src/lib/topics/index.ts`
-4. Add topic to TopicSelection component if needed
+2. Implement: `getName()`, `generateChallenge(level)`, `generateGrid(w, h, challenge)`
+3. Add topic to `TOPIC_MAP` in `client/src/lib/stores/useGameState.tsx`
+4. Add topic card to `topics` array in `client/src/components/TopicSelection.tsx`
+
+To add a new game mode:
+1. Add mode to `GameMode` type in `useGameState.tsx`
+2. Add settings in `getModeSettings()` function
+3. Add mode card in `ModeSelection.tsx`
+4. Add mode-specific HUD in `GameUI.tsx` `renderStats()`
+5. Handle mode behavior in `munchCurrentCell()` and `gameLogic.ts`
 
 To modify game mechanics:
-- Core game logic is in `client/src/lib/stores/useGameState.tsx`
-- Board generation logic in `client/src/lib/gameLogic.ts`
-- 3D components in `client/src/components/` (Game.tsx, GameBoard.tsx)
-- 2D rendering in `client/src/components/GameBoard2D.tsx`
-
-To work with the database:
-- Schema definitions in `shared/schema.ts`
-- Use `npm run db:push` after schema changes
-- API routes in `server/routes.ts`
-- Storage abstraction in `server/storage.ts`
+- Core game state: `client/src/lib/stores/useGameState.tsx`
+- Enemy AI & collision: `client/src/lib/gameLogic.ts`
+- 3D board: `client/src/components/GameBoard.tsx`
+- 2D board: `client/src/components/GameBoard2D.tsx`
 
 ### Deployment
-- Multiple deployment options supported (Replit, Vercel, Netlify, Railway)
-- Production build creates artifacts in `.next/` directory
-- GitHub Actions CI/CD configured with artifact uploads
-- See `docs/DEPLOYMENT.md` for platform-specific instructions
+- Pure static site — deploy `dist/` to any host (Vercel, Netlify, GitHub Pages, etc.)
+- Build with `npm run build`, preview with `npm run preview`
