@@ -57,6 +57,5 @@ temp/
 attached_assets/
 screenshots/
 
-# Replit specific
-.replit
-replit.nix
+# Local Claude Code settings
+.claude/settings.local.json

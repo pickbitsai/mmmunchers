@@ -1,197 +1,61 @@
-# Contributing to Number Munchers 3D
+# Contributing to mmmunchers
 
-Thank you for your interest in contributing to Number Munchers 3D! This document outlines the guidelines and processes for contributing to the project.
+Thanks for your interest! This is a small open-source project — pull requests, bug reports, and ideas for new topics or modes are all welcome.
 
-## Getting Started
+## Getting set up
 
-1. Fork the repository on GitHub
-2. Clone your fork locally
-3. Install dependencies with `npm install`
-4. Start the development server with `npm run dev`
-5. Make your changes and test them thoroughly
-
-## Development Setup
-
-### Prerequisites
-- Node.js 18 or higher
-- npm or yarn package manager
-- Basic knowledge of React, TypeScript, and Three.js
-
-### Project Structure
-```
-client/src/
-├── components/          # React components
-│   ├── ui/             # Reusable UI components
-│   ├── Game.tsx        # Main game component
-│   ├── GameBoard.tsx   # 3D game board
-│   └── ...
-├── lib/
-│   ├── stores/         # Zustand state management
-│   ├── topics/         # Educational topic providers
-│   └── gameLogic.ts    # Core game mechanics
-└── pages/              # Route components
+```bash
+git clone https://github.com/pickbitsai/mmmunchers.git
+cd mmmunchers
+npm install
+npm run dev
 ```
 
-## Types of Contributions
+Open http://localhost:3000.
 
-### 1. Educational Topics
-Add new learning subjects by creating topic providers:
+Run `npm run check` before submitting a PR to make sure TypeScript is clean.
 
-- Create a new class extending `TopicProvider`
-- Implement challenge generation logic
-- Add category support for varied gameplay
-- Include comprehensive test coverage
+## Project layout
 
-### 2. Game Features
-Enhance gameplay mechanics:
+See the [README](README.md#project-layout) for the directory tour. The important bits:
 
-- New enemy types with unique behaviors
-- Power-ups and special items
-- Visual effects and animations
-- Audio improvements
+- `client/src/lib/topics/` — one file per educational topic
+- `client/src/lib/stores/useGameState.tsx` — game state, phase transitions, topic registry
+- `client/src/lib/gameLogic.ts` — enemy AI, collision, timer
+- `client/src/components/GameBoard.tsx` / `GameBoard2D.tsx` — 3D and 2D renderers
 
-### 3. UI/UX Improvements
-Improve the user experience:
+## Adding a topic
 
-- Accessibility enhancements
-- Mobile responsiveness
-- Performance optimizations
-- Design refinements
+1. Create a class in `client/src/lib/topics/` that extends `TopicProvider`
+2. Implement at minimum `getName()`, `generateChallenge(level)`, and `generateGrid(width, height, challenge)`
+3. Optionally implement `getCategories()` and `setCategory()` for category filtering
+4. Register the topic in `TOPIC_MAP` in `useGameState.tsx`
+5. Add a card for it in `TopicSelection.tsx`
 
-### 4. Bug Fixes
-Help maintain code quality:
+Keep content age-appropriate (roughly elementary through middle school) and factually accurate. Progressive difficulty is nice — harder levels should feel harder.
 
-- Fix reported issues
-- Improve error handling
-- Add missing features
-- Performance optimizations
+## Adding a game mode
 
-## Code Style Guidelines
+1. Extend the `GameMode` union in `useGameState.tsx`
+2. Add defaults to `getModeSettings()`
+3. Add a card in `ModeSelection.tsx`
+4. Add any mode-specific HUD in `GameUI.tsx`
+5. Wire behavior into `munchCurrentCell()` / `gameLogic.ts`
 
-### TypeScript
-- Use strict typing with proper interfaces
-- Prefer `interface` over `type` for object shapes
-- Use meaningful variable and function names
-- Add JSDoc comments for complex functions
+## Style
 
-### React
-- Use functional components with hooks
-- Implement proper error boundaries
-- Follow React best practices for state management
-- Use memo and callback optimizations when appropriate
+- TypeScript, functional React components, hooks
+- TailwindCSS for styling
+- Match the surrounding code — no large reformatting passes alongside logic changes
+- Keep PRs focused: one feature or one fix per PR is much easier to review
 
-### Styling
-- Use TailwindCSS utility classes
-- Follow the existing design system
-- Ensure responsive design across devices
-- Maintain consistent spacing and typography
+## Pull requests
 
-## Testing
+1. Fork, branch from `main`
+2. Make your change with clear commits
+3. Run `npm run check` and verify the game still plays in both 2D and 3D modes
+4. Open a PR with a short description of what changed and why. Screenshots or a short clip help a lot for visual changes.
 
-- Write unit tests for new functionality
-- Test educational content accuracy
-- Verify cross-browser compatibility
-- Check mobile device responsiveness
+## License
 
-## Educational Content Guidelines
-
-When adding new topics or challenges:
-
-1. **Accuracy**: Ensure all educational content is factually correct
-2. **Age Appropriate**: Consider the target age group (elementary to middle school)
-3. **Progressive Difficulty**: Implement proper level scaling
-4. **Clear Instructions**: Make challenges easy to understand
-5. **Variety**: Provide diverse question types within each topic
-
-## Submitting Changes
-
-### Pull Request Process
-
-1. Create a feature branch from `main`
-2. Make your changes with clear, descriptive commits
-3. Update documentation if needed
-4. Test your changes thoroughly
-5. Submit a pull request with:
-   - Clear title and description
-   - Screenshots or GIFs for UI changes
-   - List of changes made
-   - Testing instructions
-
-### Commit Message Format
-```
-type(scope): brief description
-
-Detailed explanation of changes if needed
-
-- List specific changes
-- Include any breaking changes
-- Reference issue numbers
-```
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-## Adding New Educational Topics
-
-### Step-by-Step Guide
-
-1. Create a new file in `client/src/lib/topics/`
-2. Extend the `TopicProvider` abstract class
-3. Implement required methods:
-   ```typescript
-   export class MyTopic extends TopicProvider {
-     getName(): string { return "My Topic"; }
-     
-     generateChallenge(level: number): Challenge {
-       // Generate level-appropriate challenges
-     }
-     
-     generateGrid(width: number, height: number, challenge: Challenge): GridCell[][] {
-       // Populate grid with correct/incorrect answers
-     }
-     
-     getCategories(): Array<{id: string, name: string}> {
-       // Return available categories
-     }
-     
-     setCategory(category: string): void {
-       // Set active category
-     }
-   }
-   ```
-
-4. Add comprehensive challenge varieties
-5. Test with different difficulty levels
-6. Update documentation
-
-### Topic Requirements
-
-- Minimum 5 categories per topic
-- 10+ unique challenges per category
-- Progressive difficulty scaling
-- Clear answer validation logic
-- Educational value verification
-
-## Code Review Process
-
-All contributions go through code review:
-
-1. **Automated Checks**: CI runs tests and linting
-2. **Peer Review**: Other contributors review code quality
-3. **Educational Review**: Content accuracy verification
-4. **Final Approval**: Maintainer approval for merge
-
-## Getting Help
-
-- Open an issue for questions or discussions
-- Join community discussions in pull requests
-- Check existing issues before creating new ones
-- Be respectful and constructive in all interactions
-
-## Recognition
-
-Contributors are recognized in:
-- README.md acknowledgments
-- Release notes for significant contributions
-- Community highlights for educational content
-
-Thank you for helping make learning fun and accessible through Number Munchers 3D!
+By contributing, you agree that your contributions will be licensed under the MIT License.

@@ -1,181 +1,95 @@
-# Number Munchers - Educational Game
+# mmmunchers
 
-A modern 3D educational game built with React Three Fiber, inspired by the classic educational arcade game. Players navigate a grid-based environment to "munch" correct answers based on mathematical or word-based challenges while avoiding enemies.
+A modern 3D reimagining of the classic _Number Munchers_ educational game. Navigate a grid, munch the correct answers, and dodge enemies. 11 topics, 5 game modes, dual 2D/3D rendering. Pure client-side — no backend.
 
-## Features
+Built with React, TypeScript, Three.js / React Three Fiber, and Vite.
 
-### 🎮 Game Mechanics
-- **Grid-based gameplay** with 3D visualization
-- **Multiple educational topics**: Math, Words, Marvel Universe, Movie Trivia
-- **Progressive difficulty** with automatic level advancement
-- **Enemy AI** with three types: basic, fast, and smart behaviors
-- **Score system** with level-based multipliers
-- **Lives system** with collision detection
+## Quick start
 
-### 📱 Platform Support
-- **Desktop controls**: Arrow keys or WASD for movement, Space for munching
-- **Mobile controls**: Touch-based directional buttons with haptic feedback
-- **Responsive design** that adapts to different screen sizes
-- **Mobile-optimized UI** with proper touch target sizing
-
-### 🎵 Audio System
-- **Background music** with seamless looping
-- **Sound effects** for movement, munching, and game events
-- **Mute/unmute controls** with persistent settings
-- **Haptic feedback** on mobile devices
-
-### 🎨 Visual Design
-- **3D graphics** powered by React Three Fiber
-- **Smooth animations** with GSAP integration
-- **Dark theme** with gradient backgrounds
-- **Accessible UI** with high contrast text
-
-## Tech Stack
-
-### Frontend
-- **React 18** with TypeScript
-- **React Three Fiber** for 3D rendering
-- **@react-three/drei** for 3D utilities
-- **Vite** for fast development and building
-- **TailwindCSS** with shadcn/ui components
-- **Zustand** for state management
-
-### Backend
-- **Express.js** with TypeScript
-- **Drizzle ORM** for database operations
-- **PostgreSQL** support (production)
-- **In-memory storage** (development)
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/number-munchers.git
-cd number-munchers
-```
-
-2. Install dependencies:
 ```bash
 npm install
-```
-
-3. Start the development server:
-```bash
 npm run dev
 ```
 
-4. Open your browser to `http://localhost:5000`
+Then open http://localhost:3000.
 
-## Game Controls
+## Scripts
 
-### Desktop
-- **Arrow Keys** or **WASD**: Move player
-- **Space**: Munch current cell
-- **P**: Pause/Resume game
-- **M**: Toggle mute
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Build the production bundle to `dist/public` |
+| `npm run preview` | Preview the production build locally |
+| `npm run check` | Run TypeScript type checking |
 
-### Mobile
-- **Touch Controls**: Use on-screen directional buttons
-- **MUNCH Button**: Tap to munch current cell
-- **UI Buttons**: Tap pause, mute, and restart buttons
+Node 20+ is recommended (see `.nvmrc`).
 
-## Educational Topics
+## Controls
 
-### Mathematics
-- **Categories**: Multiples, Factors, Prime Numbers, Perfect Squares, Addition, Subtraction
-- **Progressive difficulty** with larger numbers at higher levels
-- **Real-time challenge descriptions** guide learning objectives
+**Desktop**
+- Arrow keys / WASD — move
+- Space — munch
+- P — pause
+- M — mute
 
-### Word Games
-- **Categories**: Nouns, Verbs, Adjectives, All Parts of Speech
-- **Vocabulary building** through pattern recognition
-- **Educational descriptions** explain grammar concepts
+**Mobile** — on-screen D-pad plus a MUNCH button.
 
-### Marvel Universe
-- **Categories**: Heroes, Villains, Teams, Powers, Locations
-- **Pop culture learning** through character recognition
-- **Comprehensive Marvel database** with authentic content
+## Game modes
 
-### Movie Trivia
-- **Categories**: Actors, Directors, Genres, Decades, Franchises, Awards
-- **Film literacy** through entertainment knowledge
-- **Diverse movie database** spanning multiple eras
+| Mode | Enemies | Timer | Lives | Notes |
+|---|---|---|---|---|
+| Classic | Yes | Yes | 3 | The standard loop |
+| Time Attack | No | 30s | — | +5s correct, −3s wrong |
+| Trog Attack | Many, fast | No | 5 | Enemy-heavy challenge |
+| Zen | No | No | — | Pure practice, no pressure |
+| Streak | No | No | — | Chain correct answers; one wrong ends the run |
 
-## Development
+## Topics
 
-### Project Structure
+Math, Words, Science, History, Geography, Animals, Dinosaurs, Marvel, Movies, Music, Surfing. Most topics have category filters (e.g. Math → multiples, factors, primes, perfect squares; Marvel → heroes, villains, teams).
+
+## Project layout
+
 ```
-├── client/               # React frontend
-│   ├── src/
-│   │   ├── components/  # UI components
-│   │   ├── lib/         # Utilities and stores
-│   │   └── pages/       # Route components
-├── server/              # Express backend
-├── shared/              # Shared types and schemas
-└── docs/                # Documentation
-```
-
-### Key Technologies
-- **State Management**: Zustand stores for game state, audio, and UI
-- **3D Rendering**: React Three Fiber with custom components
-- **Responsive Design**: Mobile-first approach with TailwindCSS
-- **Touch Handling**: Coordinate-based detection for reliable mobile controls
-
-### Adding New Topics
-1. Create a new class extending `TopicProvider`
-2. Implement required methods: `generateChallenge()` and `generateGrid()`
-3. Add the topic to the selection screen
-4. Register the topic in the game state
-
-## Deployment
-
-### Replit (Recommended)
-The project is optimized for Replit deployment with automatic configuration.
-
-### Manual Deployment
-1. Build the project:
-```bash
-npm run build
+client/
+  index.html
+  src/
+    components/        React components (Game, GameBoard, GameBoard2D, MainMenu, ...)
+    lib/
+      gameLogic.ts     Enemy AI, collision, timer
+      assetLoader.ts   3D asset preloading
+      stores/          Zustand stores (useGameState, useAudio)
+      topics/          Educational content providers (one file per topic)
+  public/              Static assets (fonts, sounds, textures, geometries)
 ```
 
-2. Set environment variables:
-```bash
-DATABASE_URL=your_postgresql_url
-```
+## Adding a new topic
 
-3. Deploy to your preferred platform (Vercel, Netlify, Railway, etc.)
+1. Create `client/src/lib/topics/MyTopic.ts` extending `TopicProvider`
+2. Implement `getName()`, `generateChallenge(level)`, `generateGrid(w, h, challenge)`
+3. Register it in the `TOPIC_MAP` in `client/src/lib/stores/useGameState.tsx`
+4. Add a card for it in `client/src/components/TopicSelection.tsx`
+
+## Adding a new game mode
+
+1. Extend the `GameMode` union in `client/src/lib/stores/useGameState.tsx`
+2. Add defaults to `getModeSettings()`
+3. Add a card in `ModeSelection.tsx`
+4. Add any mode-specific HUD bits in `GameUI.tsx`
+5. Wire up mode-specific behavior in `munchCurrentCell()` / `gameLogic.ts`
+
+## Deploy
+
+This is a pure static site — `npm run build` emits `dist/public/`, which you can host anywhere (Vercel, Netlify, GitHub Pages, Cloudflare Pages, plain S3). Config files for Vercel (`vercel.json`) and Netlify (`netlify.toml`) are included.
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Pull requests welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
-## Acknowledgments
+## Credits
 
-- Inspired by the classic MECC Number Munchers educational game
-- Built with modern web technologies for accessibility and performance
-- Designed to make learning engaging and interactive
-
-## Support
-
-If you encounter any issues or have questions:
-1. Check the [documentation](docs/)
-2. Search existing [issues](https://github.com/yourusername/number-munchers/issues)
-3. Create a new issue with detailed information
-
----
-
-**Happy Learning! 🎓**
+Inspired by the classic MECC _Number Munchers_ (1986).
