@@ -493,7 +493,7 @@ export default function GameBoard2D() {
             <SplashEffect key={splash.id} x={splash.x} y={splash.y} cellSize={cellSize} />
           ))}
 
-          {/* Player - beach muncher character */}
+          {/* Player - green blob muncher (2026) */}
           <div
             className="absolute flex items-center justify-center transition-all duration-150 pointer-events-none"
             style={{
@@ -502,57 +502,101 @@ export default function GameBoard2D() {
               width: charSize,
               height: charSize,
               zIndex: 20,
-              animation: 'player-bounce 1.5s ease-in-out infinite',
-              filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.3))',
+              animation: 'player-bounce 1.2s ease-in-out infinite',
+              filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.35)) drop-shadow(0 0 10px rgba(132,204,22,0.55))',
             }}
           >
-            {/* Player body */}
+            {/* Antennae */}
+            {[-1, 1].map((s) => (
+              <div
+                key={s}
+                className="absolute"
+                style={{
+                  top: '-14%',
+                  left: '50%',
+                  width: charSize * 0.05,
+                  height: charSize * 0.22,
+                  background: '#4a7c0f',
+                  borderRadius: '3px',
+                  transform: `translateX(-50%) translateX(${s * charSize * 0.13}px) rotate(${s * 22}deg)`,
+                  transformOrigin: 'bottom center',
+                }}
+              >
+                <div
+                  className="rounded-full"
+                  style={{
+                    position: 'absolute',
+                    top: `-${charSize * 0.05}px`,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: charSize * 0.12,
+                    height: charSize * 0.12,
+                    background: 'radial-gradient(circle at 35% 30%, #d9f99d, #84cc16)',
+                    boxShadow: '0 0 6px rgba(190,242,100,0.7)',
+                  }}
+                />
+              </div>
+            ))}
+
+            {/* Body */}
             <div
               className="relative w-full h-full rounded-full"
               style={{
-                background: 'linear-gradient(145deg, #4fc3f7 0%, #0288d1 50%, #01579b 100%)',
-                border: '3px solid #01579b',
-                boxShadow: 'inset 0 -3px 6px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.3)',
+                background: 'radial-gradient(circle at 35% 28%, #bef264 0%, #84cc16 45%, #558b0f 100%)',
+                border: `${Math.max(charSize * 0.03, 2)}px solid #3f6212`,
+                boxShadow: 'inset 0 -5px 8px rgba(0,0,0,0.22), inset 0 3px 6px rgba(255,255,255,0.4)',
               }}
             >
-              {/* Eyes */}
-              <div className="absolute flex gap-1" style={{ top: '22%', left: '50%', transform: 'translateX(-50%)' }}>
-                <div className="rounded-full bg-white" style={{ width: charSize * 0.2, height: charSize * 0.22 }}>
-                  <div className="rounded-full bg-gray-900" style={{ width: charSize * 0.1, height: charSize * 0.1, margin: '20% auto 0' }} />
-                </div>
-                <div className="rounded-full bg-white" style={{ width: charSize * 0.2, height: charSize * 0.22 }}>
-                  <div className="rounded-full bg-gray-900" style={{ width: charSize * 0.1, height: charSize * 0.1, margin: '20% auto 0' }} />
-                </div>
+              {/* Spots */}
+              <div className="absolute rounded-full" style={{ top: '18%', right: '18%', width: charSize * 0.1, height: charSize * 0.1, background: 'rgba(63,98,18,0.5)' }} />
+              <div className="absolute rounded-full" style={{ bottom: '24%', left: '16%', width: charSize * 0.08, height: charSize * 0.08, background: 'rgba(63,98,18,0.4)' }} />
+
+              {/* Cheeks */}
+              <div className="absolute rounded-full" style={{ top: '48%', left: '8%', width: charSize * 0.14, height: charSize * 0.1, background: 'rgba(255,143,176,0.65)', filter: 'blur(1px)' }} />
+              <div className="absolute rounded-full" style={{ top: '48%', right: '8%', width: charSize * 0.14, height: charSize * 0.1, background: 'rgba(255,143,176,0.65)', filter: 'blur(1px)' }} />
+
+              {/* Eyes - big and googly */}
+              <div className="absolute flex gap-1.5" style={{ top: '18%', left: '50%', transform: 'translateX(-50%)' }}>
+                {[0, 1].map((i) => (
+                  <div key={i} className="rounded-full bg-white relative" style={{ width: charSize * 0.27, height: charSize * 0.3, boxShadow: 'inset 0 -2px 3px rgba(0,0,0,0.15)' }}>
+                    <div className="rounded-full bg-gray-900 absolute" style={{ width: charSize * 0.14, height: charSize * 0.14, left: '50%', top: '42%', transform: 'translate(-50%, 0)' }}>
+                      <div className="rounded-full bg-white absolute" style={{ width: charSize * 0.05, height: charSize * 0.05, top: '10%', right: '10%' }} />
+                    </div>
+                  </div>
+                ))}
               </div>
-              {/* Mouth - wide open muncher mouth */}
+
+              {/* Mouth - happy open chomper */}
               <div
-                className="absolute rounded-b-full"
+                className="absolute overflow-hidden"
                 style={{
-                  bottom: '15%',
-                  left: '25%',
-                  width: '50%',
-                  height: '30%',
-                  background: '#b71c1c',
-                  border: '2px solid #880e0e',
-                  borderTop: 'none',
-                  borderTopLeftRadius: '2px',
-                  borderTopRightRadius: '2px',
+                  bottom: '14%',
+                  left: '28%',
+                  width: '44%',
+                  height: '26%',
+                  background: 'linear-gradient(#7a1030, #4a0a1e)',
+                  border: '2px solid #3f0a16',
+                  borderRadius: '30% 30% 55% 55%',
                 }}
               >
                 {/* Teeth */}
-                <div className="absolute top-0 left-[15%] w-[20%] bg-white" style={{ height: '30%', borderRadius: '0 0 2px 2px' }} />
-                <div className="absolute top-0 right-[15%] w-[20%] bg-white" style={{ height: '30%', borderRadius: '0 0 2px 2px' }} />
+                <div className="absolute top-0 left-[12%] bg-white" style={{ width: '22%', height: '42%', borderRadius: '0 0 3px 3px' }} />
+                <div className="absolute top-0 right-[12%] bg-white" style={{ width: '22%', height: '42%', borderRadius: '0 0 3px 3px' }} />
+                {/* Tongue */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-t-full" style={{ width: '55%', height: '45%', background: '#ff6b8a' }} />
               </div>
             </div>
           </div>
 
-          {/* Enemies - troll characters */}
+          {/* Enemies - blocky voxel crystal monsters (2026) */}
           {enemies.map((enemy) => {
             const colors = enemy.type === 'fast'
-              ? { body: '#FF6B35', border: '#cc4400', eye: '#FF0000' }
+              ? { body: '#f59e0b', light: '#fcd34d', dark: '#b45309' }
               : enemy.type === 'smart'
-              ? { body: '#9C27B0', border: '#6a0080', eye: '#FF0000' }
-              : { body: '#c62828', border: '#8e0000', eye: '#FF0000' };
+              ? { body: '#a855f7', light: '#d8b4fe', dark: '#6b21a8' }
+              : { body: '#2f9fe0', light: '#7cd0ff', dark: '#1c5f8c' };
+
+            const facet = 'polygon(50% 0%, 100% 26%, 100% 74%, 50% 100%, 0% 74%, 0% 26%)';
 
             return (
               <div
@@ -566,84 +610,103 @@ export default function GameBoard2D() {
                   zIndex: 15,
                   transitionDuration: enemy.type === 'fast' ? '75ms' : '150ms',
                   animation: `enemy-wobble ${enemy.type === 'fast' ? '0.6' : '1'}s ease-in-out infinite`,
-                  filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.3))',
+                  filter: `drop-shadow(0 3px 4px rgba(0,0,0,0.35)) drop-shadow(0 0 8px ${colors.body}55)`,
                 }}
               >
-                {/* Enemy body */}
+                {/* Crystal shards on top */}
+                <div className="absolute" style={{
+                  top: '-16%', left: '50%', transform: 'translateX(-50%)',
+                  width: 0, height: 0,
+                  borderLeft: `${charSize * 0.09}px solid transparent`,
+                  borderRight: `${charSize * 0.09}px solid transparent`,
+                  borderBottom: `${charSize * 0.24}px solid ${colors.light}`,
+                }} />
+                <div className="absolute" style={{
+                  top: '-8%', left: '24%',
+                  width: 0, height: 0,
+                  borderLeft: `${charSize * 0.06}px solid transparent`,
+                  borderRight: `${charSize * 0.06}px solid transparent`,
+                  borderBottom: `${charSize * 0.16}px solid ${colors.body}`,
+                  transform: 'rotate(-18deg)',
+                }} />
+                <div className="absolute" style={{
+                  top: '-8%', right: '24%',
+                  width: 0, height: 0,
+                  borderLeft: `${charSize * 0.06}px solid transparent`,
+                  borderRight: `${charSize * 0.06}px solid transparent`,
+                  borderBottom: `${charSize * 0.16}px solid ${colors.body}`,
+                  transform: 'rotate(18deg)',
+                }} />
+
+                {/* Faceted crystal body */}
                 <div
-                  className="relative w-full h-full"
+                  className="relative"
                   style={{
-                    background: `linear-gradient(145deg, ${colors.body} 0%, ${colors.border} 100%)`,
-                    border: `3px solid ${colors.border}`,
-                    borderRadius: '40% 40% 50% 50%',
-                    boxShadow: 'inset 0 -3px 6px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.2)',
+                    width: '90%',
+                    height: '90%',
+                    clipPath: facet,
+                    background: `linear-gradient(150deg, ${colors.light} 0%, ${colors.body} 45%, ${colors.dark} 100%)`,
+                    boxShadow: `inset 0 -4px 8px rgba(0,0,0,0.3), inset 0 3px 6px rgba(255,255,255,0.35)`,
                   }}
                 >
-                  {/* Horns */}
-                  <div className="absolute" style={{
-                    top: '-20%', left: '12%',
-                    width: 0, height: 0,
-                    borderLeft: `${charSize * 0.08}px solid transparent`,
-                    borderRight: `${charSize * 0.08}px solid transparent`,
-                    borderBottom: `${charSize * 0.22}px solid #FFD700`,
-                    transform: 'rotate(-15deg)',
+                  {/* Facet edge highlight */}
+                  <div className="absolute inset-0" style={{
+                    clipPath: 'polygon(50% 0%, 100% 26%, 50% 50%, 0% 26%)',
+                    background: 'rgba(255,255,255,0.18)',
                   }} />
-                  <div className="absolute" style={{
-                    top: '-20%', right: '12%',
-                    width: 0, height: 0,
-                    borderLeft: `${charSize * 0.08}px solid transparent`,
-                    borderRight: `${charSize * 0.08}px solid transparent`,
-                    borderBottom: `${charSize * 0.22}px solid #FFD700`,
-                    transform: 'rotate(15deg)',
-                  }} />
-                  {/* Eyes - angry with red glow */}
-                  <div className="absolute flex gap-1" style={{ top: '28%', left: '50%', transform: 'translateX(-50%)' }}>
-                    <div className="rounded-full" style={{
-                      width: charSize * 0.18, height: charSize * 0.18,
-                      background: `radial-gradient(circle, ${colors.eye} 40%, #880000 100%)`,
-                      boxShadow: `0 0 ${charSize * 0.06}px ${colors.eye}`,
-                    }} />
-                    <div className="rounded-full" style={{
-                      width: charSize * 0.18, height: charSize * 0.18,
-                      background: `radial-gradient(circle, ${colors.eye} 40%, #880000 100%)`,
-                      boxShadow: `0 0 ${charSize * 0.06}px ${colors.eye}`,
-                    }} />
+
+                  {/* Glowing yellow angry eyes */}
+                  <div className="absolute flex gap-1.5" style={{ top: '34%', left: '50%', transform: 'translateX(-50%)' }}>
+                    {[0, 1].map((i) => (
+                      <div key={i} style={{
+                        width: charSize * 0.16, height: charSize * 0.13,
+                        background: 'radial-gradient(circle at 50% 40%, #fff7c2 0%, #ffe14d 45%, #f5a800 100%)',
+                        boxShadow: `0 0 ${charSize * 0.09}px #ffd24d, 0 0 ${charSize * 0.04}px #fff`,
+                        borderRadius: '2px',
+                        clipPath: 'polygon(0 15%, 100% 0, 100% 100%, 0 85%)',
+                        transform: i === 0 ? 'scaleX(-1)' : 'none',
+                      }}>
+                        <div style={{
+                          position: 'absolute', left: '50%', top: '30%', transform: 'translateX(-50%)',
+                          width: charSize * 0.03, height: charSize * 0.07, background: '#1a1400', borderRadius: '1px',
+                        }} />
+                      </div>
+                    ))}
                   </div>
-                  {/* Angry eyebrows */}
+
+                  {/* Angry brows */}
                   <div className="absolute" style={{
-                    top: '22%', left: '18%', width: '25%', height: '3px',
-                    background: '#000', transform: 'rotate(15deg)', borderRadius: '2px',
+                    top: '26%', left: '20%', width: '26%', height: `${Math.max(charSize * 0.04, 2)}px`,
+                    background: colors.dark, transform: 'rotate(16deg)', borderRadius: '2px',
                   }} />
                   <div className="absolute" style={{
-                    top: '22%', right: '18%', width: '25%', height: '3px',
-                    background: '#000', transform: 'rotate(-15deg)', borderRadius: '2px',
+                    top: '26%', right: '20%', width: '26%', height: `${Math.max(charSize * 0.04, 2)}px`,
+                    background: colors.dark, transform: 'rotate(-16deg)', borderRadius: '2px',
                   }} />
-                  {/* Mouth with teeth */}
-                  <div className="absolute" style={{
-                    bottom: '20%', left: '25%', width: '50%', height: '20%',
-                    background: '#000', borderRadius: '2px 2px 8px 8px',
-                  }}>
-                    <div className="absolute top-0 left-[10%] bg-white" style={{
-                      width: '20%', height: '45%',
-                      clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
-                    }} />
-                    <div className="absolute top-0 right-[10%] bg-white" style={{
-                      width: '20%', height: '45%',
-                      clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
-                    }} />
+
+                  {/* Jagged grin */}
+                  <div className="absolute flex justify-center gap-[2px]" style={{ bottom: '22%', left: '50%', transform: 'translateX(-50%)', width: '48%' }}>
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} style={{
+                        width: charSize * 0.06, height: charSize * 0.08,
+                        background: '#fff',
+                        clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
+                      }} />
+                    ))}
                   </div>
-                  {/* Type indicator */}
-                  {enemy.type === 'fast' && (
-                    <div className="absolute -right-1 top-1/2 -translate-y-1/2 text-yellow-300" style={{ fontSize: `${charSize * 0.25}px` }}>
-                      {">>"}
-                    </div>
-                  )}
-                  {enemy.type === 'smart' && (
-                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-yellow-300" style={{ fontSize: `${charSize * 0.2}px` }}>
-                      {"*"}
-                    </div>
-                  )}
                 </div>
+
+                {/* Type indicator */}
+                {enemy.type === 'fast' && (
+                  <div className="absolute -right-1 top-1/2 -translate-y-1/2 font-black" style={{ color: colors.light, fontSize: `${charSize * 0.24}px`, textShadow: `0 0 4px ${colors.body}` }}>
+                    {"»"}
+                  </div>
+                )}
+                {enemy.type === 'smart' && (
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2" style={{ color: colors.light, fontSize: `${charSize * 0.2}px`, textShadow: `0 0 4px ${colors.body}` }}>
+                    {"✦"}
+                  </div>
+                )}
               </div>
             );
           })}
