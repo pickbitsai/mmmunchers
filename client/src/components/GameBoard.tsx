@@ -1,12 +1,13 @@
-import { useRef, useEffect } from "react";
+import { Suspense, useRef, useEffect } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Group, Vector3 } from "three";
 import { useGameState } from "../lib/stores/useGameState";
 import { updateGameLogic } from "../lib/gameLogic";
 import Player from "./Player";
 import Enemy from "./Enemy";
-import GridCell from "./GridCell";
-import Ocean from "./Ocean";
+import GridCell, { TILE_SURFACE_Y } from "./GridCell";
+import ArcadeFloor from "./ArcadeFloor";
+import ArcadeWalls from "./ArcadeWalls";
 
 export default function GameBoard() {
   const groupRef = useRef<Group>(null);
@@ -184,12 +185,15 @@ export default function GameBoard() {
 
   return (
     <group ref={groupRef}>
-      {/* Ocean water surface */}
-      <Ocean
-        width={Math.max(groundWidth, groundHeight) * 2}
-        depth={Math.max(groundWidth, groundHeight) * 2}
-        position={[0, -0.3, 0]}
+      {/* Neon arcade playfield */}
+      <ArcadeFloor
+        width={groundWidth}
+        depth={groundHeight}
+        position={[0, -0.32, 0]}
       />
+
+      {/* Maze-style boundary walls */}
+      <ArcadeWalls width={groundWidth} depth={groundHeight} />
 
       {/* Grid cells */}
       {grid.map((row, rowIndex) =>
@@ -209,26 +213,30 @@ export default function GameBoard() {
         })
       )}
 
-      {/* Player */}
-      <Player
-        position={[
-          (player.x - centerX) * 2,
-          0.5,
-          (player.y - centerY) * 2
-        ]}
-      />
-
-      {/* Enemies */}
-      {enemies.map((enemy) => (
-        <Enemy
-          key={enemy.id}
-          enemy={enemy}
+      {/* Player — its own Suspense boundary so a slower-loading enemy model
+          can't force a re-render that leaves a stale duplicate behind. */}
+      <Suspense fallback={null}>
+        <Player
           position={[
-            (enemy.x - centerX) * 2,
-            0.5,
-            (enemy.y - centerY) * 2
+            (player.x - centerX) * 2,
+            TILE_SURFACE_Y,
+            (player.y - centerY) * 2
           ]}
         />
+      </Suspense>
+
+      {/* Enemies — each isolated the same way */}
+      {enemies.map((enemy) => (
+        <Suspense key={enemy.id} fallback={null}>
+          <Enemy
+            enemy={enemy}
+            position={[
+              (enemy.x - centerX) * 2,
+              TILE_SURFACE_Y,
+              (enemy.y - centerY) * 2
+            ]}
+          />
+        </Suspense>
       ))}
     </group>
   );

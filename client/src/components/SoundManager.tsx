@@ -2,13 +2,15 @@ import { useEffect } from "react";
 import { useAudio } from "../lib/stores/useAudio";
 
 export default function SoundManager() {
-  const { 
-    setBackgroundMusic, 
-    setHitSound, 
-    setSuccessSound, 
-    setMunchSound, 
-    setMoveSound, 
-    setEnemyMoveSound 
+  const {
+    isMuted,
+    backgroundMusic,
+    setBackgroundMusic,
+    setHitSound,
+    setSuccessSound,
+    setMunchSound,
+    setMoveSound,
+    setEnemyMoveSound
   } = useAudio();
 
   useEffect(() => {
@@ -43,7 +45,19 @@ export default function SoundManager() {
     enemyMoveAudio.volume = 0.3;
     setEnemyMoveSound(enemyMoveAudio);
 
+    // Browsers block audio until the page has seen a user gesture — retry
+    // starting the music on the first click/keypress if it was blocked on mount.
+    const tryStartMusic = () => {
+      if (!useAudio.getState().isMuted) {
+        bgMusic.play().catch(() => {});
+      }
+    };
+    window.addEventListener("pointerdown", tryStartMusic, { once: true });
+    window.addEventListener("keydown", tryStartMusic, { once: true });
+
     return () => {
+      window.removeEventListener("pointerdown", tryStartMusic);
+      window.removeEventListener("keydown", tryStartMusic);
       bgMusic.pause();
       bgMusic.src = "";
       hitAudio.src = "";
@@ -53,6 +67,16 @@ export default function SoundManager() {
       enemyMoveAudio.src = "";
     };
   }, [setBackgroundMusic, setHitSound, setSuccessSound, setMunchSound, setMoveSound, setEnemyMoveSound]);
+
+  // Keep playback in sync with the mute toggle.
+  useEffect(() => {
+    if (!backgroundMusic) return;
+    if (isMuted) {
+      backgroundMusic.pause();
+    } else {
+      backgroundMusic.play().catch(() => {});
+    }
+  }, [isMuted, backgroundMusic]);
 
   return null;
 }

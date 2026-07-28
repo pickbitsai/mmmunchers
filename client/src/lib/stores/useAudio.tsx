@@ -33,7 +33,7 @@ export const useAudio = create<AudioState>((set, get) => ({
   munchSound: null,
   moveSound: null,
   enemyMoveSound: null,
-  isMuted: true, // Start muted by default
+  isMuted: false, // Start unmuted — browsers still require a gesture before it can actually play
   
   setBackgroundMusic: (music) => set({ backgroundMusic: music }),
   setHitSound: (sound) => set({ hitSound: sound }),

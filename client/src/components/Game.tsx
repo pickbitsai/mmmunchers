@@ -1,10 +1,10 @@
 import GameBoard from "./GameBoard";
-import BeachEnvironment from "./BeachEnvironment";
+import ArcadeEnvironment from "./ArcadeEnvironment";
 
 export default function Game() {
   return (
     <>
-      <BeachEnvironment />
+      <ArcadeEnvironment />
       <GameBoard />
     </>
   );
