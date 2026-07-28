@@ -67,7 +67,7 @@ export default function ArcadeWalls({ width, depth }: ArcadeWallsProps) {
     <group position={[0, -0.32, 0]}>
       {blocks.map((block, i) => (
         <group key={i} position={block.position}>
-          <mesh castShadow receiveShadow>
+          <mesh receiveShadow>
             <boxGeometry args={block.size} />
             <meshStandardMaterial
               color={WALL_COLORS[i % WALL_COLORS.length]}

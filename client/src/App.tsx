@@ -35,6 +35,7 @@ function App() {
           {renderMode === '3d' ? (
             <Canvas
               shadows
+              dpr={[1, 1.5]}
               camera={{ position: [0, 10, 10], fov: 60 }}
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
               onCreated={() => {}}
@@ -47,8 +48,8 @@ function App() {
                 intensity={1.35}
                 color="#e6f8ff"
                 castShadow
-                shadow-mapSize-width={2048}
-                shadow-mapSize-height={2048}
+                shadow-mapSize-width={1024}
+                shadow-mapSize-height={1024}
               />
               <pointLight position={[-12, 7, 8]} intensity={18} distance={38} color="#1ac8ff" />
               <pointLight position={[12, 6, -5]} intensity={16} distance={34} color="#ff2fba" />

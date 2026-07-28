@@ -164,7 +164,6 @@ export default function GridCell({ cell, position }: GridCellProps) {
           smoothness={4}
           position={[0, 0, 0]}
           receiveShadow
-          castShadow
         >
           <meshStandardMaterial
             color={surface}
@@ -193,7 +192,7 @@ export default function GridCell({ cell, position }: GridCellProps) {
 
         {!inactive && cell.value && (
           <Text
-            position={[0, 0.09, 0.06]}
+            position={[0, 0.22, 0.05]}
             fontSize={getFontSize(cell.value)}
             color="#ffffff"
             anchorX="center"
