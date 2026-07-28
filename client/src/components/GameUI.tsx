@@ -154,60 +154,95 @@ export default function GameUI() {
     <div className="fixed inset-0 pointer-events-none z-50">
       {/* Top HUD */}
       <div className="absolute top-2 left-2 right-2 pointer-events-auto">
-        <div className="flex flex-row gap-2 items-center">
-          {/* Stats */}
-          <Card className="bg-black/80 text-white border-gray-600 flex-1">
-            <CardContent className="p-2">
-              {renderStats()}
-            </CardContent>
-          </Card>
+        <div className="max-w-4xl mx-auto flex flex-col gap-2">
+          <div className="flex flex-row gap-2 items-center justify-between">
+            {/* Stats */}
+            <Card className="bg-black/80 text-white border-gray-600 shrink-0">
+              <CardContent className="px-3 py-2">
+                {renderStats()}
+              </CardContent>
+            </Card>
 
-          {/* Mode badge */}
-          <div className="hidden sm:block px-2 py-1 rounded text-xs text-cyan-300 bg-black/80 border border-gray-600 whitespace-nowrap">
-            {modeLabels[gameMode]}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Mode badge */}
+              <div className="hidden sm:block px-3 py-2 rounded text-xs text-cyan-300 bg-black/80 border border-gray-600 whitespace-nowrap">
+                {modeLabels[gameMode]}
+              </div>
+
+              {/* Controls */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={togglePause}
+                className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
+              >
+                {gamePhase === 'paused' || gamePhase === 'level_complete' ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleMute}
+                className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
+              >
+                {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={togglePause}
-              className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
+          {/* Challenge / objective banner */}
+          {currentChallenge && (
+            <div
+              className="rounded-xl px-4 py-2.5 sm:px-6 sm:py-3 text-center"
+              style={{
+                background: 'linear-gradient(90deg, rgba(26,200,255,0.14), rgba(255,47,186,0.14))',
+                border: '1px solid rgba(26,200,255,0.55)',
+                boxShadow: '0 0 20px rgba(26,200,255,0.25), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
             >
-              {gamePhase === 'paused' || gamePhase === 'level_complete' ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleMute}
-              className="bg-black/80 text-white border-gray-600 hover:bg-gray-700"
-            >
-              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </Button>
+              <span className="text-cyan-300/80 text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase mr-2 align-middle">
+                Objective
+              </span>
+              <span
+                className="text-white text-sm sm:text-lg md:text-xl font-extrabold tracking-wide align-middle"
+                style={{ textShadow: '0 0 14px rgba(26,200,255,0.65)' }}
+              >
+                {currentChallenge.description}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop keyboard control hint */}
+      {!isMobile && gamePhase === 'playing' && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+          <div className="flex items-center gap-3 px-4 py-2 rounded-full text-xs text-gray-300 bg-black/70 border border-gray-700 whitespace-nowrap">
+            <span className="flex items-center gap-1.5">
+              <Key>W</Key><Key>A</Key><Key>S</Key><Key>D</Key>
+              <span className="text-gray-500 mx-0.5">or</span>
+              <Key>&larr;</Key><Key>&uarr;</Key><Key>&darr;</Key><Key>&rarr;</Key>
+              <span className="ml-1">move</span>
+            </span>
+            <span className="text-gray-600">|</span>
+            <span className="flex items-center gap-1.5">
+              <Key wide>Space</Key>
+              <span className="ml-1">munch</span>
+            </span>
           </div>
         </div>
-
-        {/* Challenge Description */}
-        {currentChallenge && (
-          <Card className="bg-black/80 text-white border-gray-600 mt-2">
-            <CardContent className="p-2">
-              <div className="text-center">
-                <div className="text-xs sm:text-sm font-bold text-cyan-400">
-                  {currentChallenge.description}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      )}
 
       {/* Level Complete overlay */}
       {gamePhase === 'level_complete' && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center pointer-events-auto">
-          <Card className="bg-black/90 text-white border-gray-600">
+          <Card
+            className="bg-black/90 text-white border-green-500/40"
+            style={{ boxShadow: '0 0 40px rgba(74,222,128,0.25)' }}
+          >
             <CardContent className="p-8 text-center">
-              <h2 className="text-3xl font-bold mb-2 text-green-400">Level Complete!</h2>
+              <h2 className="text-3xl font-bold mb-2 text-green-400" style={{ textShadow: '0 0 16px rgba(74,222,128,0.6)' }}>
+                Level Complete!
+              </h2>
               <div className="text-lg text-gray-300">Get ready for Level {level}...</div>
             </CardContent>
           </Card>
@@ -217,14 +252,22 @@ export default function GameUI() {
       {/* Pause overlay */}
       {gamePhase === 'paused' && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center pointer-events-auto">
-          <Card className="bg-black/90 text-white border-gray-600">
+          <Card
+            className="bg-black/90 text-white border-cyan-500/40"
+            style={{ boxShadow: '0 0 40px rgba(26,200,255,0.25)' }}
+          >
             <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">Game Paused</h2>
+              <h2 className="text-2xl font-bold mb-4" style={{ textShadow: '0 0 16px rgba(26,200,255,0.5)' }}>
+                Game Paused
+              </h2>
               <div className="flex gap-4">
-                <Button onClick={togglePause} variant="outline" className="bg-white/10 text-white border-gray-600">
+                <Button
+                  onClick={togglePause}
+                  className="bg-gradient-to-b from-lime-300 to-green-500 text-[#0b1a02] font-bold border-b-2 border-green-700 hover:brightness-110"
+                >
                   Resume
                 </Button>
-                <Button onClick={goToMainMenu} variant="outline" className="bg-white/10 text-white border-gray-600">
+                <Button onClick={goToMainMenu} variant="outline" className="bg-white/10 text-cyan-300 border-cyan-500/50 hover:bg-cyan-500/10">
                   Main Menu
                 </Button>
               </div>
@@ -236,9 +279,12 @@ export default function GameUI() {
       {/* Game Over overlay */}
       {gamePhase === 'game_over' && (
         <div className="absolute inset-0 bg-black/70 flex items-center justify-center pointer-events-auto">
-          <Card className="bg-black/90 text-white border-gray-600">
+          <Card
+            className="bg-black/90 text-white border-red-500/40"
+            style={{ boxShadow: '0 0 40px rgba(248,113,113,0.25)' }}
+          >
             <CardContent className="p-8 text-center">
-              <h2 className="text-3xl font-bold mb-2 text-red-400">
+              <h2 className="text-3xl font-bold mb-2 text-red-400" style={{ textShadow: '0 0 16px rgba(248,113,113,0.6)' }}>
                 {gameMode === 'streak' ? 'Streak Over!' : 'Game Over!'}
               </h2>
               {renderGameOverStats()}
@@ -322,5 +368,17 @@ export default function GameUI() {
         </div>
       )}
     </div>
+  );
+}
+
+function Key({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
+  return (
+    <kbd
+      className={`inline-flex items-center justify-center rounded border border-gray-500 bg-gray-800 text-gray-100 font-semibold ${
+        wide ? 'px-2 h-5 text-[10px]' : 'w-5 h-5 text-[10px]'
+      }`}
+    >
+      {children}
+    </kbd>
   );
 }

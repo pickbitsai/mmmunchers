@@ -4,6 +4,19 @@ import { useAudio } from "../lib/stores/useAudio";
 import { updateGameLogic } from "../lib/gameLogic";
 import OnscreenControls from "./OnscreenControls";
 
+const BOARD_INSET = 20;
+
+const NEON_TILE_PALETTE = [
+  { surface: "#116ca9", top: "#168dd1", accent: "#1ac8ff", glow: "rgba(26, 200, 255, 0.55)" },
+  { surface: "#62359a", top: "#814fc2", accent: "#c28aff", glow: "rgba(194, 138, 255, 0.5)" },
+  { surface: "#bd6815", top: "#dc8b20", accent: "#ffb52e", glow: "rgba(255, 181, 46, 0.52)" },
+  { surface: "#3f842d", top: "#59a83a", accent: "#9be94c", glow: "rgba(155, 233, 76, 0.48)" },
+] as const;
+
+function getNeonTilePalette(rowIndex: number, colIndex: number) {
+  return NEON_TILE_PALETTE[Math.abs(colIndex * 3 + rowIndex * 5) % NEON_TILE_PALETTE.length];
+}
+
 function getCellFontSize(text: string, baseFontSize: number, cellSize: number): string {
   const charCount = text.length;
   const words = text.split(' ');
@@ -37,12 +50,12 @@ function SplashEffect({ x, y, cellSize }: { x: number; y: number; cellSize: numb
 
   if (!visible) return null;
 
-  const cx = x * cellSize + cellSize / 2;
-  const cy = y * cellSize + cellSize / 2;
+  const cx = BOARD_INSET + x * cellSize + cellSize / 2;
+  const cy = BOARD_INSET + y * cellSize + cellSize / 2;
 
   return (
     <>
-      {/* Water splash droplets */}
+      {/* Neon pixel burst */}
       {[...Array(8)].map((_, i) => {
         const angle = (i / 8) * Math.PI * 2;
         const dist = cellSize * 0.4;
@@ -55,7 +68,8 @@ function SplashEffect({ x, y, cellSize }: { x: number; y: number; cellSize: numb
               top: cy - 4,
               width: 8,
               height: 8,
-              background: i % 2 === 0 ? '#88ddff' : '#ffffff',
+              background: i % 2 === 0 ? '#1ac8ff' : '#ff2fba',
+              boxShadow: `0 0 8px ${i % 2 === 0 ? '#1ac8ff' : '#ff2fba'}`,
               animation: `splash-particle 0.6s ease-out forwards`,
               '--splash-x': `${Math.cos(angle) * dist}px`,
               '--splash-y': `${Math.sin(angle) * dist}px`,
@@ -65,14 +79,16 @@ function SplashEffect({ x, y, cellSize }: { x: number; y: number; cellSize: numb
           />
         );
       })}
-      {/* Ripple ring */}
+      {/* Energy ring */}
       <div
-        className="absolute rounded-full pointer-events-none border-2 border-sky-300"
+        className="absolute rounded-full pointer-events-none"
         style={{
           left: cx - cellSize * 0.3,
           top: cy - cellSize * 0.3,
           width: cellSize * 0.6,
           height: cellSize * 0.6,
+          border: '2px solid #8ae6ff',
+          boxShadow: '0 0 12px rgba(26, 200, 255, 0.85)',
           animation: 'splash-ripple 0.6s ease-out forwards',
         }}
       />
@@ -335,15 +351,13 @@ export default function GameBoard2D() {
     <>
       {/* Inject keyframe animations */}
       <style>{`
-        @keyframes ocean-shimmer {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
+        @keyframes neon-board-pulse {
+          0%, 100% { box-shadow: 0 0 0 1px rgba(255,47,186,0.35), 0 0 24px rgba(26,200,255,0.28), inset 0 0 34px rgba(26,200,255,0.1); }
+          50% { box-shadow: 0 0 0 1px rgba(26,200,255,0.5), 0 0 34px rgba(255,47,186,0.3), inset 0 0 44px rgba(255,47,186,0.1); }
         }
-        @keyframes tile-bob {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-2px) rotate(0.3deg); }
-          75% { transform: translateY(1px) rotate(-0.2deg); }
+        @keyframes tile-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-2px); }
         }
         @keyframes splash-particle {
           0% { transform: translate(0, 0) scale(1); opacity: 0.9; }
@@ -362,49 +376,49 @@ export default function GameBoard2D() {
           25% { transform: rotate(3deg); }
           75% { transform: rotate(-3deg); }
         }
-        @keyframes wave-line {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-40px); }
+        @keyframes grid-drift {
+          0% { background-position: 0 0, 0 0; }
+          100% { background-position: 32px 32px, 32px 32px; }
         }
       `}</style>
 
       <div className="fixed inset-0 flex items-center justify-center pb-32">
-        {/* Board container with beach theme */}
+        {/* Neon arcade playfield */}
         <div
           className="relative rounded-2xl overflow-hidden"
           style={{
             width: boardWidth + 40,
             height: boardHeight + 40,
-            padding: '20px',
-            /* Sandy border frame */
-            border: '6px solid #c4956a',
-            boxShadow: '0 0 0 3px #a0784c, 0 8px 32px rgba(0,0,0,0.3), inset 0 0 20px rgba(0,119,190,0.15)',
-            /* Ocean water background */
-            background: 'linear-gradient(135deg, #0077be 0%, #00a4cc 25%, #0088aa 50%, #006699 75%, #0077be 100%)',
-            backgroundSize: '300% 300%',
-            animation: 'ocean-shimmer 8s ease-in-out infinite',
+            border: '2px solid #1ac8ff',
+            boxShadow: '0 0 0 1px rgba(255,47,186,0.35), 0 0 28px rgba(26,200,255,0.3), inset 0 0 38px rgba(26,200,255,0.1)',
+            background: `
+              linear-gradient(rgba(26,200,255,0.075) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(26,200,255,0.075) 1px, transparent 1px),
+              radial-gradient(circle at 50% 38%, #0b1d3a 0%, #050a1a 60%, #02040c 100%)
+            `,
+            backgroundSize: '32px 32px, 32px 32px, auto',
+            animation: 'neon-board-pulse 5s ease-in-out infinite',
           }}
         >
-          {/* Animated wave overlay lines */}
+          {/* Slow technical-grid drift */}
           <div
-            className="absolute inset-0 pointer-events-none opacity-10"
+            className="absolute inset-0 pointer-events-none"
             style={{
-              backgroundImage: `repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 18px,
-                rgba(255,255,255,0.4) 18px,
-                rgba(255,255,255,0.4) 20px
-              )`,
-              animation: 'wave-line 3s linear infinite',
+              backgroundImage: `
+                linear-gradient(rgba(255,47,186,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,47,186,0.04) 1px, transparent 1px)
+              `,
+              backgroundSize: '32px 32px',
+              animation: 'grid-drift 8s linear infinite',
+              maskImage: 'radial-gradient(circle at center, black 20%, transparent 85%)',
             }}
           />
 
-          {/* Grid cells - wooden plank tiles */}
+          {/* Grid cells - raised neon answer pads */}
           {grid.map((row, rowIndex) =>
             row.map((cell, colIndex) => {
-              const isWater = cell.isEmpty || cell.isMunched;
-              // Stagger bob animation per tile
+              const inactive = cell.isEmpty || cell.isMunched;
+              const palette = getNeonTilePalette(rowIndex, colIndex);
               const bobDelay = ((rowIndex * gridWidth + colIndex) * 0.15) % 2;
 
               return (
@@ -412,76 +426,51 @@ export default function GameBoard2D() {
                   key={`${rowIndex}-${colIndex}`}
                   className="absolute flex items-center justify-center font-bold"
                   style={{
-                    left: colIndex * cellSize + 3,
-                    top: rowIndex * cellSize + 3,
+                    left: BOARD_INSET + colIndex * cellSize + 4,
+                    top: BOARD_INSET + rowIndex * cellSize + 4,
                     width: cellSize - 8,
                     height: cellSize - 8,
-                    borderRadius: isWater ? '4px' : '8px',
+                    borderRadius: '10px',
                     fontSize: `${fontSize}px`,
                     padding: '4px',
                     lineHeight: 1.2,
                     transition: 'all 0.3s ease',
-                    ...(isWater
+                    ...(inactive
                       ? {
-                          /* Water gap - transparent to show ocean */
-                          background: 'rgba(0, 100, 160, 0.3)',
-                          border: '1px solid rgba(100, 200, 255, 0.15)',
+                          background: 'linear-gradient(145deg, rgba(5,11,24,0.94), rgba(10,23,44,0.82))',
+                          border: '1px solid rgba(26,200,255,0.16)',
+                          boxShadow: 'inset 0 0 16px rgba(26,200,255,0.06)',
                         }
                       : {
-                          /* Wooden plank tile */
                           background: `linear-gradient(
-                            180deg,
-                            #e8c98e 0%,
-                            #deb887 20%,
-                            #d4a76a 40%,
-                            #deb887 60%,
-                            #c4956a 80%,
-                            #deb887 100%
+                            145deg,
+                            ${palette.top} 0%,
+                            ${palette.surface} 48%,
+                            #08142b 125%
                           )`,
-                          border: '2px solid #a0784c',
+                          border: `2px solid ${palette.accent}`,
                           boxShadow: `
-                            inset 0 1px 0 rgba(255,255,255,0.3),
-                            inset 0 -2px 4px rgba(0,0,0,0.1),
-                            0 3px 8px rgba(0,0,0,0.25),
-                            0 1px 2px rgba(0,0,0,0.15)
+                            inset 0 1px 0 rgba(255,255,255,0.46),
+                            inset 0 -8px 16px rgba(2,4,12,0.46),
+                            0 0 14px ${palette.glow},
+                            0 5px 0 #020611,
+                            0 8px 12px rgba(0,0,0,0.42)
                           `,
-                          animation: `tile-bob ${2 + bobDelay * 0.5}s ease-in-out ${bobDelay}s infinite`,
+                          animation: `tile-float ${2.1 + bobDelay * 0.35}s ease-in-out ${bobDelay}s infinite`,
                         }),
                   }}
                 >
-                  {/* Wood grain lines */}
-                  {!isWater && (
+                  {/* Glossy inset panel */}
+                  {!inactive && (
                     <div
-                      className="absolute inset-0 pointer-events-none opacity-20"
+                      className="absolute pointer-events-none"
                       style={{
-                        backgroundImage: `
-                          linear-gradient(0deg, transparent 0%, transparent 30%, rgba(139,90,43,0.3) 30%, rgba(139,90,43,0.3) 31%, transparent 31%, transparent 65%, rgba(139,90,43,0.25) 65%, rgba(139,90,43,0.25) 66%, transparent 66%)
-                        `,
-                        borderRadius: '6px',
+                        inset: '7%',
+                        borderRadius: '7px',
+                        border: '1px solid rgba(255,255,255,0.24)',
+                        background: 'linear-gradient(155deg, rgba(255,255,255,0.2), transparent 40%)',
                       }}
                     />
-                  )}
-
-                  {/* Cell text */}
-                  {!cell.isEmpty && !cell.isMunched && (
-                    <span
-                      className="text-center flex items-center justify-center relative z-10"
-                      style={{
-                        fontSize: getCellFontSize(cell.value, fontSize, cellSize),
-                        overflowWrap: 'break-word',
-                        lineHeight: 1.15,
-                        padding: '2px',
-                        width: `${cellSize - 16}px`,
-                        maxHeight: `${cellSize - 16}px`,
-                        overflow: 'hidden',
-                        textAlign: 'center',
-                        color: '#2c1810',
-                        textShadow: '0 1px 0 rgba(255,255,255,0.4)',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {cell.value}
-                    </span>
                   )}
                 </div>
               );
@@ -493,12 +482,12 @@ export default function GameBoard2D() {
             <SplashEffect key={splash.id} x={splash.x} y={splash.y} cellSize={cellSize} />
           ))}
 
-          {/* Player - green blob muncher (2026) */}
+          {/* Glimmer - 2D counterpart to the Meshy-authored 3D hero */}
           <div
             className="absolute flex items-center justify-center transition-all duration-150 pointer-events-none"
             style={{
-              left: player.x * cellSize + (cellSize - charSize) / 2,
-              top: player.y * cellSize + (cellSize - charSize) / 2,
+              left: BOARD_INSET + player.x * cellSize + (cellSize - charSize) / 2,
+              top: BOARD_INSET + player.y * cellSize + (cellSize - charSize) / 2,
               width: charSize,
               height: charSize,
               zIndex: 20,
@@ -506,210 +495,119 @@ export default function GameBoard2D() {
               filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.35)) drop-shadow(0 0 10px rgba(132,204,22,0.55))',
             }}
           >
-            {/* Antennae */}
-            {[-1, 1].map((s) => (
-              <div
-                key={s}
-                className="absolute"
-                style={{
-                  top: '-14%',
-                  left: '50%',
-                  width: charSize * 0.05,
-                  height: charSize * 0.22,
-                  background: '#4a7c0f',
-                  borderRadius: '3px',
-                  transform: `translateX(-50%) translateX(${s * charSize * 0.13}px) rotate(${s * 22}deg)`,
-                  transformOrigin: 'bottom center',
-                }}
-              >
-                <div
-                  className="rounded-full"
-                  style={{
-                    position: 'absolute',
-                    top: `-${charSize * 0.05}px`,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: charSize * 0.12,
-                    height: charSize * 0.12,
-                    background: 'radial-gradient(circle at 35% 30%, #d9f99d, #84cc16)',
-                    boxShadow: '0 0 6px rgba(190,242,100,0.7)',
-                  }}
-                />
-              </div>
-            ))}
-
-            {/* Body */}
-            <div
-              className="relative w-full h-full rounded-full"
-              style={{
-                background: 'radial-gradient(circle at 35% 28%, #bef264 0%, #84cc16 45%, #558b0f 100%)',
-                border: `${Math.max(charSize * 0.03, 2)}px solid #3f6212`,
-                boxShadow: 'inset 0 -5px 8px rgba(0,0,0,0.22), inset 0 3px 6px rgba(255,255,255,0.4)',
-              }}
-            >
-              {/* Spots */}
-              <div className="absolute rounded-full" style={{ top: '18%', right: '18%', width: charSize * 0.1, height: charSize * 0.1, background: 'rgba(63,98,18,0.5)' }} />
-              <div className="absolute rounded-full" style={{ bottom: '24%', left: '16%', width: charSize * 0.08, height: charSize * 0.08, background: 'rgba(63,98,18,0.4)' }} />
-
-              {/* Cheeks */}
-              <div className="absolute rounded-full" style={{ top: '48%', left: '8%', width: charSize * 0.14, height: charSize * 0.1, background: 'rgba(255,143,176,0.65)', filter: 'blur(1px)' }} />
-              <div className="absolute rounded-full" style={{ top: '48%', right: '8%', width: charSize * 0.14, height: charSize * 0.1, background: 'rgba(255,143,176,0.65)', filter: 'blur(1px)' }} />
-
-              {/* Eyes - big and googly */}
-              <div className="absolute flex gap-1.5" style={{ top: '18%', left: '50%', transform: 'translateX(-50%)' }}>
-                {[0, 1].map((i) => (
-                  <div key={i} className="rounded-full bg-white relative" style={{ width: charSize * 0.27, height: charSize * 0.3, boxShadow: 'inset 0 -2px 3px rgba(0,0,0,0.15)' }}>
-                    <div className="rounded-full bg-gray-900 absolute" style={{ width: charSize * 0.14, height: charSize * 0.14, left: '50%', top: '42%', transform: 'translate(-50%, 0)' }}>
-                      <div className="rounded-full bg-white absolute" style={{ width: charSize * 0.05, height: charSize * 0.05, top: '10%', right: '10%' }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Mouth - happy open chomper */}
-              <div
-                className="absolute overflow-hidden"
-                style={{
-                  bottom: '14%',
-                  left: '28%',
-                  width: '44%',
-                  height: '26%',
-                  background: 'linear-gradient(#7a1030, #4a0a1e)',
-                  border: '2px solid #3f0a16',
-                  borderRadius: '30% 30% 55% 55%',
-                }}
-              >
-                {/* Teeth */}
-                <div className="absolute top-0 left-[12%] bg-white" style={{ width: '22%', height: '42%', borderRadius: '0 0 3px 3px' }} />
-                <div className="absolute top-0 right-[12%] bg-white" style={{ width: '22%', height: '42%', borderRadius: '0 0 3px 3px' }} />
-                {/* Tongue */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-t-full" style={{ width: '55%', height: '45%', background: '#ff6b8a' }} />
-              </div>
-            </div>
+            <img
+              src="/characters/glimmer-2d.png"
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="h-full w-full select-none object-contain"
+            />
           </div>
 
-          {/* Enemies - blocky voxel crystal monsters (2026) */}
+          {/* Approved Trog cutout, with a small type-colored arena marker. */}
           {enemies.map((enemy) => {
-            const colors = enemy.type === 'fast'
-              ? { body: '#f59e0b', light: '#fcd34d', dark: '#b45309' }
+            const accent = enemy.type === 'fast'
+              ? '#ffb52e'
               : enemy.type === 'smart'
-              ? { body: '#a855f7', light: '#d8b4fe', dark: '#6b21a8' }
-              : { body: '#2f9fe0', light: '#7cd0ff', dark: '#1c5f8c' };
-
-            const facet = 'polygon(50% 0%, 100% 26%, 100% 74%, 50% 100%, 0% 74%, 0% 26%)';
+              ? '#c28aff'
+              : '#1ac8ff';
+            const enemyWidth = charSize * 1.22;
 
             return (
               <div
                 key={enemy.id}
                 className="absolute flex items-center justify-center transition-all pointer-events-none"
                 style={{
-                  left: enemy.x * cellSize + (cellSize - charSize) / 2,
-                  top: enemy.y * cellSize + (cellSize - charSize) / 2,
-                  width: charSize,
+                  left: BOARD_INSET + enemy.x * cellSize + (cellSize - enemyWidth) / 2,
+                  top: BOARD_INSET + enemy.y * cellSize + (cellSize - charSize) / 2,
+                  width: enemyWidth,
                   height: charSize,
                   zIndex: 15,
                   transitionDuration: enemy.type === 'fast' ? '75ms' : '150ms',
                   animation: `enemy-wobble ${enemy.type === 'fast' ? '0.6' : '1'}s ease-in-out infinite`,
-                  filter: `drop-shadow(0 3px 4px rgba(0,0,0,0.35)) drop-shadow(0 0 8px ${colors.body}55)`,
+                  filter: `drop-shadow(0 3px 4px rgba(0,0,0,0.45)) drop-shadow(0 0 8px ${accent}88)`,
                 }}
               >
-                {/* Crystal shards on top */}
-                <div className="absolute" style={{
-                  top: '-16%', left: '50%', transform: 'translateX(-50%)',
-                  width: 0, height: 0,
-                  borderLeft: `${charSize * 0.09}px solid transparent`,
-                  borderRight: `${charSize * 0.09}px solid transparent`,
-                  borderBottom: `${charSize * 0.24}px solid ${colors.light}`,
-                }} />
-                <div className="absolute" style={{
-                  top: '-8%', left: '24%',
-                  width: 0, height: 0,
-                  borderLeft: `${charSize * 0.06}px solid transparent`,
-                  borderRight: `${charSize * 0.06}px solid transparent`,
-                  borderBottom: `${charSize * 0.16}px solid ${colors.body}`,
-                  transform: 'rotate(-18deg)',
-                }} />
-                <div className="absolute" style={{
-                  top: '-8%', right: '24%',
-                  width: 0, height: 0,
-                  borderLeft: `${charSize * 0.06}px solid transparent`,
-                  borderRight: `${charSize * 0.06}px solid transparent`,
-                  borderBottom: `${charSize * 0.16}px solid ${colors.body}`,
-                  transform: 'rotate(18deg)',
-                }} />
-
-                {/* Faceted crystal body */}
                 <div
-                  className="relative"
+                  className="absolute rounded-full"
                   style={{
-                    width: '90%',
-                    height: '90%',
-                    clipPath: facet,
-                    background: `linear-gradient(150deg, ${colors.light} 0%, ${colors.body} 45%, ${colors.dark} 100%)`,
-                    boxShadow: `inset 0 -4px 8px rgba(0,0,0,0.3), inset 0 3px 6px rgba(255,255,255,0.35)`,
+                    left: '13%',
+                    right: '13%',
+                    bottom: '5%',
+                    height: '20%',
+                    border: `2px solid ${accent}`,
+                    boxShadow: `0 0 10px ${accent}`,
+                    opacity: 0.72,
                   }}
-                >
-                  {/* Facet edge highlight */}
-                  <div className="absolute inset-0" style={{
-                    clipPath: 'polygon(50% 0%, 100% 26%, 50% 50%, 0% 26%)',
-                    background: 'rgba(255,255,255,0.18)',
-                  }} />
-
-                  {/* Glowing yellow angry eyes */}
-                  <div className="absolute flex gap-1.5" style={{ top: '34%', left: '50%', transform: 'translateX(-50%)' }}>
-                    {[0, 1].map((i) => (
-                      <div key={i} style={{
-                        width: charSize * 0.16, height: charSize * 0.13,
-                        background: 'radial-gradient(circle at 50% 40%, #fff7c2 0%, #ffe14d 45%, #f5a800 100%)',
-                        boxShadow: `0 0 ${charSize * 0.09}px #ffd24d, 0 0 ${charSize * 0.04}px #fff`,
-                        borderRadius: '2px',
-                        clipPath: 'polygon(0 15%, 100% 0, 100% 100%, 0 85%)',
-                        transform: i === 0 ? 'scaleX(-1)' : 'none',
-                      }}>
-                        <div style={{
-                          position: 'absolute', left: '50%', top: '30%', transform: 'translateX(-50%)',
-                          width: charSize * 0.03, height: charSize * 0.07, background: '#1a1400', borderRadius: '1px',
-                        }} />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Angry brows */}
-                  <div className="absolute" style={{
-                    top: '26%', left: '20%', width: '26%', height: `${Math.max(charSize * 0.04, 2)}px`,
-                    background: colors.dark, transform: 'rotate(16deg)', borderRadius: '2px',
-                  }} />
-                  <div className="absolute" style={{
-                    top: '26%', right: '20%', width: '26%', height: `${Math.max(charSize * 0.04, 2)}px`,
-                    background: colors.dark, transform: 'rotate(-16deg)', borderRadius: '2px',
-                  }} />
-
-                  {/* Jagged grin */}
-                  <div className="absolute flex justify-center gap-[2px]" style={{ bottom: '22%', left: '50%', transform: 'translateX(-50%)', width: '48%' }}>
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} style={{
-                        width: charSize * 0.06, height: charSize * 0.08,
-                        background: '#fff',
-                        clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
-                      }} />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Type indicator */}
+                />
+                <img
+                  src="/characters/trog-2d.png"
+                  alt=""
+                  aria-hidden="true"
+                  draggable={false}
+                  className="relative h-full w-full select-none object-contain"
+                />
                 {enemy.type === 'fast' && (
-                  <div className="absolute -right-1 top-1/2 -translate-y-1/2 font-black" style={{ color: colors.light, fontSize: `${charSize * 0.24}px`, textShadow: `0 0 4px ${colors.body}` }}>
+                  <div
+                    className="absolute -right-1 top-1/2 -translate-y-1/2 font-black"
+                    style={{ color: accent, fontSize: `${charSize * 0.24}px`, textShadow: `0 0 4px ${accent}` }}
+                  >
                     {"»"}
                   </div>
                 )}
                 {enemy.type === 'smart' && (
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2" style={{ color: colors.light, fontSize: `${charSize * 0.2}px`, textShadow: `0 0 4px ${colors.body}` }}>
+                  <div
+                    className="absolute -top-2 left-1/2 -translate-x-1/2"
+                    style={{ color: accent, fontSize: `${charSize * 0.2}px`, textShadow: `0 0 4px ${accent}` }}
+                  >
                     {"✦"}
                   </div>
                 )}
               </div>
             );
           })}
+
+          {/* Answer text, rendered above characters so standing on a tile never hides its clue */}
+          {grid.map((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+              if (cell.isEmpty || cell.isMunched) return null;
+              const palette = getNeonTilePalette(rowIndex, colIndex);
+
+              return (
+                <div
+                  key={`text-${rowIndex}-${colIndex}`}
+                  className="absolute flex items-center justify-center pointer-events-none"
+                  style={{
+                    left: BOARD_INSET + colIndex * cellSize + 4,
+                    top: BOARD_INSET + rowIndex * cellSize + 4,
+                    width: cellSize - 8,
+                    height: cellSize - 8,
+                    zIndex: 25,
+                    padding: '4px',
+                  }}
+                >
+                  <span
+                    className="text-center flex items-center justify-center"
+                    style={{
+                      fontSize: getCellFontSize(cell.value, fontSize, cellSize),
+                      overflowWrap: 'break-word',
+                      lineHeight: 1.15,
+                      padding: '2px',
+                      width: `${cellSize - 16}px`,
+                      maxHeight: `${cellSize - 16}px`,
+                      overflow: 'hidden',
+                      textAlign: 'center',
+                      color: '#ffffff',
+                      textShadow: `0 0 4px #ffffff, 0 0 10px ${palette.accent}, 0 2px 2px rgba(0,0,0,0.8)`,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {cell.value}
+                  </span>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
