@@ -9,9 +9,12 @@ import GameUI from "./components/GameUI";
 import { useGameState } from "./lib/stores/useGameState";
 import { assetLoader } from "./lib/assetLoader";
 import "@fontsource/inter";
+import { PickBitsAuth } from "./components/PickBitsAuth";
+import { subscribeCareerSync } from "./lib/stores/useCareerState";
 
 function App() {
   const { gamePhase, initializeGame, renderMode } = useGameState();
+  React.useEffect(subscribeCareerSync, []);
 
   React.useEffect(() => {
     assetLoader.preloadCriticalAssets().catch(() => {});
@@ -67,6 +70,7 @@ function App() {
       )}
 
       <SoundManager />
+      <PickBitsAuth />
     </div>
   );
 }

@@ -13,6 +13,8 @@ import { DinosaurTopic } from "../topics/DinosaurTopic";
 import { MusicTopic } from "../topics/MusicTopic";
 import { SurfingTopic } from "../topics/SurfingTopic";
 import { useAudio } from "./useAudio";
+import { recordCareerProgress } from "./useCareerState";
+import { submitScore } from "../pickbits";
 
 export type { GridCell };
 export type GamePhase = "main_menu" | "mode_selection" | "topic_selection" | "playing" | "paused" | "game_over" | "level_complete";
@@ -65,6 +67,8 @@ interface GameState {
   timeRemaining: number;
   streak: number;
   bestStreak: number;
+  roundCorrectAnswers: number;
+  roundHadMistake: boolean;
 
   // Actions
   initializeGame: () => void;
@@ -152,6 +156,8 @@ export const useGameState = create<GameState>()(
     timeRemaining: 0,
     streak: 0,
     bestStreak: 0,
+    roundCorrectAnswers: 0,
+    roundHadMistake: false,
 
     initializeGame: () => {
       set({
@@ -168,7 +174,9 @@ export const useGameState = create<GameState>()(
         level: 1,
         timeRemaining: 0,
         streak: 0,
-        bestStreak: 0
+        bestStreak: 0,
+        roundCorrectAnswers: 0,
+        roundHadMistake: false
       });
     },
 
@@ -184,7 +192,9 @@ export const useGameState = create<GameState>()(
         lives: 3,
         level: 1,
         streak: 0,
-        bestStreak: 0
+        bestStreak: 0,
+        roundCorrectAnswers: 0,
+        roundHadMistake: false
       });
     },
 
@@ -216,7 +226,8 @@ export const useGameState = create<GameState>()(
       const provider = factory();
 
       // Set category if available from localStorage
-      const savedCategory = localStorage.getItem(`category_${topicId}`);
+      let savedCategory: string | null = null;
+      try { savedCategory = localStorage.getItem(`category_${topicId}`); } catch { /* Use default category. */ }
       if (savedCategory && 'setCategory' in provider) {
         (provider as any).setCategory(savedCategory);
       }
@@ -252,8 +263,11 @@ export const useGameState = create<GameState>()(
           score: state.score > 0 ? state.score : 0,
           lives: state.lives > 0 && state.level > 1 ? state.lives : settings.lives,
           timeRemaining: settings.time,
-          streak: gameMode === 'streak' && state.level > 1 ? state.streak : 0
+          streak: gameMode === 'streak' && state.level > 1 ? state.streak : 0,
+          roundCorrectAnswers: 0,
+          roundHadMistake: false
         }));
+        recordCareerProgress(get());
       } catch {
         set({
           gamePhase: "topic_selection",
@@ -273,7 +287,9 @@ export const useGameState = create<GameState>()(
         enemies: [],
         timeRemaining: 0,
         streak: 0,
-        bestStreak: 0
+        bestStreak: 0,
+        roundCorrectAnswers: 0,
+        roundHadMistake: false
       });
 
       if (selectedTopic) {
@@ -291,11 +307,15 @@ export const useGameState = create<GameState>()(
     },
 
     gameOver: () => {
+      if (!['playing', 'paused', 'level_complete'].includes(get().gamePhase)) return;
       set((state) => ({
         gamePhase: "game_over",
         enemies: [],
         bestStreak: Math.max(state.bestStreak, state.streak)
       }));
+      const state = get();
+      submitScore(state.score);
+      recordCareerProgress({ ...state, finished: true });
     },
 
     toggleRenderMode: () => {
@@ -335,6 +355,7 @@ export const useGameState = create<GameState>()(
     },
 
     munchCurrentCell: () => {
+      if (get().gamePhase !== 'playing') return;
       const { grid, player, currentChallenge, gameMode } = get();
       const cell = grid[player.y][player.x];
 
@@ -361,8 +382,10 @@ export const useGameState = create<GameState>()(
           grid: newGrid,
           score: state.score + scoreBonus,
           streak: newStreak,
-          bestStreak: Math.max(state.bestStreak, newStreak)
+          bestStreak: Math.max(state.bestStreak, newStreak),
+          roundCorrectAnswers: state.roundCorrectAnswers + 1
         }));
+        recordCareerProgress({ ...get(), correctAnswer: true });
 
         // Time Attack: add bonus time
         if (gameMode === 'time_attack') {
@@ -376,6 +399,7 @@ export const useGameState = create<GameState>()(
         }
       } else {
         // Wrong answer
+        set({ roundHadMistake: true });
         const { playHit } = useAudio.getState();
         playHit();
 
@@ -466,6 +490,8 @@ export const useGameState = create<GameState>()(
     },
 
     nextLevel: () => {
+      if (get().gamePhase !== 'playing') return;
+      const perfectRound = get().roundCorrectAnswers > 0 && !get().roundHadMistake;
       const { playSuccess } = useAudio.getState();
       playSuccess();
 
@@ -478,8 +504,10 @@ export const useGameState = create<GameState>()(
         score: state.score + 100 * state.level,
         gamePhase: "level_complete" as GamePhase
       }));
+      recordCareerProgress({ ...get(), perfectRound });
 
       setTimeout(() => {
+        if (get().gamePhase !== 'level_complete') return;
         get().startGame();
         get().spawnEnemies();
       }, 1500);
@@ -515,7 +543,8 @@ export const useGameState = create<GameState>()(
     loseLife: () => {
       set((state) => ({
         lives: state.lives - 1,
-        streak: 0
+        streak: 0,
+        roundHadMistake: true
       }));
 
       if (get().lives <= 0) {
