@@ -1,0 +1,3 @@
+{ id:'mmmunchers', name:'Mmmunchers', statusLabel:'Live', status:'live', tagline:'Learn the maze. Munch the answer.', tech:'React Three Fiber · 11 topics, 5 modes', blurb:'Munch correct answers and dodge Trogs across 11 topics. Build your career, chase high scores, and unlock 10 achievements with PickBits sign-in and cloud saves.', accent:'#ffe600', image:'/assets/img/games/mmmunchers.png', tags:['Education','Arcade','Puzzle'], repo:'https://github.com/pickbitsai/mmmunchers', play:'https://mmmunchers.pickbits.ai', license:'MIT', openSource:true },
+
+if (slug === 'mmmunchers') return 'Best ' + n(sum.bestScore) + ' · Streak ' + n(sum.bestStreak) + ' · ' + n(sum.games) + ' games · ' + n(Array.isArray(sum.topicsPlayed) ? sum.topicsPlayed.length : 0) + ' topics';

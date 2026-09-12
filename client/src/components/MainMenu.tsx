@@ -2,6 +2,9 @@ import { useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { useGameState, GameMode } from "../lib/stores/useGameState";
 import { useAudio } from "../lib/stores/useAudio";
+import { useCareerState } from "../lib/stores/useCareerState";
+import { saveProgress } from "../lib/pickbits";
+import { ACHIEVEMENTS } from "../lib/careerStats";
 import {
   Gamepad2, Box, Volume2, VolumeX, BookOpen, Atom, Play,
   Swords, Timer, Skull, Leaf, Flame, ChevronDown, Check,
@@ -113,6 +116,7 @@ const topics = [
 export default function MainMenu() {
   const { setGameMode, selectTopic, renderMode, toggleRenderMode } = useGameState();
   const { isMuted, toggleMute } = useAudio();
+  const career = useCareerState(state => state.career);
   const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({});
   const topicSectionRef = useRef<HTMLDivElement>(null);
@@ -129,7 +133,8 @@ export default function MainMenu() {
   const handleStartTopic = (topicId: string) => {
     if (!selectedMode) return;
     const category = selectedCategories[topicId] || 'random';
-    localStorage.setItem(`category_${topicId}`, category);
+    try { localStorage.setItem(`category_${topicId}`, category); } catch { /* Play with defaults if storage is blocked. */ }
+    saveProgress();
     setGameMode(selectedMode);
     selectTopic(topicId);
   };
@@ -230,6 +235,11 @@ export default function MainMenu() {
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </Button>
+        </div>
+
+        <div className="mt-5 text-xs text-cyan-200/80" data-testid="career-summary">
+          Best {career.bestScore.toLocaleString()} · Streak {career.bestStreak} · {career.games.toLocaleString()} games
+          <span className="block mt-1">{career.correctAnswers.toLocaleString()} correct · {career.topicsPlayed.length}/11 topics · {career.achievements.length}/{ACHIEVEMENTS.length} achievements</span>
         </div>
 
         {/* Feature chips */}
