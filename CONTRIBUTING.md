@@ -5,7 +5,7 @@ Thanks for your interest! This is a small open-source project — pull requests,
 ## Getting set up
 
 ```bash
-git clone https://github.com/pickbitsai/mmmunchers.git
+git clone https://github.com/pickbitsstudio/mmmunchers.git
 cd mmmunchers
 npm install
 npm run dev

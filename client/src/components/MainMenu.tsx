@@ -5,7 +5,7 @@ import { useAudio } from "../lib/stores/useAudio";
 import {
   Gamepad2, Box, Volume2, VolumeX, BookOpen, Atom, Play,
   Swords, Timer, Skull, Leaf, Flame, ChevronDown, Check,
-  Calculator, Zap, Film, FlaskConical, Landmark, Globe,
+  Calculator, Film, FlaskConical, Landmark, Globe,
   PawPrint, Bone, Music, Waves,
 } from "lucide-react";
 
@@ -69,7 +69,7 @@ const topics = [
     categories: [
       { id: 'random', name: 'Random Mix' }, { id: 'mammals', name: 'Mammals' }, { id: 'birds', name: 'Birds' },
       { id: 'reptiles', name: 'Reptiles & Amphibians' }, { id: 'ocean', name: 'Ocean Life' }, { id: 'insects', name: 'Insects & Bugs' },
-      { id: 'predators', name: 'Predators' },
+      { id: 'predators', name: 'Predators' }, { id: 'dogs', name: 'Dog Breeds' }, { id: 'rabbits', name: 'Rabbits & Small Pets' },
     ],
   },
   {
@@ -80,17 +80,10 @@ const topics = [
     ],
   },
   {
-    id: 'marvel', name: 'Marvel Universe', icon: Zap, color: 'from-red-500 to-pink-600', glowColor: 'shadow-red-500/50',
-    categories: [
-      { id: 'random', name: 'Random Mix' }, { id: 'heroes', name: 'Superheroes' }, { id: 'villains', name: 'Villains' },
-      { id: 'teams', name: 'Teams' }, { id: 'powers', name: 'Superpowers' }, { id: 'locations', name: 'Locations' },
-    ],
-  },
-  {
     id: 'movies', name: 'Movie Trivia', icon: Film, color: 'from-purple-500 to-indigo-600', glowColor: 'shadow-purple-500/50',
     categories: [
-      { id: 'random', name: 'Random Mix' }, { id: 'actors', name: 'Famous Actors' }, { id: 'directors', name: 'Directors' },
-      { id: 'genres', name: 'Movie Genres' }, { id: 'decades', name: 'Movie Decades' }, { id: 'franchises', name: 'Movie Franchises' },
+      { id: 'random', name: 'Random Mix' }, { id: 'roles', name: 'Film Crew Roles' }, { id: 'techniques', name: 'Film Techniques' },
+      { id: 'genres', name: 'Movie Genres' }, { id: 'decades', name: 'Movie Decades' }, { id: 'formats', name: 'Film Formats' },
       { id: 'awards', name: 'Award Winners' },
     ],
   },
@@ -238,7 +231,7 @@ export default function MainMenu() {
           <div className="grid grid-cols-3 items-center py-4">
             <Feature icon={<BookOpen className="w-5 h-5" />} color="#84cc16" label="Educational Arcade" />
             <div className="flex justify-center">
-              <Feature icon={<Atom className="w-5 h-5" />} color="#a855f7" label="11 Topics" bordered />
+              <Feature icon={<Atom className="w-5 h-5" />} color="#a855f7" label="10 Topics" bordered />
             </div>
             <Feature icon={<Box className="w-5 h-5" />} color="#f59e0b" label="2D + 3D Modes" />
           </div>

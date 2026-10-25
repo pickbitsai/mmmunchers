@@ -16,7 +16,9 @@ export class AnimalsTopic extends TopicProvider {
       { id: 'reptiles', name: 'Reptiles & Amphibians' },
       { id: 'ocean', name: 'Ocean Life' },
       { id: 'insects', name: 'Insects & Bugs' },
-      { id: 'predators', name: 'Predators' }
+      { id: 'predators', name: 'Predators' },
+      { id: 'dogs', name: 'Dog Breeds' },
+      { id: 'rabbits', name: 'Rabbits & Small Pets' }
     ];
   }
 
@@ -60,9 +62,23 @@ export class AnimalsTopic extends TopicProvider {
     'Orca', 'Komodo Dragon', 'Python', 'Bear', 'Wolverine', 'Hyena'
   ];
 
+  private readonly dogs = [
+    'Labrador', 'Beagle', 'Poodle', 'Corgi', 'Dachshund', 'Husky',
+    'Greyhound', 'Chihuahua', 'Rottweiler', 'Border Collie', 'Pug', 'Shiba Inu',
+    'Great Dane', 'Terrier', 'Spaniel', 'Bulldog', 'Boxer', 'Dalmatian',
+    'Mastiff', 'Schnauzer', 'Pomeranian', 'Samoyed', 'Pointer', 'Sheepdog'
+  ];
+
+  private readonly rabbits = [
+    'Rabbit', 'Lop', 'Angora', 'Lionhead', 'Dwarf Rabbit', 'Hare',
+    'Guinea Pig', 'Hamster', 'Gerbil', 'Chinchilla', 'Ferret', 'Mouse',
+    'Rat', 'Degu', 'Mongolian Gerbil', 'Syrian Hamster', 'Fancy Mouse',
+    'Fancy Rat', 'Netherland Dwarf', 'Mini Rex'
+  ];
+
   private readonly allItems = [
     ...this.mammals, ...this.birds, ...this.reptiles,
-    ...this.ocean, ...this.insects
+    ...this.ocean, ...this.insects, ...this.dogs, ...this.rabbits
   ];
 
   getName(): string {
@@ -140,6 +156,18 @@ export class AnimalsTopic extends TopicProvider {
         {
           description: "Munch PREDATORS",
           checkAnswer: (value: string) => this.predators.includes(value)
+        }
+      ],
+      dogs: [
+        {
+          description: "Munch DOG BREEDS",
+          checkAnswer: (value: string) => this.dogs.includes(value)
+        }
+      ],
+      rabbits: [
+        {
+          description: "Munch RABBITS & SMALL PETS",
+          checkAnswer: (value: string) => this.rabbits.includes(value)
         }
       ]
     };

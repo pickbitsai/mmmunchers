@@ -3,7 +3,6 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { TopicProvider, GridCell } from "../topics/TopicProvider";
 import { MathTopic } from "../topics/MathTopic";
 import { WordTopic } from "../topics/WordTopic";
-import { MarvelTopic } from "../topics/MarvelTopic";
 import { MovieTopic } from "../topics/MovieTopic";
 import { ScienceTopic } from "../topics/ScienceTopic";
 import { HistoryTopic } from "../topics/HistoryTopic";
@@ -105,7 +104,6 @@ const getGridDimensions = () => {
 const TOPIC_MAP: Record<string, () => TopicProvider> = {
   math: () => new MathTopic(),
   words: () => new WordTopic(),
-  marvel: () => new MarvelTopic(),
   movies: () => new MovieTopic(),
   science: () => new ScienceTopic(),
   history: () => new HistoryTopic(),
@@ -210,19 +208,19 @@ export const useGameState = create<GameState>()(
         return;
       }
 
-      const factory = TOPIC_MAP[topicId];
-      if (!factory) return;
+      const resolvedTopicId = TOPIC_MAP[topicId] ? topicId : "math";
+      const factory = TOPIC_MAP[resolvedTopicId];
 
       const provider = factory();
 
       // Set category if available from localStorage
-      const savedCategory = localStorage.getItem(`category_${topicId}`);
+      const savedCategory = localStorage.getItem(`category_${resolvedTopicId}`);
       if (savedCategory && 'setCategory' in provider) {
         (provider as any).setCategory(savedCategory);
       }
 
       set({
-        selectedTopic: topicId,
+        selectedTopic: resolvedTopicId,
         topicProvider: provider
       });
 

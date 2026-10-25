@@ -11,31 +11,27 @@ export class MovieTopic extends TopicProvider {
   getCategories(): Array<{id: string, name: string}> {
     return [
       { id: 'random', name: 'Random Mix' },
-      { id: 'actors', name: 'Famous Actors' },
-      { id: 'directors', name: 'Directors' },
+      { id: 'roles', name: 'Film Crew Roles' },
+      { id: 'techniques', name: 'Film Techniques' },
       { id: 'genres', name: 'Movie Genres' },
       { id: 'decades', name: 'Movie Decades' },
-      { id: 'franchises', name: 'Movie Franchises' },
+      { id: 'formats', name: 'Film Formats' },
       { id: 'awards', name: 'Award Winners' }
     ];
   }
 
-  private readonly actors = [
-    'Tom Hanks', 'Meryl Streep', 'Leonardo DiCaprio', 'Jennifer Lawrence',
-    'Brad Pitt', 'Angelina Jolie', 'Will Smith', 'Sandra Bullock',
-    'Robert Downey Jr', 'Scarlett Johansson', 'Chris Evans', 'Emma Stone',
-    'Ryan Gosling', 'Natalie Portman', 'Matt Damon', 'Julia Roberts',
-    'Morgan Freeman', 'Denzel Washington', 'Hugh Jackman', 'Anne Hathaway',
-    'Christian Bale', 'Amy Adams', 'Ryan Reynolds', 'Emma Watson',
-    'Tom Cruise', 'Nicole Kidman', 'Johnny Depp', 'Charlize Theron'
+  private readonly roles = [
+    'Director', 'Producer', 'Screenwriter', 'Cinematographer',
+    'Editor', 'Production Designer', 'Costume Designer', 'Foley Artist',
+    'Gaffer', 'Best Boy', 'Script Supervisor', 'Composer',
+    'Sound Designer', 'Casting Director', 'Location Scout', 'Storyboard Artist'
   ];
 
-  private readonly directors = [
-    'Steven Spielberg', 'Martin Scorsese', 'Christopher Nolan', 'Quentin Tarantino',
-    'Alfred Hitchcock', 'Stanley Kubrick', 'James Cameron', 'Ridley Scott',
-    'Tim Burton', 'David Fincher', 'Coen Brothers', 'Peter Jackson',
-    'Guillermo del Toro', 'Denis Villeneuve', 'Jordan Peele', 'Greta Gerwig',
-    'Rian Johnson', 'Edgar Wright', 'Wes Anderson', 'Spike Lee'
+  private readonly techniques = [
+    'Close-Up', 'Dolly Zoom', 'Jump Cut', 'Match Cut',
+    'Tracking Shot', 'Rack Focus', 'Montage', 'Cross-Cut',
+    'Long Take', 'Point-of-View Shot', 'Dutch Angle', 'Fade Out',
+    'Slow Motion', 'Time-Lapse', 'Overhead Shot', 'Handheld Shot'
   ];
 
   private readonly genres = [
@@ -49,11 +45,11 @@ export class MovieTopic extends TopicProvider {
     '2010s Movies', '2020s Movies', 'Classic Films', 'Modern Cinema'
   ];
 
-  private readonly franchises = [
-    'Marvel Cinematic Universe', 'Star Wars', 'Harry Potter', 'Fast & Furious',
-    'Mission Impossible', 'James Bond', 'Jurassic Park', 'Terminator',
-    'Star Trek', 'Lord of the Rings', 'Pirates of Caribbean', 'X-Men',
-    'Transformers', 'Indiana Jones', 'Batman Movies', 'Spider-Man'
+  private readonly formats = [
+    'Feature', 'Short', 'Documentary', 'Anthology',
+    'Miniseries', 'Animation', 'Silent Film', 'Experimental Film',
+    'Newsreel', 'Serial', 'Mockumentary', 'Docudrama',
+    'Stop Motion', 'Live Action', 'Episodic Film', 'Educational Film'
   ];
 
   private readonly awards = [
@@ -62,11 +58,11 @@ export class MovieTopic extends TopicProvider {
   ];
 
   private readonly allMovieItems = [
-    ...this.actors,
-    ...this.directors,
+    ...this.roles,
+    ...this.techniques,
     ...this.genres,
     ...this.decades,
-    ...this.franchises,
+    ...this.formats,
     ...this.awards
   ];
 
@@ -76,22 +72,21 @@ export class MovieTopic extends TopicProvider {
 
   generateChallenge(level: number): Challenge {
     const challenges = [
-      // Actor challenges
       {
-        description: 'Find all the FAMOUS ACTORS',
-        checkAnswer: (value: string) => this.actors.includes(value)
+        description: 'Find all the FILM CREW ROLES',
+        checkAnswer: (value: string) => this.roles.includes(value)
       },
       {
-        description: 'Find all the MOVIE DIRECTORS',
-        checkAnswer: (value: string) => this.directors.includes(value)
+        description: 'Find all the FILM TECHNIQUES',
+        checkAnswer: (value: string) => this.techniques.includes(value)
       },
       {
         description: 'Find all the MOVIE GENRES',
         checkAnswer: (value: string) => this.genres.includes(value)
       },
       {
-        description: 'Find all the MOVIE FRANCHISES',
-        checkAnswer: (value: string) => this.franchises.includes(value)
+        description: 'Find all the FILM FORMATS',
+        checkAnswer: (value: string) => this.formats.includes(value)
       },
       {
         description: 'Find all the AWARD CATEGORIES',
@@ -104,15 +99,15 @@ export class MovieTopic extends TopicProvider {
     ];
 
     // Category-specific challenges
-    if (this.selectedCategory === 'actors') {
+    if (this.selectedCategory === 'roles') {
       return {
-        description: 'Find all the FAMOUS ACTORS',
-        checkAnswer: (value: string) => this.actors.includes(value)
+        description: 'Find all the FILM CREW ROLES',
+        checkAnswer: (value: string) => this.roles.includes(value)
       };
-    } else if (this.selectedCategory === 'directors') {
+    } else if (this.selectedCategory === 'techniques') {
       return {
-        description: 'Find all the MOVIE DIRECTORS',
-        checkAnswer: (value: string) => this.directors.includes(value)
+        description: 'Find all the FILM TECHNIQUES',
+        checkAnswer: (value: string) => this.techniques.includes(value)
       };
     } else if (this.selectedCategory === 'genres') {
       return {
@@ -124,10 +119,10 @@ export class MovieTopic extends TopicProvider {
         description: 'Find all the MOVIE TIME PERIODS',
         checkAnswer: (value: string) => this.decades.includes(value)
       };
-    } else if (this.selectedCategory === 'franchises') {
+    } else if (this.selectedCategory === 'formats') {
       return {
-        description: 'Find all the MOVIE FRANCHISES',
-        checkAnswer: (value: string) => this.franchises.includes(value)
+        description: 'Find all the FILM FORMATS',
+        checkAnswer: (value: string) => this.formats.includes(value)
       };
     } else if (this.selectedCategory === 'awards') {
       return {
@@ -192,16 +187,16 @@ export class MovieTopic extends TopicProvider {
     let correctPool: string[] = [];
     
     // Determine which pool to use based on challenge
-    if (challenge.description.includes('ACTORS')) {
-      correctPool = this.actors;
-    } else if (challenge.description.includes('DIRECTORS')) {
-      correctPool = this.directors;
+    if (challenge.description.includes('CREW ROLES')) {
+      correctPool = this.roles;
+    } else if (challenge.description.includes('TECHNIQUES')) {
+      correctPool = this.techniques;
     } else if (challenge.description.includes('GENRES')) {
       correctPool = this.genres;
     } else if (challenge.description.includes('TIME PERIODS')) {
       correctPool = this.decades;
-    } else if (challenge.description.includes('FRANCHISES')) {
-      correctPool = this.franchises;
+    } else if (challenge.description.includes('FORMATS')) {
+      correctPool = this.formats;
     } else if (challenge.description.includes('AWARD')) {
       correctPool = this.awards;
     } else {
